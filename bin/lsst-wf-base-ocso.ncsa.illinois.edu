@@ -1,0 +1,47 @@
+[db-desoper]
+user = felipe
+passwd = fel70chips
+name = desoper
+server = leovip148.ncsa.uiuc.edu
+port = 1521
+
+[db-dessci]
+user = felipe
+passwd = fel70chips
+name = dessci
+server = leovip148.ncsa.uiuc.edu
+port = 1521
+
+[db-destest]
+user = felipe
+passwd = fel70chips
+name = destest
+server = leovip148.ncsa.uiuc.edu
+port = 1521
+
+[db-oracle-unittest]
+user = felipe
+passwd = fel70chips
+name = destest
+server = leovip148.ncsa.uiuc.edu
+
+[http-desarchive]
+user = felipe
+passwd = fel70chips
+name = desar2home
+url = https://desar2.cosmology.illinois.edu/DESFiles/desarchive
+
+[file-http-prodbeta]
+user = prodbeta70
+passwd = pr0db3ta70
+
+[jira-desdm]
+user = felipe
+passwd = route163
+server = https://opensource.ncsa.illinois.edu/jira/
+
+[jira-desdm]
+user = felipe
+passwd = route163
+server = https://opensource.ncsa.illinois.edu/jira/
+
