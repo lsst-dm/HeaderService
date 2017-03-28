@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+
+import MHClient
+
+if __name__ == "__main__":
+
+    telem = MHClient.HOSER()
+    # Get a stream
+    s1 = telem.get_stream()
+    print s1['RA']
+    
+    # Update to next visit
+    telem.next_visit()
+    s2 = telem.get_stream()
+    print s2['RA']
+
+    # Manually Update a header param
+    telem.header['RA'] = 10
+    telem.header['DEC'] = -30
+    telem.header['FILTER'] = 'z'
+    s3 = telem.get_stream()
+
+    print s3['RA']
+    print s3['DEC']
+    print s3['FILTER']
+    
+
+ 

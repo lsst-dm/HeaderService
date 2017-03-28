@@ -6,30 +6,54 @@ if __name__ == "__main__":
 
     # Load a set of random words and values
     # we can access it via w.words[k] and w.words_values[k]
-    w = MHClient.RANWORDS()
 
-    # Load up the HDR templates
-    t = MHClient.HDRTEMPL()
+    h = MHClient.HOSER()
+    s1 = h.get_stream()
 
-    print t.header['RA']
-    print t.header['DEC']
-    print t.header['VISITID']
+    print s1
 
-    # Update next visit  -- we could loop over this
-    t.next_visit()
+    h.next_visit()
+    s2 = h.get_stream()
 
-    print t.header['RA']
-    print t.header['DEC']
-    print t.header['VISITID']
+
+    print s2
+
 
     exit()
+
+
+    print h.stream_keys
+    print h.stream_vals
+    s = h.get_stream()
+    print h.stream_vals
+
+    print s
+    
+    exit()
+
+    print h.words
+    print h.words_vals
+
+    print h.header.keys()
+    print h.header
+    exit()
+
+    print h.header['RA']
+    print h.header['DEC']
+    print h.header['VISITID']
+
+    h.next_visit()
+
+    print h.header['RA']
+    print h.header['DEC']
+    print h.header['VISITID']
     
     # Loop over all of the contents
-    for name in t.header.keys():
+    for name in h.header.keys():
 
         # To access the record itself
         #print t.get_record(name)
-        print name, t.header.get(name), t.header.get_comment(name)
+        print name, h.header.get(name), h.header.get_comment(name)
 
 
         
