@@ -89,6 +89,22 @@ class HDRTEMPL:
         self.header_keys = numpy.array(head_keys)
         self.header_vals = numpy.array(head_vals)
 
+    def write_header(self,filename,newline=False):
+
+        """
+        Write the header using the strict FITS notation (newline=False)
+        or more human readable (newline=True)
+        """
+
+        if newline:
+            with open(filename,'w') as fobj:
+                hstring = str(self.header)
+                fobj.write(hstring)
+        else:
+            data=None
+            fitsio.write(filename, data, header=self.header)
+        return
+
 class RANWORDS():
 
     """ Class to generate random words from a dictionary """

@@ -45,12 +45,10 @@ if __name__ == "__main__":
             htempl.update_header_record('FILTER',filter_name)
             htempl.update_header_record('BAND',filter_name)
             htempl.update_header_record('EXPNUM',visitID)
-            
+
+            # Write it out
             hout_file = "LSSTCam_%08d.header" % visitID
-            hout = open(hout_file,"w")
-            for rec in htempl.header.records():
-                hout.write("%s\n" % rec['card_string'])
-            hout.close()
+            htempl.write_header(hout_file, newline=True)
             print "Wrote header to: %s" % hout_file
         else:
             print "WARNING: Readout time out"
