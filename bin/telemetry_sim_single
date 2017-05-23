@@ -3,12 +3,11 @@
 import time
 import argparse
 from datetime import datetime
-import MHClient.SAL_tools as SAL_tools
+import MHClient.SAL_tools_send as SAL_tools_send
 
 def cmdline():
 
     DATE = (datetime.now()).isoformat()
-
 
     # Make conf_parser that hold values from a config.ini file
     parser = argparse.ArgumentParser(description="Send telemetry to Header Client")
@@ -22,27 +21,27 @@ def cmdline():
                         help="The CCD assigned")
     parser.add_argument("--band", action="store",default=None, 
                         help="Number of CCDs to build")
-    parser.add_argument("--expnum", action="store",default=None, type=int, 
-                        help="Exposure number to process")
+    parser.add_argument("--visitID", action="store",default=None, type=int, 
+                        help="VisitID")
     parser.add_argument("--obsdate", action="store",default=DATE,
                         help="Exposure number to process")
 
     args = parser.parse_args()
-    # Sanity checks for ccds to be integers
     return args
-
 
 if __name__ == "__main__":
 
     args = cmdline()
 
     # Send targer postion
-    SAL_tools.send_FK5Target(args.ra,args.dec)
+    SAL_tools_send.send_FK5Target(args.ra,args.dec,args.visitID)
 
     # Send Filter
     time.sleep(1)
-    SAL_tools.send_Filter(args.band)
+    SAL_tools_send.send_Filter(args.band)
 
-    # Send Readout end event
+    # Send Readout end event after integration is finished
     time.sleep(5)
-    SAL_tools.camera_logevent_endReadout()
+    SAL_tools_send.camera_logevent_endReadout()
+
+    print "Bye..."

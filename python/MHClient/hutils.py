@@ -8,7 +8,7 @@ import random
 try:
     MHCLIENT_DIR = os.environ['MHCLIENT_DIR']
 except:
-    MHCLIENT_DIR = __file__.split('python')
+    MHCLIENT_DIR = __file__.split('python')[0]
 
 WORDFILE = os.path.join(MHCLIENT_DIR,'etc','words.txt')
 HDRLIST = ['camera','observatory','primary_hdu','telescope']
@@ -48,6 +48,15 @@ class HDRTEMPL:
 
     def get_header_values(self):
         return get_values(self.header)
+
+    def update_header_record(self,keyword,value):
+        """ Update record for key with value """
+        rec = self.get_record(keyword)
+        rec['value'] = value
+        rec['card_string'] = self.header._record2card(rec)
+        #self.header.write_keys([rec])
+        #self.header.add_record(rec)
+        
             
     def next_visit(self,filter='r'):
         """ Rev up the visitID counter """
@@ -109,6 +118,20 @@ class RANWORDS():
         self.words_keys = self.all_words_keys[idx]
         self.words_vals = self.all_words_vals[idx]
 
+
+class TELEMSIM(HDRTEMPL):
+
+    """ A class to generate and send telemetry for the header client"""
+    
+    def __init__(self, wordfile=WORDFILE,nparray=True,hrdlist=HDRLIST, visitID_start=1):
+        
+        HDRTEMPL.__init__(self, hrdlist=HDRLIST, visitID_start=1)
+
+    def get_stream(self):
+
+        """ We merge the set of random words we selected with the current header"""
+        # Update header as array
+        self.header_as_arrays()
 
 class HOSER(HDRTEMPL,RANWORDS):
 

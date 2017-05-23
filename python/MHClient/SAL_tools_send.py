@@ -6,6 +6,11 @@ import sys
 import SALPY_camera 
 import SALPY_tcs
 
+""" Functions to send simply telemetry """
+
+# TODO:
+# Make these function classes to avoid init overhead
+
 def send_Filter(fname):
     
     filter_names = ['u','g','r','i','z','Y']
@@ -25,7 +30,7 @@ def send_Filter(fname):
     print "Sent FILTER=%s" % fname
     return retval
 
-def send_FK5Target(ra,dec):
+def send_FK5Target(ra,dec,visitID):
 
     mgr = SALPY_tcs.SAL_tcs()
     mgr.salTelemetryPub("tcs_kernel_FK5Target")
@@ -37,10 +42,12 @@ def send_FK5Target(ra,dec):
     myData.parallax = 1.0
     myData.pmDec = 1.0
     myData.pmRA = 1.0
-    myData.rv = 1.0
+    #myData.rv = 1.0
+    myData.rv = visitID
     retval = mgr.putSample_kernel_FK5Target(myData)
     mgr.salShutdown()
     print "Sent RA:%s, DEC:%s" % (ra,dec)
+    print "Sent visitID:%s" % visitID
     return
 
 def camera_logevent_endReadout(priority=1):
@@ -51,6 +58,7 @@ def camera_logevent_endReadout(priority=1):
     myData.priority=int(priority)
     priority=int(myData.priority)
     mgr.logEvent_endReadout(myData, priority)
-    mgr.salShutdown()
     print "Sent event Camera endReadout"
+    time.sleep(1)
+    mgr.salShutdown()
     return
