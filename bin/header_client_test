@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+
+import time
+import MHClient
+import MHClient.SAL_tools_recv as SAL_tools_recv
+
+if __name__ == "__main__":
+
+    # Load up the header template
+    htempl= MHClient.HDRTEMPL()
+
+    # Initialize subscribers -- we do this only once.
+    FK5Target = SAL_tools_recv.tcs_kernel_FK5Target()
+    Filter    = SAL_tools_recv.camera_Filter()
+    Readout   = SAL_tools_recv.camera_logevent_endReadout(tsleep=0.005)
+
+    loop_n = 0
+    while True:
+
+        print "----- Loop %s ---------" % loop_n
+        # Get the RA,DEC
+        if FK5Target.get():
+            ra,dec,visitID = FK5Target.ra,FK5Target.dec,FK5Target.visitID
+            print "Received: RA=%s, DEC=%s" % (ra,dec)
+            print "Received: visitID=%s" % visitID
+        else:
+            print "ERROR: Did not get FK5Target"
+        
+        # Get the Filter
+        if Filter.get():
+            filter_name = Filter.filter_name    
+            print "Received: Filter=%s" % filter_name    
+        else:
+            print "ERROR: Did not get Filter"
+        
+        # Get the readout
+        endReadout = Readout.get()
+        if endReadout:
+
+            print "Received: Readout Signal"
+
+            # Manually Update a header param
+            htempl.update_header_record('RA',ra)
+            htempl.update_header_record('DEC',dec)
+            htempl.update_header_record('FILTER',filter_name)
+            htempl.update_header_record('BAND',filter_name)
+            htempl.update_header_record('EXPNUM',visitID)
+            
+            hout_file = "LSSTCam_%08d.header" % visitID
+            hout = open(hout_file,"w")
+            for rec in htempl.header.records():
+                hout.write("%s\n" % rec['card_string'])
+            hout.close()
+            print "Wrote header to: %s" % hout_file
+        else:
+            print "WARNING: Readout time out"
+        
+        loop_n +=1    
