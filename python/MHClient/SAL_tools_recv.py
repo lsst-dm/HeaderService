@@ -2,8 +2,82 @@
 
 import time
 import sys
-import SALPY_camera 
 import SALPY_tcs
+import SALPY_camera 
+import threading
+
+class DDSSubcriber(threading.Thread):
+
+    def __init__(self, module, topic, threadID='1', Stype='Telemetry',tsleep=0.5,timeout=3600,nkeep=100):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.module = module
+        self.topic  = topic
+        self.tsleep = tsleep
+        self.Stype  = Stype
+        self.timeout = timeout
+        self.nkeep   = nkeep
+        self.daemon = True
+        self.subscribe()
+        
+        
+    def subscribe(self):
+
+        # This section does the equivalent of:
+        # self.mgr = SALPY_tcs.SAL_tcs()
+        # The steps are:
+        # - 'figure out' the SALPY_xxxx module name
+        # - finds the library pointer using globals()
+        # - creates a mananger
+
+        self.newTelem = False
+        SALPY_lib_name = 'SALPY_%s' % self.module
+        SALPY_lib = globals()[SALPY_lib_name]
+        self.mgr = getattr(SALPY_lib, 'SAL_%s' % self.module)()
+
+        if self.Stype=='Telemetry':
+            self.mgr.salTelemetrySub(self.topic)
+            self.myData = getattr(SALPY_lib,self.topic+'C')()
+            print "# %s subscriber ready for topic: %s" % (self.Stype,self.topic)
+        elif self.Stype=='Event':
+            self.mgr.salEvent(self.topic)
+            self.event = getattr(SALPY_lib,self.topic+'C')()
+            self.event_topic = self.topic.split("_")[-1]
+            self.getEvent_topic = getattr(self.mgr,'getEvent_'+self.event_topic)
+            self.getEvent_topic(self.event)
+            print "# %s subscriber ready for topic: %s" % (self.Stype,self.topic)
+
+    def run_Telemetry(self):
+        t0 =  time.time()
+
+        # Generic method to get for example: self.mgr.getNextSample_kernel_FK5Target
+        self.nextsample_topic = self.topic.split(self.module)[-1]
+        self.getNextSample = getattr(self.mgr,"getNextSample" + self.nextsample_topic)
+
+        self.myDatalist = []
+        self.newTelem = False
+        while True:
+            retval = self.getNextSample(self.myData)
+            if retval == 0:
+                self.myDatalist.append(self.myData)
+                self.myDatalist = self.myDatalist[-self.nkeep:] # Keep only nkeep entries
+                self.newTelem = True
+            time.sleep(self.tsleep)
+        return 
+
+    def run(self):
+        if self.Stype == 'Telemetry':
+            self.run_Telemetry()
+
+    def getCurrentTelemetry(self):
+        if len(self.myDatalist) > 0:
+            Telem = self.myDatalist[-1]
+            self.newTelem = False
+        else:
+            Telem = None
+        return Telem
+
+        
 
 class tcs_kernel_FK5Target:
 
