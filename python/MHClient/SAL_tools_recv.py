@@ -68,6 +68,10 @@ class DDSSubcriber(threading.Thread):
     def run(self):
         if self.Stype == 'Telemetry':
             self.run_Telemetry()
+        elif self.Stype == 'Event':
+            self.wait_Event()
+        else:
+            raise ValueError("Stype=%s not defined\n" % self.Stype)
 
     def getCurrentTelemetry(self):
         if len(self.myDatalist) > 0:
@@ -77,7 +81,31 @@ class DDSSubcriber(threading.Thread):
             Telem = None
         return Telem
 
-        
+    def wait_Event(self):
+
+        t0 =  time.time()
+        self.endEvent = False
+        print "Waiting for %s event" % self.topic
+
+        while True:
+            #retval = self.mgr.getEvent_endReadout(self.event)
+            retval = self.getEvent_topic(self.event)
+            if retval==0:
+                self.endEvent = True
+                break
+            if time.time() - t0 > self.timeout:
+                print "WARNING: Timeout reading for Event %s" % self.topic
+                self.endEvent = False
+                break
+            time.sleep(self.tsleep)
+        return self.endEvent
+
+    def get_filter_name(self):
+        # Need to move these filter definitions to a better place
+        self.filter_names = ['u','g','r','i','z','Y']
+        self.filter_name = self.filter_names[self.myData.REB_ID] 
+        return self.filter_name 
+
 
 class tcs_kernel_FK5Target:
 

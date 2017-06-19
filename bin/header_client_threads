@@ -3,6 +3,9 @@
 import time
 import MHClient
 import MHClient.SAL_tools_recv as SAL_tools_recv
+import sys
+import itertools
+spinner = itertools.cycle(['-', '/', '|', '\\'])
 
 if __name__ == "__main__":
 
@@ -11,24 +14,44 @@ if __name__ == "__main__":
     
     FK5Target = SAL_tools_recv.DDSSubcriber("tcs","tcs_kernel_FK5Target", Stype="Telemetry")
     Filter    = SAL_tools_recv.DDSSubcriber("camera","camera_Filter",Stype="Telemetry")
-    Readout   = SAL_tools_recv.DDSSubcriber("camera","camera_logevent_endReadout", Stype="Event",tsleep=0.005)
+    Readout   = SAL_tools_recv.DDSSubcriber("camera","camera_logevent_endReadout", Stype="Event")
         
     FK5Target.start()
     Filter.start()
+    Readout.start()
 
     loop_n = 0
     while True:
 
-        print "----- Loop %s ---------" % loop_n
         # Get the RA,DEC
-        if FK5Target.newTelem:
+        if FK5Target.newTelem and Filter.newTelem:
             print "New value for FK5 Target"
             myData = FK5Target.getCurrentTelemetry()
             ra,dec,visitID = myData.ra, myData.dec, int(myData.rv)
             print "Received: RA=%s, DEC=%s" % (ra,dec)
             print "Received: visitID=%s" % visitID
+            filter_name = Filter.get_filter_name()
+            print "Received: Filter=%s" % filter_name    
+
+            # Get the readout
+            print "Waiting for Camera Readout event"
+            Readout.join()
+            if Readout.endEvent:
+                print "Received: Readout Signal"
+                # Manually Update a header param
+                htempl.update_header_record('RA',ra)
+                htempl.update_header_record('DEC',dec)
+                htempl.update_header_record('FILTER',filter_name)
+                htempl.update_header_record('BAND',filter_name)
+                htempl.update_header_record('EXPNUM',visitID)
+                # Write the header it out
+                hout_file = "LSSTCam_%08d.header" % visitID
+                htempl.write_header(hout_file, newline=True)
+                print "Wrote header to: %s" % hout_file
+                print "------------------------------------------"
         else:
-            print "Nothing new"
-            pass
-        time.sleep(1)
+            sys.stdout.write("Wating for new Position/Filter... [%s]" % spinner.next())
+            sys.stdout.flush()
+            sys.stdout.write('\r') 
+        time.sleep(0.5)
         loop_n +=1    
