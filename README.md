@@ -1,6 +1,6 @@
 # HeaderService
 
-Development for LSST Meta-data FITS header client
+Development for LSST Meta-data FITS header service
 
 Description
 -----------
