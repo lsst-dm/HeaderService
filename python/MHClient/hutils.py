@@ -22,6 +22,18 @@ def get_values(header):
     """ Returns a list with all of the values in a FITSHDR header """
     return [hearder[key] for key in header.keys()]
 
+
+class HDRTEMP_CAMERA_DAQ:
+
+    def __init__(self, section,'SciCamera',hrdlist=HDRLIST, nsegments=16, visitID_start=1):
+        self.hdrlist = hrdlist
+        self.visitID_start = visitID_start
+        self.visitID = "%08d" % self.visitID_start
+        self.load_templates()
+        self.header_as_arrays()
+
+    
+
 class HDRTEMPL:
 
     # TODO: We might want to add the ability to separate the header by type
@@ -37,7 +49,7 @@ class HDRTEMPL:
         """ Load in all of the header templates """
         self.header = fitsio.FITSHDR()
         for hdrname in self.hdrlist:
-            hdrfile = os.path.join(MHCLIENT_DIR,'etc',"%s.header" % hdrname)
+            hdrfile = os.path.join(MHCLIENT_DIR,'etc','SciCamera',"%s.header" % hdrname)
             # We read and append at the same time, but we might want
             # to de-couple these two actions, if we want to keept the
             # sections separated so they can be streamed independently

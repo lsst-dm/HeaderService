@@ -1,0 +1,18 @@
+# To display
+ds9 -mosaicimage  iraf ITL-3800C-145-Dev_fe55_bias_000_4698D_20170306174623.fits 
+
+
+filename = 'ITL-3800C-145-Dev_fe55_bias_000_4698D_20170306174623.fits'
+F = fitsio.FITS(filename)
+
+print F
+
+# Get the primary HDU
+h0 = F[0].read_header()
+
+# Get Segment 00
+h_00 = F['Segment00'].read_header()
+
+
+# Extract primary header
+fitshead ITL-3800C-145-Dev_fe55_bias_000_4698D_20170306174623.fits  > sensor_primary.head

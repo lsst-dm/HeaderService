@@ -26,9 +26,9 @@ Examples
 source MHClient/setpath.sh  ~/MHClient 
 
 # Initialize header client (Terminal 1)
-header_client_test 
+header_client_threaded
 
-# Send telemetry a control writing of header (Terminal 2)
+# Send telemetry to trigger header writing (Terminal 2)
 telemetry_sim_single --ra 21.723 --dec -45.127 --band g --visitID 1
 telemetry_sim_single --ra 22.127 --dec -46.890 --band r --visitID 2
 telemetry_sim_single --ra 22.127 --dec -46.890 --band i --visitID 3

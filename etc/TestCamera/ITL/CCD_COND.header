@@ -1,0 +1,12 @@
+
+XTENSION= 'BINTABLE'           / marks beginning of new HDU
+BITPIX  =                    8 / bits per data value
+NAXIS   =                    2 / number of axes
+NAXIS1  =                    0 / size of the n'th axis
+NAXIS2  =                    0 / size of the n'th axis
+PCOUNT  =                    0 / Required value
+GCOUNT  =                    1 / Required value
+TFIELDS =                    0 / Number of table fields
+CHECKSUM= '5AJgA7JZ7AJfA5JZ'   / checksum for the current HDU
+EXTNAME = 'CCD_COND'           / Name of the extension
+DATASUM = '0       '           / checksum of the data records
