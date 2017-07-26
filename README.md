@@ -1,4 +1,4 @@
-# MHClient
+# HeaderService
 
 Development for LSST Meta-data FITS header client
 
@@ -23,7 +23,7 @@ Examples
 
 ```bash
 # Setup the path for the MHClient
-source MHClient/setpath.sh  ~/MHClient 
+source HeaderService/setpath.sh  ~/HeaderService 
 
 # Initialize header client (Terminal 1)
 header_client_threaded
