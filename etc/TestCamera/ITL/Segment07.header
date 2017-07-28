@@ -1,4 +1,3 @@
-
 XTENSION= 'IMAGE   '           / marks beginning of new HDU
 BITPIX  =                   32 / bits per data value
 NAXIS   =                    2 / number of axis

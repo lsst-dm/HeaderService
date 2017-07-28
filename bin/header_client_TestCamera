@@ -10,7 +10,10 @@ spinner = itertools.cycle(['-', '/', '|', '\\'])
 if __name__ == "__main__":
 
     # Load up the header template
-    htempl= HeaderService.HDRTEMPL()
+    htempl= HeaderService.HDRTEMPL_TestCamera()
+    htempl.write_header('TEST.header', newline=True)
+                
+    exit()
     
     FK5Target = SAL_tools_recv.DDSSubcriber("tcs","tcs_kernel_FK5Target", Stype="Telemetry")
     Filter    = SAL_tools_recv.DDSSubcriber("camera","camera_Filter",Stype="Telemetry")

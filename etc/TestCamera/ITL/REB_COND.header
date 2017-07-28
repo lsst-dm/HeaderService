@@ -1,4 +1,3 @@
-
 XTENSION= 'BINTABLE'           / marks beginning of new HDU
 BITPIX  =                    8 / bits per data value
 NAXIS   =                    2 / number of axes

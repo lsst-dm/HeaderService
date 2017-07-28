@@ -1,0 +1,17 @@
+primary_hdu
+Segment00
+Segment01
+Segment02
+Segment03
+Segment04
+Segment05
+Segment06
+Segment07
+Segment10
+Segment11
+Segment12
+Segment13
+Segment14
+Segment15
+Segment16
+Segment17

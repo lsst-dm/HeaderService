@@ -4,6 +4,10 @@ import os
 import fitsio
 import numpy
 import random
+import logging
+
+# TODO:
+# Merge/inherit HDRTEMPL_XXXX into a master/common class
 
 try:
     HEADERSERVICE_DIR = os.environ['HEADERSERVICE_DIR']
@@ -12,6 +16,16 @@ except:
 
 WORDFILE = os.path.join(HEADERSERVICE_DIR,'etc','words.txt')
 HDRLIST = ['camera','observatory','primary_hdu','telescope']
+
+def create_logger(level=logging.NOTSET,name='default'):
+    logging.basicConfig(level=level,
+                        format='[%(asctime)s] [%(levelname)s] %(message)s',
+                        datefmt='%Y-%m-%d %H:%M:%S')
+    logger = logging.getLogger(name)
+    return logger
+
+# Create a logger for all functions
+LOGGER = create_logger(level=logging.NOTSET,name='BPZ')
 
 def get_record(header,keyword):
     """ Utility option to gets the record form a FITSHDR header"""
@@ -23,18 +37,76 @@ def get_values(header):
     return [hearder[key] for key in header.keys()]
 
 
-class HDRTEMP_CAMERA_DAQ:
+class HDRTEMPL_TestCamera:
 
-    def __init__(self, section,'SciCamera',hrdlist=HDRLIST, nsegments=16, visitID_start=1):
-        self.hdrlist = hrdlist
+    def __init__(self, section='TestCamera', hdrlist=None, vendor='ITL', visitID_start=1):
+
+        self.section = section
+        self.vendor  = vendor
         self.visitID_start = visitID_start
         self.visitID = "%08d" % self.visitID_start
+        self.headerpath = os.path.join(HEADERSERVICE_DIR,'etc',self.section,self.vendor)
+        self.header_manifest = os.path.join(self.headerpath,'manifest.txt')
+        
+        if hdrlist:
+            self.hdrlist = hrdlist
+        else:
+            self.build_header_list()
         self.load_templates()
-        self.header_as_arrays()
 
-    
+    def build_header_list(self):
+        """ Build the hdrlist"""
 
-class HDRTEMPL:
+        # Read in the full set of tiles
+        if os.path.exists(self.header_manifest):
+            LOGGER.info("Loading templates from: %s" % self.header_manifest)
+            with open(self.header_manifest) as f:
+                self.hdrlist = f.read().splitlines()
+        else:
+            exit("ERROR:No manifest file defined")
+        return 
+
+    def load_templates(self):
+        """ Load in all of the header templates """
+        self.header = {}
+        for hdrname in self.hdrlist:
+            hdrfile = os.path.join(HEADERSERVICE_DIR,'etc',self.section,self.vendor,"%s.header" % hdrname)
+            LOGGER.info("Loading template for: %s" % hdrname)
+            self.header[hdrname] = fitsio.read_scamp_head(hdrfile)
+
+    def get_record(self,keyword,extname):
+        return get_record(self.header[extname],keyword)
+
+    def get_header_values(self):
+        return get_values(self.header[extname])
+
+    def update_record(self,keyword,value,extname):
+        """ Update record for key with value """
+        rec = self.get_record(keyword,extname)
+        rec['value'] = value
+        rec['card_string'] = self.header[extname]._record2card(rec)
+
+    def write_header(self,filename,delimiter='END',newline=False):
+
+        """
+        Write the header using the strict FITS notation (newline=False)
+        or more human readable (newline=True)
+        """
+
+        if newline:
+            with open(filename,'w') as fobj:
+                for extname in self.hdrlist:
+                    hstring = str(self.header[extname])
+                    fobj.write(hstring)
+                    fobj.write('\n'+delimiter)
+        else:
+            data=None
+            for extname in self.hdrlist:
+                fitsio.write(filename, data, header=self.header[extname])
+        return
+
+
+class HDRTEMPL_SciCamera:
 
     # TODO: We might want to add the ability to separate the header by type
 
@@ -61,7 +133,7 @@ class HDRTEMPL:
     def get_header_values(self):
         return get_values(self.header)
 
-    def update_header_record(self,keyword,value):
+    def update_record(self,keyword,value):
         """ Update record for key with value """
         rec = self.get_record(keyword)
         rec['value'] = value
@@ -147,7 +219,7 @@ class RANWORDS():
         self.words_vals = self.all_words_vals[idx]
 
 
-class TELEMSIM(HDRTEMPL):
+class TELEMSIM(HDRTEMPL_SciCamera):
 
     """ A class to generate and send telemetry for the header client"""
     
@@ -161,7 +233,7 @@ class TELEMSIM(HDRTEMPL):
         # Update header as array
         self.header_as_arrays()
 
-class HOSER(HDRTEMPL,RANWORDS):
+class HOSER(HDRTEMPL_SciCamera,RANWORDS):
 
     """ A class to send a telemetry stream """
 
