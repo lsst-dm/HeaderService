@@ -22,7 +22,7 @@ Examples
 --------
 
 ```bash
-# Setup the path for the MHClient
+# Setup the path for the HeaderService
 source HeaderService/setpath.sh  ~/HeaderService 
 
 # Initialize header client (Terminal 1)

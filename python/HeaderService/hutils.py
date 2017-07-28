@@ -6,11 +6,11 @@ import numpy
 import random
 
 try:
-    MHCLIENT_DIR = os.environ['MHCLIENT_DIR']
+    HEADERSERVICE_DIR = os.environ['HEADERSERVICE_DIR']
 except:
-    MHCLIENT_DIR = __file__.split('python')[0]
+    HEADERSERVICE_DIR = __file__.split('python')[0]
 
-WORDFILE = os.path.join(MHCLIENT_DIR,'etc','words.txt')
+WORDFILE = os.path.join(HEADERSERVICE_DIR,'etc','words.txt')
 HDRLIST = ['camera','observatory','primary_hdu','telescope']
 
 def get_record(header,keyword):
@@ -49,7 +49,7 @@ class HDRTEMPL:
         """ Load in all of the header templates """
         self.header = fitsio.FITSHDR()
         for hdrname in self.hdrlist:
-            hdrfile = os.path.join(MHCLIENT_DIR,'etc','SciCamera',"%s.header" % hdrname)
+            hdrfile = os.path.join(HEADERSERVICE_DIR,'etc','SciCamera',"%s.header" % hdrname)
             # We read and append at the same time, but we might want
             # to de-couple these two actions, if we want to keept the
             # sections separated so they can be streamed independently

@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 import time
-import MHClient
-import MHClient.SAL_tools_recv as SAL_tools_recv
+import HeaderService
+import HeaderService.SAL_tools_recv as SAL_tools_recv
 
 if __name__ == "__main__":
 
     # Load up the header template
-    htempl= MHClient.HDRTEMPL()
+    htempl= HeaderService.HDRTEMPL()
 
     # Initialize subscribers -- we do this only once.
     FK5Target = SAL_tools_recv.tcs_kernel_FK5Target()
