@@ -12,8 +12,6 @@ spinner = itertools.cycle(['-', '/', '|', '\\'])
 
 LOGGER = hutils.create_logger(level=logging.NOTSET,name='HEADERSERVICE')
 
-
-
 if __name__ == "__main__":
 
     # Load up the header template
