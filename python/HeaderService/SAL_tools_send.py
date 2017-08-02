@@ -5,8 +5,12 @@ import time
 import sys
 import SALPY_camera 
 import SALPY_tcs
+import logging
+import HeaderService.hutils as hutils
 
 """ Functions to send simply telemetry """
+
+LOGGER = hutils.create_logger(level=logging.NOTSET,name='SAL_SEND')
 
 # TODO:
 # Make these function classes to avoid init overhead
@@ -27,7 +31,7 @@ def send_Filter(fname):
     myData.REB_ID = filterID
     retval = mgr.putSample_Filter(myData)
     mgr.salShutdown()
-    print "Sent FILTER=%s" % fname
+    LOGGER.info("Sent FILTER=%s" % fname)
     return retval
 
 def send_FK5Target(ra,dec,visitID):
@@ -46,8 +50,8 @@ def send_FK5Target(ra,dec,visitID):
     myData.rv = visitID
     retval = mgr.putSample_kernel_FK5Target(myData)
     mgr.salShutdown()
-    print "Sent RA:%s, DEC:%s" % (ra,dec)
-    print "Sent visitID:%s" % visitID
+    LOGGER.info("Sent RA:%s, DEC:%s" % (ra,dec))
+    LOGGER.info("Sent visitID:%s" % visitID)
     return
 
 def camera_logevent_endReadout(priority=1):
@@ -58,7 +62,7 @@ def camera_logevent_endReadout(priority=1):
     myData.priority=int(priority)
     priority=int(myData.priority)
     mgr.logEvent_endReadout(myData, priority)
-    print "Sent event Camera endReadout"
+    LOGGER.info("Sent event Camera endReadout")
     time.sleep(1)
     mgr.salShutdown()
     return

@@ -5,6 +5,10 @@ import sys
 import SALPY_tcs
 import SALPY_camera 
 import threading
+import logging
+import HeaderService.hutils as hutils
+
+LOGGER = hutils.create_logger(level=logging.NOTSET,name='SAL_RECV')
 
 class DDSSubcriber(threading.Thread):
 
@@ -38,14 +42,14 @@ class DDSSubcriber(threading.Thread):
         if self.Stype=='Telemetry':
             self.mgr.salTelemetrySub(self.topic)
             self.myData = getattr(SALPY_lib,self.topic+'C')()
-            print "# %s subscriber ready for topic: %s" % (self.Stype,self.topic)
+            LOGGER.info("%s subscriber ready for topic: %s" % (self.Stype,self.topic))
         elif self.Stype=='Event':
             self.mgr.salEvent(self.topic)
             self.event = getattr(SALPY_lib,self.topic+'C')()
             self.event_topic = self.topic.split("_")[-1]
             self.getEvent_topic = getattr(self.mgr,'getEvent_'+self.event_topic)
             self.getEvent_topic(self.event)
-            print "# %s subscriber ready for topic: %s" % (self.Stype,self.topic)
+            LOGGER.info("%s subscriber ready for topic: %s" % (self.Stype,self.topic))
 
     def run_Telemetry(self):
         t0 =  time.time()
@@ -85,7 +89,7 @@ class DDSSubcriber(threading.Thread):
 
         t0 =  time.time()
         self.endEvent = False
-        print "Waiting for %s event" % self.topic
+        LOGGER.info("Waiting for %s event" % self.topic)
 
         while True:
             #retval = self.mgr.getEvent_endReadout(self.event)
@@ -94,7 +98,7 @@ class DDSSubcriber(threading.Thread):
                 self.endEvent = True
                 break
             if time.time() - t0 > self.timeout:
-                print "WARNING: Timeout reading for Event %s" % self.topic
+                LOGGER.info("WARNING: Timeout reading for Event %s" % self.topic)
                 self.endEvent = False
                 break
             time.sleep(self.tsleep)
@@ -118,7 +122,7 @@ class tcs_kernel_FK5Target:
         self.mgr = SALPY_tcs.SAL_tcs()
         self.mgr.salTelemetrySub("tcs_kernel_FK5Target")
         self.myData = SALPY_tcs.tcs_kernel_FK5TargetC()
-        print "# tcs_kernel_FK5Target subscriber ready" 
+        LOGGER.info("tcs_kernel_FK5Target subscriber ready" )
 
     def get(self):
         t0 =  time.time()
@@ -130,14 +134,14 @@ class tcs_kernel_FK5Target:
                 self.ra, self.dec, self.visitID = self.myData.ra, self.myData.dec, int(self.myData.rv)
                 break
             if time.time() - t0 > self.timeout:
-                print "WARNING: Timeout reading FK5Target"
+                LOGGER.info("WARNING: Timeout reading FK5Target")
                 success = False
                 break
             time.sleep(self.tsleep)
         return success
 
     def close(self):
-        print "Shutting down tcs_kernel_FK5Target"
+        LOGGER.info("Shutting down tcs_kernel_FK5Target")
         self.mgr.salShutdown()
 
 
@@ -154,7 +158,7 @@ class camera_Filter:
         self.mgr = SALPY_camera.SAL_camera()
         self.mgr.salTelemetrySub("camera_Filter")
         self.myData = SALPY_camera.camera_FilterC()
-        print "# camera_Filter subscriber ready"
+        LOGGER.info("camera_Filter subscriber ready")
 
     def get(self):
         
@@ -162,7 +166,7 @@ class camera_Filter:
         while True :
             retval = self.mgr.getNextSample_Filter(self.myData)
             if time.time() - t0 > self.timeout:
-                print "WARNING: Timeout reading Filter"
+                LOGGER.info("WARNING: Timeout reading Filter")
                 success = False
                 self.filter_name = None
                 break
@@ -174,7 +178,7 @@ class camera_Filter:
         return success
 
     def close(self):
-        print "Shutting down camera_Filter subscriber ready"
+        LOGGER.info("Shutting down camera_Filter subscriber ready")
         self.mgr.salShutdown()
 
 class camera_logevent_endReadout:
@@ -190,14 +194,14 @@ class camera_logevent_endReadout:
         self.mgr.salEvent("camera_logevent_endReadout")
         self.event = SALPY_camera.camera_logevent_endReadoutC()
         self.mgr.getEvent_endReadout(self.event)
-        print "# camera_endReadout logger ready"
+        LOGGER.info("camera_endReadout logger ready")
 
     def get(self):
 
         t0 =  time.time()
         self.t0 =  time.time()
         endReadout = False
-        print "Waiting for Camera Readout event"
+        LOGGER.info("Waiting for Camera Readout event")
 
         while True:
             retval = self.mgr.getEvent_endReadout(self.event)
@@ -205,14 +209,14 @@ class camera_logevent_endReadout:
                 endReadout = True
                 break
             if time.time() - t0 > self.timeout:
-                print "WARNING: Timeout reading endReadout Event..."
+                LOGGER.info("WARNING: Timeout reading endReadout Event...")
                 endReadout = False
                 break
             time.sleep(self.tsleep)
         return endReadout
 
     def close(self):
-        print "Shutting down camera_logevent_endReadout"
+        LOGGER.info("Shutting down camera_logevent_endReadout")
         self.mgr.salShutdown()
 
     

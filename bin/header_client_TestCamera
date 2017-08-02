@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 
 import time
-import HeaderService
-import HeaderService.SAL_tools_recv as SAL_tools_recv
 import sys
 import itertools
+import logging
+import HeaderService
+import HeaderService.SAL_tools_recv as SAL_tools_recv
 spinner = itertools.cycle(['-', '/', '|', '\\'])
 
 if __name__ == "__main__":
 
     # Load up the header template
-    htempl= HeaderService.HDRTEMPL_TestCamera()
-    htempl.write_header('TEST.header', newline=True)
-                
-    exit()
+    htempl= HeaderService.HDRTEMPL_TestCamera(vendor='ITL')
+
+    LOGGER = htempl.logger
     
     FK5Target = SAL_tools_recv.DDSSubcriber("tcs","tcs_kernel_FK5Target", Stype="Telemetry")
     Filter    = SAL_tools_recv.DDSSubcriber("camera","camera_Filter",Stype="Telemetry")
@@ -28,33 +28,32 @@ if __name__ == "__main__":
 
         # Get the RA,DEC
         if FK5Target.newTelem and Filter.newTelem:
-            print "New value for FK5 Target"
+            LOGGER.info("New value for FK5 Target")
             myData = FK5Target.getCurrentTelemetry()
             ra,dec,visitID = myData.ra, myData.dec, int(myData.rv)
-            print "Received: RA=%s, DEC=%s" % (ra,dec)
-            print "Received: visitID=%s" % visitID
+            LOGGER.info("Received: RA=%s, DEC=%s" % (ra,dec))
+            LOGGER.info("Received: visitID=%s" % visitID)
             filter_name = Filter.get_filter_name()
-            print "Received: Filter=%s" % filter_name    
-
+            LOGGER.info("Received: Filter=%s" % filter_name)
+            
             # Get the readout
-            print "Waiting for Camera Readout event"
+            LOGGER.info("Waiting for Camera Readout event")
             Readout.join()
             if Readout.endEvent:
-                print "Received: Readout Signal"
-                # Manually Update a header param
-                htempl.update_record('RA',ra)
-                htempl.update_record('DEC',dec)
-                htempl.update_record('FILTER',filter_name)
-                htempl.update_record('BAND',filter_name)
-                htempl.update_record('EXPNUM',visitID)
+                sys.stdout.flush()
+                LOGGER.info("Received: Readout Signal")
+                htempl.update_record('FILTER',filter_name, 'PRIMARY_HDU')
+                htempl.update_record('IMAGETAG',visitID,'PRIMARY_HDU')
                 # Write the header it out
-                hout_file = "LSSTCam_%08d.header" % visitID
+                hout_file = "TestCam_%08d.header" % visitID
                 htempl.write_header(hout_file, newline=True)
-                print "Wrote header to: %s" % hout_file
-                print "------------------------------------------"
+                LOGGER.info("Wrote header to: %s" % hout_file)
+                LOGGER.info("------------------------------------------")
         else:
-            sys.stdout.write("Wating for new Position/Filter... [%s]" % spinner.next())
             sys.stdout.flush()
+            sys.stdout.write("Wating for new Position/Filter... [%s]" % spinner.next())
             sys.stdout.write('\r') 
-        time.sleep(0.5)
+            
+
+        time.sleep(0.1)
         loop_n +=1    

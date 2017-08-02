@@ -25,7 +25,7 @@ def create_logger(level=logging.NOTSET,name='default'):
     return logger
 
 # Create a logger for all functions
-LOGGER = create_logger(level=logging.NOTSET,name='BPZ')
+LOGGER = create_logger(level=logging.NOTSET,name='HEADERSERVICE')
 
 def get_record(header,keyword):
     """ Utility option to gets the record form a FITSHDR header"""
@@ -47,7 +47,10 @@ class HDRTEMPL_TestCamera:
         self.visitID = "%08d" % self.visitID_start
         self.headerpath = os.path.join(HEADERSERVICE_DIR,'etc',self.section,self.vendor)
         self.header_manifest = os.path.join(self.headerpath,'manifest.txt')
-        
+
+        # Create logger
+        self.logger = create_logger(level=logging.NOTSET,name='HEADERSERVICE')
+
         if hdrlist:
             self.hdrlist = hrdlist
         else:
@@ -64,15 +67,22 @@ class HDRTEMPL_TestCamera:
                 self.hdrlist = f.read().splitlines()
         else:
             exit("ERROR:No manifest file defined")
+
+        # Keep an upper case copy
+        self.HDRLIST = [x.upper() for x in self.hdrlist]
         return 
 
     def load_templates(self):
         """ Load in all of the header templates """
+
+        LOGGER.info("Loading templates from vendor: %s" % self.vendor)
         self.header = {}
         for hdrname in self.hdrlist:
+            # Let's keep HDU-like section as upper cases
+            HDRNAME = hdrname.upper()
             hdrfile = os.path.join(HEADERSERVICE_DIR,'etc',self.section,self.vendor,"%s.header" % hdrname)
-            LOGGER.info("Loading template for: %s" % hdrname)
-            self.header[hdrname] = fitsio.read_scamp_head(hdrfile)
+            LOGGER.info("Loading template for: %s" % HDRNAME)
+            self.header[HDRNAME] = fitsio.read_scamp_head(hdrfile)
 
     def get_record(self,keyword,extname):
         return get_record(self.header[extname],keyword)
@@ -95,7 +105,7 @@ class HDRTEMPL_TestCamera:
 
         if newline:
             with open(filename,'w') as fobj:
-                for extname in self.hdrlist:
+                for extname in self.HDRLIST:
                     hstring = str(self.header[extname])
                     fobj.write(hstring)
                     fobj.write('\n'+delimiter)
@@ -114,6 +124,8 @@ class HDRTEMPL_SciCamera:
         self.hdrlist = hrdlist
         self.visitID_start = visitID_start
         self.visitID = "%08d" % self.visitID_start
+        # Create logger
+        self.logger = create_logger(level=logging.NOTSET,name='HEADERSERVICE')
         self.load_templates()
         self.header_as_arrays()
 
