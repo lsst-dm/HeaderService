@@ -5,6 +5,7 @@ import fitsio
 import numpy
 import random
 import logging
+import multiprocessing
 
 # TODO:
 # Merge/inherit HDRTEMPL_XXXX into a master/common class
@@ -36,6 +37,25 @@ def get_values(header):
     """ Returns a list with all of the values in a FITSHDR header """
     return [hearder[key] for key in header.keys()]
 
+def elapsed_time(t1,verb=False):
+    import time
+    t2    = time.time()
+    stime = "%dm %2.2fs" % ( int( (t2-t1)/60.), (t2-t1) - 60*int((t2-t1)/60.))
+    if verb:
+        print >>sys.stderr,"Elapsed time: %s" % stime
+    return stime
+
+def write_header(arg):
+    """
+    Simple method to write a header string to a filename that can be
+    called by the multiprocess function. Therefore the filename and
+    str_header are passed as a tuple
+    """
+    filename, str_header = arg
+    with open(filename,'w') as fobj:
+        fobj.write(str_header)
+    LOGGER.info("Wrote header to: %s" % filename)
+    return
 
 class HDRTEMPL_TestCamera:
 
@@ -96,25 +116,48 @@ class HDRTEMPL_TestCamera:
         rec['value'] = value
         rec['card_string'] = self.header[extname]._record2card(rec)
 
-    def write_header(self,filename,delimiter='END',newline=False):
+
+    def string_header(self,delimiter='END'):
+        """ Format a header as a string """
+        self.hstring = ''
+        for extname in self.HDRLIST:
+            self.hstring = self.hstring + str(self.header[extname]) + '\n' + delimiter
+        return self.hstring 
+
+
+    def write_headers(self,filenames, MP=False, NP=2):
+
+        """
+        Write one header per CCD (all the same) for now in order to test I/O performance
+        """
+        if MP:
+            pool = multiprocessing.Pool(processes=NP)
+            args = [ (filename, self.hstring) for filename in filenames]
+            pool.map(write_header, args)
+            pool.close()
+            pool.join()
+        else:
+            for filename in filenames:
+                arg = filename, self.hstring
+                write_header(arg)
+        return
+
+
+    def write_header_single(self,filename,delimiter='END',newline=False):
 
         """
         Write the header using the strict FITS notation (newline=False)
         or more human readable (newline=True)
         """
-
         if newline:
             with open(filename,'w') as fobj:
-                for extname in self.HDRLIST:
-                    hstring = str(self.header[extname])
-                    fobj.write(hstring)
-                    fobj.write('\n'+delimiter)
+                fobj.write(self.hstring)
         else:
             data=None
-            for extname in self.hdrlist:
+            for extname in self.HDRLIST:
                 fitsio.write(filename, data, header=self.header[extname])
+        LOGGER.info("Wrote header to: %s" % filename)
         return
-
 
 class HDRTEMPL_SciCamera:
 

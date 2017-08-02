@@ -6,7 +6,13 @@ import itertools
 import logging
 import HeaderService
 import HeaderService.SAL_tools_recv as SAL_tools_recv
+import HeaderService.hutils as hutils
+import time
 spinner = itertools.cycle(['-', '/', '|', '\\'])
+
+LOGGER = hutils.create_logger(level=logging.NOTSET,name='HEADERSERVICE')
+
+
 
 if __name__ == "__main__":
 
@@ -23,9 +29,12 @@ if __name__ == "__main__":
     Filter.start()
     Readout.start()
 
-    loop_n = 0
-    while True:
+    MP = True
+    #NP = multiprocessing.cpu_count()
+    NP = 4
+    NCCDS = 189
 
+    while True:
         # Get the RA,DEC
         if FK5Target.newTelem and Filter.newTelem:
             LOGGER.info("New value for FK5 Target")
@@ -44,11 +53,15 @@ if __name__ == "__main__":
                 LOGGER.info("Received: Readout Signal")
                 htempl.update_record('FILTER',filter_name, 'PRIMARY_HDU')
                 htempl.update_record('IMAGETAG',visitID,'PRIMARY_HDU')
+                # Update header to a single string
+                htempl.string_header()
+                filenames = ["TestCam_%08d_%03d.header" % (visitID, k+1) for k in range(NCCDS)]
+                t0 = time.time()
                 # Write the header it out
-                hout_file = "TestCam_%08d.header" % visitID
-                htempl.write_header(hout_file, newline=True)
-                LOGGER.info("Wrote header to: %s" % hout_file)
+                htempl.write_headers(filenames, MP=MP, NP=NP)
+                LOGGER.info("Header write time: %s" % hutils.elapsed_time(t0))
                 LOGGER.info("------------------------------------------")
+
         else:
             sys.stdout.flush()
             sys.stdout.write("Wating for new Position/Filter... [%s]" % spinner.next())
@@ -56,4 +69,3 @@ if __name__ == "__main__":
             
 
         time.sleep(0.1)
-        loop_n +=1    
