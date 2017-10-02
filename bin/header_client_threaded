@@ -6,6 +6,8 @@ import itertools
 import logging
 import HeaderService
 import HeaderService.SAL_tools_recv as SAL_tools_recv
+import HeaderService.hutils as hutils
+
 spinner = itertools.cycle(['-', '/', '|', '\\'])
 
 if __name__ == "__main__":
@@ -52,6 +54,10 @@ if __name__ == "__main__":
                 htempl.write_header(hout_file, newline=True)
                 LOGGER.info("Wrote header to: %s" % hout_file)
                 LOGGER.info("------------------------------------------")
+                # Get the md5 for the header file
+                md5value = hutils.md5Checksum(hout_file) #,blocksize=1024*512):
+                LOGGER.info("Got MD5SUM: %s" % md5value)
+
         else:
             sys.stdout.flush()
             sys.stdout.write("Wating for new Position/Filter... [%s]" % spinner.next())

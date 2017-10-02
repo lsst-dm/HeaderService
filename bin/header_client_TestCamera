@@ -56,7 +56,7 @@ if __name__ == "__main__":
                 filenames = ["TestCam_%08d_%03d.header" % (visitID, k+1) for k in range(NCCDS)]
                 t0 = time.time()
                 # Write the header it out
-                htempl.write_headers(filenames, MP=MP, NP=NP)
+                htempl.write_headers(filenames, MP=MP, NP=NP, md5=True)
                 LOGGER.info("Header write time: %s" % hutils.elapsed_time(t0))
                 LOGGER.info("------------------------------------------")
 

@@ -6,6 +6,7 @@ import numpy
 import random
 import logging
 import multiprocessing
+import hashlib
 
 # TODO:
 # Merge/inherit HDRTEMPL_XXXX into a master/common class
@@ -51,10 +52,13 @@ def write_header(arg):
     called by the multiprocess function. Therefore the filename and
     str_header are passed as a tuple
     """
-    filename, str_header = arg
+    filename, str_header, md5 = arg
     with open(filename,'w') as fobj:
         fobj.write(str_header)
     LOGGER.info("Wrote header to: %s" % filename)
+    if md5:
+        md5value = md5Checksum(filename) #,blocksize=1024*512):
+        LOGGER.info("Got MD5SUM: %s" % md5value)
     return
 
 class HDRTEMPL_TestCamera:
@@ -125,20 +129,20 @@ class HDRTEMPL_TestCamera:
         return self.hstring 
 
 
-    def write_headers(self,filenames, MP=False, NP=2):
+    def write_headers(self,filenames, MP=False, NP=2, md5=False):
 
         """
         Write one header per CCD (all the same) for now in order to test I/O performance
         """
         if MP:
             pool = multiprocessing.Pool(processes=NP)
-            args = [ (filename, self.hstring) for filename in filenames]
+            args = [ (filename, self.hstring, md5) for filename in filenames]
             pool.map(write_header, args)
             pool.close()
             pool.join()
         else:
             for filename in filenames:
-                arg = filename, self.hstring
+                arg = filename, self.hstring, md5
                 write_header(arg)
         return
 
@@ -228,7 +232,7 @@ class HDRTEMPL_SciCamera:
         self.header_keys = numpy.array(head_keys)
         self.header_vals = numpy.array(head_vals)
 
-    def write_header(self,filename,newline=False):
+    def write_header(self,filename,newline=False, md5=False):
 
         """
         Write the header using the strict FITS notation (newline=False)
@@ -327,3 +331,12 @@ class HOSER(HDRTEMPL_SciCamera,RANWORDS):
         return self.stream
 
 
+def md5Checksum(filePath,blocksize=1024*512):
+    with open(filePath, 'rb') as fh:
+        m = hashlib.md5()
+        while True:
+            data = fh.read(blocksize)
+            if not data:
+                break
+            m.update(data)
+    return m.hexdigest()
