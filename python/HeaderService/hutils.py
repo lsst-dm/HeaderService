@@ -46,7 +46,7 @@ def elapsed_time(t1,verb=False):
         print >>sys.stderr,"Elapsed time: %s" % stime
     return stime
 
-def write_header(arg):
+def write_header_string(arg):
     """
     Simple method to write a header string to a filename that can be
     called by the multiprocess function. Therefore the filename and
@@ -137,15 +137,14 @@ class HDRTEMPL_TestCamera:
         if MP:
             pool = multiprocessing.Pool(processes=NP)
             args = [ (filename, self.hstring, md5) for filename in filenames]
-            pool.map(write_header, args)
+            pool.map(write_header_string, args)
             pool.close()
             pool.join()
         else:
             for filename in filenames:
                 arg = filename, self.hstring, md5
-                write_header(arg)
+                write_header_string(arg)
         return
-
 
     def write_header_single(self,filename,delimiter='END',newline=False):
 
@@ -160,8 +159,11 @@ class HDRTEMPL_TestCamera:
             data=None
             for extname in self.HDRLIST:
                 fitsio.write(filename, data, header=self.header[extname])
-        LOGGER.info("Wrote header to: %s" % filename)
+        #LOGGER.info("Wrote header to: %s" % filename)
         return
+
+    def write_header(self,filename,delimiter='END',newline=False):
+        self.write_header_single(filename,delimiter=delimiter,newline=newline)
 
 class HDRTEMPL_SciCamera:
 

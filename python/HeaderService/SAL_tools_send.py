@@ -5,6 +5,7 @@ import time
 import sys
 import SALPY_camera 
 import SALPY_tcs
+import SALPY_dmHeaderService
 import logging
 import HeaderService.hutils as hutils
 
@@ -63,6 +64,25 @@ def camera_logevent_endReadout(priority=1):
     priority=int(myData.priority)
     mgr.logEvent_endReadout(myData, priority)
     LOGGER.info("Sent event Camera endReadout")
+    time.sleep(1)
+    mgr.salShutdown()
+    return
+
+def dmHeaderService_logevent_LargeFileObjectAvailable(**kwargs):
+
+    mgr = SALPY_dmHeaderService.SAL_dmHeaderService()
+    mgr.salEvent("dmHeaderService_logevent_LargeFileObjectAvailable")
+    # Build the myData structure
+    myData = SALPY_dmHeaderService.dmHeaderService_logevent_LargeFileObjectAvailableC()
+    myData.Byte_Size = kwargs.get('Byte_Size')
+    myData.Checksum = kwargs.get('Checksum')
+    myData.Generator = kwargs.get('Generator')
+    myData.Mime = kwargs.get('Mime','text/plain')
+    myData.URL = kwargs.get('URL')
+    myData.Version = kwargs.get('Version',1)
+    myData.priority = kwargs.get('priority',1)
+    priority=int(myData.priority)
+    mgr.logEvent_LargeFileObjectAvailable(myData, priority)
     time.sleep(1)
     mgr.salShutdown()
     return

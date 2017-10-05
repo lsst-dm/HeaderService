@@ -69,11 +69,14 @@ class DDSSubcriber(threading.Thread):
             time.sleep(self.tsleep)
         return 
 
+    def run_Event(self):
+        return
+
     def run(self):
         if self.Stype == 'Telemetry':
             self.run_Telemetry()
         elif self.Stype == 'Event':
-            self.wait_Event()
+            self.run_Event()
         else:
             raise ValueError("Stype=%s not defined\n" % self.Stype)
 
@@ -91,7 +94,7 @@ class DDSSubcriber(threading.Thread):
         self.endEvent = False
         LOGGER.info("Waiting for %s event" % self.topic)
 
-        while True:
+        while self.loopEvent:
             #retval = self.mgr.getEvent_endReadout(self.event)
             retval = self.getEvent_topic(self.event)
             if retval==0:
@@ -201,7 +204,7 @@ class camera_logevent_endReadout:
         t0 =  time.time()
         self.t0 =  time.time()
         endReadout = False
-        LOGGER.info("Waiting for Camera Readout event")
+        #LOGGER.info("Waiting for Camera Readout event")
 
         while True:
             retval = self.mgr.getEvent_endReadout(self.event)

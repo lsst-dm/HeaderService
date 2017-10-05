@@ -6,28 +6,33 @@ import itertools
 import logging
 import HeaderService
 import HeaderService.SAL_tools_recv as SAL_tools_recv
-import HeaderService.SAL_tools_send as SAL_tools_send
 import HeaderService.hutils as hutils
-
+import time
 spinner = itertools.cycle(['-', '/', '|', '\\'])
+
+LOGGER = hutils.create_logger(level=logging.NOTSET,name='HEADERSERVICE')
 
 if __name__ == "__main__":
 
     # Load up the header template
-    htempl = HeaderService.HDRTEMPL_SciCamera()
+    htempl= HeaderService.HDRTEMPL_TestCamera(vendor='ITL')
+
     LOGGER = htempl.logger
     
     FK5Target = SAL_tools_recv.DDSSubcriber("tcs","tcs_kernel_FK5Target", Stype="Telemetry")
     Filter    = SAL_tools_recv.DDSSubcriber("camera","camera_Filter",Stype="Telemetry")
-    Readout   = SAL_tools_recv.DDSSubcriber("camera","camera_logevent_endReadout", Stype="Event")
+    Readout   = SAL_tools_recv.DDSSubcriber("camera","camera_logevent_endReadout", tsleep=0.05, Stype="Event")
         
     FK5Target.start()
     Filter.start()
     Readout.start()
 
-    loop_n = 0
-    while True:
+    MP = True
+    #NP = multiprocessing.cpu_count()
+    NP = 4
+    NCCDS = 189
 
+    while True:
         # Get the RA,DEC
         if FK5Target.newTelem and Filter.newTelem:
             LOGGER.info("New value for FK5 Target")
@@ -44,36 +49,21 @@ if __name__ == "__main__":
             if Readout.endEvent:
                 sys.stdout.flush()
                 LOGGER.info("Received: Readout Signal")
-                # Manually Update a header param
-                htempl.update_record('RA',ra)
-                htempl.update_record('DEC',dec)
-                htempl.update_record('FILTER',filter_name)
-                htempl.update_record('BAND',filter_name)
-                htempl.update_record('EXPNUM',visitID)
+                htempl.update_record('FILTER',filter_name, 'PRIMARY_HDU')
+                htempl.update_record('IMAGETAG',visitID,'PRIMARY_HDU')
+                # Update header to a single string
+                htempl.string_header()
+                filenames = ["TestCam_%08d_%03d.header" % (visitID, k+1) for k in range(NCCDS)]
+                t0 = time.time()
                 # Write the header it out
-                hout_file = "LSSTCam_%08d.header" % visitID
-                htempl.write_header(hout_file, newline=True)
-                LOGGER.info("Wrote header to: %s" % hout_file)
+                htempl.write_headers(filenames, MP=MP, NP=NP, md5=True)
+                LOGGER.info("Header write time: %s" % hutils.elapsed_time(t0))
                 LOGGER.info("------------------------------------------")
-                # Get the md5 for the header file
-                md5value = hutils.md5Checksum(hout_file) #,blocksize=1024*512):
-                LOGGER.info("Got MD5SUM: %s" % md5value)
-                # Now we publish filename and MD5
-                # Build the kwargs
-                kw = {'Byte_Size':100,
-                      'Checksum':md5value,
-                      'Generator':'DM_header_test',
-                      'Mime':'text/plain',
-                      'URL': hout_file,
-                      'Version': 1,
-                      'priority':1,
-                      }
-                SAL_tools_send.dmHeaderService_logevent_LargeFileObjectAvailable(**kw)
+
         else:
             sys.stdout.flush()
             sys.stdout.write("Wating for new Position/Filter... [%s]" % spinner.next())
             sys.stdout.write('\r') 
             
 
-        time.sleep(0.5)
-        loop_n +=1    
+        time.sleep(0.1)
