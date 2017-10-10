@@ -20,7 +20,7 @@ if __name__ == "__main__":
     
     FK5Target = SAL_tools_recv.DDSSubcriber("tcs","tcs_kernel_FK5Target", Stype="Telemetry")
     Filter    = SAL_tools_recv.DDSSubcriber("camera","camera_Filter",Stype="Telemetry")
-    Readout   = SAL_tools_recv.camera_logevent_endReadout(tsleep=0.005)
+    Readout   = SAL_tools_recv.camera_logevent_endReadout(tsleep=1.0)
     #Readout   = SAL_tools_recv.DDSSubcriber("camera","camera_logevent_endReadout", Stype="Event")
         
     FK5Target.start()

@@ -25,6 +25,7 @@ if __name__ == "__main__":
             LOGGER.info("URL: %s" % event.URL)
             LOGGER.info("Version: %s" % event.Version)
             LOGGER.info("priority: %s" % event.priority)
+            retval==-1
         time.sleep(1)
     mgr.salShutdown()
     exit()
