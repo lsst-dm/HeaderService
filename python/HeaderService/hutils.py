@@ -7,6 +7,9 @@ import random
 import logging
 import multiprocessing
 import hashlib
+import itertools
+spinner = itertools.cycle(['-', '/', '|', '\\'])
+
 
 # TODO:
 # Merge/inherit HDRTEMPL_XXXX into a master/common class

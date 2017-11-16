@@ -8,6 +8,7 @@ import threading
 import logging
 import HeaderService.hutils as hutils
 
+spinner = hutils.spinner
 LOGGER = hutils.create_logger(level=logging.NOTSET,name='SAL_RECV')
 
 class DDSSubcriber(threading.Thread):
@@ -24,17 +25,17 @@ class DDSSubcriber(threading.Thread):
         self.daemon = True
         self.subscribe()
         
-        
     def subscribe(self):
 
         # This section does the equivalent of:
         # self.mgr = SALPY_tcs.SAL_tcs()
         # The steps are:
         # - 'figure out' the SALPY_xxxx module name
-        # - finds the library pointer using globals()
-        # - creates a mananger
+        # - find the library pointer using globals()
+        # - create a mananger
 
         self.newTelem = False
+        self.newEvent = False
         SALPY_lib_name = 'SALPY_%s' % self.module
         SALPY_lib = globals()[SALPY_lib_name]
         self.mgr = getattr(SALPY_lib, 'SAL_%s' % self.module)()
@@ -51,8 +52,16 @@ class DDSSubcriber(threading.Thread):
             self.getEvent_topic(self.event)
             LOGGER.info("%s subscriber ready for topic: %s" % (self.Stype,self.topic))
 
+    def run(self):
+        ''' The run method for the threading'''
+        if self.Stype == 'Telemetry':
+            self.run_Telemetry()
+        elif self.Stype == 'Event':
+            self.run_Event()
+        else:
+            raise ValueError("Stype=%s not defined\n" % self.Stype)
+
     def run_Telemetry(self):
-        t0 =  time.time()
 
         # Generic method to get for example: self.mgr.getNextSample_kernel_FK5Target
         self.nextsample_topic = self.topic.split(self.module)[-1]
@@ -69,17 +78,6 @@ class DDSSubcriber(threading.Thread):
             time.sleep(self.tsleep)
         return 
 
-    def run_Event(self):
-        return
-
-    def run(self):
-        if self.Stype == 'Telemetry':
-            self.run_Telemetry()
-        elif self.Stype == 'Event':
-            self.run_Event()
-        else:
-            raise ValueError("Stype=%s not defined\n" % self.Stype)
-
     def getCurrentTelemetry(self):
         if len(self.myDatalist) > 0:
             Telem = self.myDatalist[-1]
@@ -87,25 +85,41 @@ class DDSSubcriber(threading.Thread):
         else:
             Telem = None
         return Telem
-
-    def wait_Event(self):
-
-        t0 =  time.time()
-        self.endEvent = False
-        LOGGER.info("Waiting for %s event" % self.topic)
-
-        while self.loopEvent:
-            #retval = self.mgr.getEvent_endReadout(self.event)
+    
+    def run_Event(self):
+        
+        '''Generic method to get for example: self.mgr.getEvent_camera_logevent_endReadout)'''
+        self.newEvent = False
+        while True:
             retval = self.getEvent_topic(self.event)
             if retval==0:
-                self.endEvent = True
-                break
-            if time.time() - t0 > self.timeout:
-                LOGGER.info("WARNING: Timeout reading for Event %s" % self.topic)
-                self.endEvent = False
-                break
+                self.newEvent = True
             time.sleep(self.tsleep)
-        return self.endEvent
+        return 
+
+    def waitEvent(self,tsleep=None,timeout=None):
+
+        """ Loop for waiting for new event """
+        if not tsleep:
+            tsleep = self.tsleep
+        if not timeout:
+            timeout = self.timeout
+            
+        t0 =  time.time()
+        while not self.newEvent:
+            sys.stdout.flush()
+            sys.stdout.write("Wating for %s event.. [%s]" % (self.topic, spinner.next()))
+            sys.stdout.write('\r') 
+            if time.time() - t0 > timeout:
+                LOGGER.info("WARNING: Timeout reading for Event %s" % self.topic)
+                self.newEvent = False
+                break
+            time.sleep(tsleep)
+        return self.newEvent
+
+    def resetEvent(self):
+        ''' Simple function to set it back'''
+        self.newEvent=False
 
     def get_filter_name(self):
         # Need to move these filter definitions to a better place
@@ -113,6 +127,10 @@ class DDSSubcriber(threading.Thread):
         self.filter_name = self.filter_names[self.myData.REB_ID] 
         return self.filter_name 
 
+
+# ---------------------------------------------------
+#                   Unused classes
+# ---------------------------------------------------
 
 class tcs_kernel_FK5Target:
 
@@ -129,7 +147,6 @@ class tcs_kernel_FK5Target:
 
     def get(self):
         t0 =  time.time()
-
         while True:
             retval = self.mgr.getNextSample_kernel_FK5Target(self.myData)
             if retval == 0:
