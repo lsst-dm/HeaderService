@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+
+import SALPY_dmHeaderService
+
+mgr = SALPY_dmHeaderService.SAL_dmHeaderService()
+
+myData_EnterControl = SALPY_dmHeaderService.dmHeaderService_command_EnterControlC()
+myData_Start        = SALPY_dmHeaderService.dmHeaderService_command_StartC()
+
+cmdId = mgr.issueCommand_EnterControl(myData_EnterControl)
+mgr.waitForCompletion_EnterControl(cmdId,5)
+
+cmdId_Start = mgr.issueCommand_Start(myData_Start)
+mgr.waitForCompletion_Start(cmdId,5)

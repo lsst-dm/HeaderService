@@ -18,9 +18,7 @@ if __name__ == "__main__":
     # This needs to be done before we star the SAL controller thread,
     # as they use the DeviveState object for the current state
     State = SAL_controller.DeviceState()
-    #State.send_SummaryState()
     State.send_logEvent('SummaryState')
-    #exit()
     
     # Create threads for the controller we want to listen to
     controller_list = ['EnterControl',
@@ -37,5 +35,5 @@ if __name__ == "__main__":
     while True:
         time.sleep(1)
         print State.get_current_state()
-        #print State.current_state
+        print State.current_state
 
