@@ -10,9 +10,11 @@ import HeaderService.SAL_tools_send as SAL_tools_send
 import HeaderService.SAL_validate as SAL_validate
 import HeaderService.SAL_controller as SAL_controller
 import HeaderService.states as states
+import HeaderService.hutils as hutils
+
+spinner = hutils.spinner
 
 if __name__ == "__main__":
-
 
     # Init the device and send the current state vis SummaryState.
     # This needs to be done before we star the SAL controller thread,
@@ -32,9 +34,12 @@ if __name__ == "__main__":
         tControl[ctrl_name] = SAL_controller.DDSController(ctrl_name,State=State)
         tControl[ctrl_name].start()
 
-    while True:
+    keep_loop = True
+    while keep_loop:
+        sys.stdout.flush()
+        sys.stdout.write("Current State is {} [{}]".format(State.current_state,spinner.next()))
+        sys.stdout.write('\r') 
         time.sleep(1)
-        #print State.get_current_state()
-        print('---------------------')
-        print State.current_state
-
+        # In case we want to break the loop
+        #if State.current_state == 'DISABLE':
+        #    keep_loop = False
