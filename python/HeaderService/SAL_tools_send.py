@@ -86,3 +86,36 @@ def dmHeaderService_logevent_LargeFileObjectAvailable(**kwargs):
     time.sleep(1)
     mgr.salShutdown()
     return
+
+
+def ocs_sequencer(commands,Device='dmHeaderService',wait_time=1, sleep_time=3):
+
+    import SALPY_dmHeaderService
+    try:
+        import SALPY_archiver
+    except:
+        print("WARNING: import SALPY_archiver")
+    import SALPY_dmHeaderService
+    import time
+
+    # We get the equivalent of:
+    #  mgr = SALPY_dmHeaderService.SAL_dmHeaderService()
+    SALPY_lib = globals()['SALPY_{}'.format(Device)]
+    mgr = getattr(SALPY_lib,'SAL_{}'.format(Device))()
+    myData = {}
+    issueCommand = {}
+    waitForCompletion = {}
+    for cmd in commands:
+        myData[cmd] = getattr(SALPY_lib,'dmHeaderService_command_{}C'.format(cmd))()
+        issueCommand[cmd] = getattr(mgr,'issueCommand_{}'.format(cmd))
+        waitForCompletion[cmd] = getattr(mgr,'waitForCompletion_{}'.format(cmd))
+        
+    for cmd in commands:
+        print("# Issuing command: {}".format(cmd)) 
+        print("# Wait for Completion: {}".format(cmd)) 
+        cmdId = issueCommand[cmd](myData[cmd])
+        waitForCompletion[cmd](cmdId,wait_time)
+        print("# Done: {}".format(cmd)) 
+        time.sleep(sleep_time)
+
+    return

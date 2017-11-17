@@ -34,6 +34,7 @@ if __name__ == "__main__":
 
     while True:
         time.sleep(1)
-        print State.get_current_state()
+        #print State.get_current_state()
+        print('---------------------')
         print State.current_state
 

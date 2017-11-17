@@ -7,5 +7,5 @@ if __name__ == "__main__":
     try: 
         commands = sys.argv[1:]
     except:
-        commands = ['EnterControl','Start','Enable']
+        commands = ['Disable','Standby','ExitControl']
     SAL_tools_send.ocs_sequencer(commands)
