@@ -9,4 +9,4 @@ if __name__ == "__main__":
     if len(commands) < 1:
         commands = ['Disable','Standby','ExitControl']
         print("Will execute Power-down Sequence:")
-    SAL_tools_send.ocs_sequencer(commands)
+    SAL_tools_send.command_sequencer(commands)

@@ -87,15 +87,13 @@ def dmHeaderService_logevent_LargeFileObjectAvailable(**kwargs):
     mgr.salShutdown()
     return
 
+def command_sequencer(commands,Device='dmHeaderService',wait_time=1, sleep_time=3):
 
-def ocs_sequencer(commands,Device='dmHeaderService',wait_time=1, sleep_time=3):
-
-    import SALPY_dmHeaderService
+    # Trick to import modules dynamically as needed/depending on the Device we want
     try:
-        import SALPY_archiver
+        exec "import SALPY_{}".format(Device)
     except:
-        print("WARNING: import SALPY_archiver")
-    import SALPY_dmHeaderService
+        raise ValueError("import SALPY_{}: failed".format(Device))
     import time
 
     # We get the equivalent of:
@@ -111,11 +109,11 @@ def ocs_sequencer(commands,Device='dmHeaderService',wait_time=1, sleep_time=3):
         waitForCompletion[cmd] = getattr(mgr,'waitForCompletion_{}'.format(cmd))
         
     for cmd in commands:
-        print("# Issuing command: {}".format(cmd)) 
-        print("# Wait for Completion: {}".format(cmd)) 
+        LOGGER.info("Issuing command: {}".format(cmd)) 
+        LOGGER.info("Wait for Completion: {}".format(cmd)) 
         cmdId = issueCommand[cmd](myData[cmd])
         waitForCompletion[cmd](cmdId,wait_time)
-        print("# Done: {}".format(cmd)) 
+        LOGGER.info("Done: {}".format(cmd)) 
         time.sleep(sleep_time)
 
     return
