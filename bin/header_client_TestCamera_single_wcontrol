@@ -7,14 +7,17 @@ import logging
 import HeaderService
 import HeaderService.SAL_tools_recv as SAL_tools_recv
 import HeaderService.SAL_tools_send as SAL_tools_send
+import HeaderService.SAL_validate as SAL_validate
+import HeaderService.SAL_controller as SAL_controller
+import HeaderService.states as states
 import HeaderService.hutils as hutils
 
 spinner = hutils.spinner
 
-if __name__ == "__main__":
-
+def run_enable(State,vendor='ITL'):
+    
     # Load up the header template
-    htempl= HeaderService.HDRTEMPL_TestCamera(vendor='ITL')
+    htempl= HeaderService.HDRTEMPL_TestCamera(vendor=vendor)
     LOGGER = htempl.logger
     
     FK5Target = SAL_tools_recv.DDSSubcriber("tcs","tcs_kernel_FK5Target", Stype="Telemetry")
@@ -26,9 +29,13 @@ if __name__ == "__main__":
     Readout.start()
     loop_n = 0
     while True:
-
+        
+        if State.current_state!='ENABLE':
+            sys.stdout.flush()
+            sys.stdout.write("Current State is {} [{}]".format(State.current_state,spinner.next()))
+            sys.stdout.write('\r') 
         # Get the RA,DEC
-        if FK5Target.newTelem and Filter.newTelem:
+        elif FK5Target.newTelem and Filter.newTelem:
 
             LOGGER.info("New value for FK5 Target")
             myData = FK5Target.getCurrentTelemetry()
@@ -39,7 +46,8 @@ if __name__ == "__main__":
             LOGGER.info("Received: Filter=%s" % filter_name)
 
             # Get the readout
-            LOGGER.info("Waiting for Camera Readout event")
+            LOGGER.info("Current State is {} -- waiting for Camera Readout event".format(State.current_state))
+
             Readout.waitEvent()
             if Readout.newEvent:
                 sys.stdout.flush()
@@ -72,9 +80,35 @@ if __name__ == "__main__":
                 Readout.newEvent = False
         else:
             sys.stdout.flush()
-            sys.stdout.write("Wating for new Position/Filter... [%s]" % spinner.next())
+            sys.stdout.write("Current State is {} -- wating for new Position/Filter...[{}]".format(State.current_state,spinner.next()))
             sys.stdout.write('\r') 
             
 
+        time.sleep(1)
         time.sleep(0.5)
         loop_n +=1    
+
+
+if __name__ == "__main__":
+
+    # Init the device and send the current state vis SummaryState.
+    # This needs to be done before we star the SAL controller thread,
+    # as they use the DeviveState object for the current state
+    State = SAL_controller.DeviceState()
+    State.send_logEvent('SummaryState')
+    
+    # Create threads for the controller we want to listen to
+    controller_list = ['EnterControl',
+                       'ExitControl',
+                       'Start',
+                       'Standby',
+                       'Enable',
+                       'Disable']
+    tControl = {}
+    for ctrl_name in controller_list:
+        tControl[ctrl_name] = SAL_controller.DDSController(ctrl_name,State=State)
+        tControl[ctrl_name].start()
+
+
+    run_enable(State)
+    

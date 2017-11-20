@@ -3,13 +3,14 @@
 import time
 import sys
 import os
+import itertools
 import logging
 import HeaderService
 import HeaderService.SAL_tools_recv as SAL_tools_recv
 import HeaderService.SAL_tools_send as SAL_tools_send
 import HeaderService.hutils as hutils
 
-spinner = hutils.spinner
+spinner = itertools.cycle(['-', '/', '|', '\\'])
 
 if __name__ == "__main__":
 
@@ -19,11 +20,12 @@ if __name__ == "__main__":
     
     FK5Target = SAL_tools_recv.DDSSubcriber("tcs","tcs_kernel_FK5Target", Stype="Telemetry")
     Filter    = SAL_tools_recv.DDSSubcriber("camera","camera_Filter",Stype="Telemetry")
-    Readout   = SAL_tools_recv.DDSSubcriber("camera","camera_logevent_endReadout", Stype="Event")
+    Readout   = SAL_tools_recv.camera_logevent_endReadout(tsleep=1.0)
+    #Readout   = SAL_tools_recv.DDSSubcriber("camera","camera_logevent_endReadout", Stype="Event")
         
     FK5Target.start()
     Filter.start()
-    Readout.start()
+    #Readout.start()
     loop_n = 0
     while True:
 
@@ -39,9 +41,14 @@ if __name__ == "__main__":
             LOGGER.info("Received: Filter=%s" % filter_name)
 
             # Get the readout
+            #LOGGER.info("Waiting for Camera Readout event")
+            # Readout.join()
+            #if Readout.endEvent:
+
+            # Get the readout
             LOGGER.info("Waiting for Camera Readout event")
-            Readout.waitEvent()
-            if Readout.newEvent:
+            endReadout = Readout.get()
+            if endReadout:
                 sys.stdout.flush()
                 LOGGER.info("Received: Readout Signal")
                 # Manually Update a header param
@@ -69,7 +76,7 @@ if __name__ == "__main__":
                       'priority':1,
                       }
                 SAL_tools_send.dmHeaderService_logevent_LargeFileObjectAvailable(**kw)
-                Readout.newEvent = False
+                #Readout.endEvent = False
         else:
             sys.stdout.flush()
             sys.stdout.write("Wating for new Position/Filter... [%s]" % spinner.next())
