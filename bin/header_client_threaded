@@ -5,7 +5,7 @@ import sys
 import itertools
 import logging
 import HeaderService
-import HeaderService.SAL_tools_recv as SAL_tools_recv
+import HeaderService.SAL_tools as SAL_tools
 import HeaderService.SAL_tools_send as SAL_tools_send
 import HeaderService.hutils as hutils
 
@@ -17,9 +17,9 @@ if __name__ == "__main__":
     htempl = HeaderService.HDRTEMPL_SciCamera()
     LOGGER = htempl.logger
     
-    FK5Target = SAL_tools_recv.DDSSubcriber("tcs","tcs_kernel_FK5Target", Stype="Telemetry")
-    Filter    = SAL_tools_recv.DDSSubcriber("camera","camera_Filter",Stype="Telemetry")
-    Readout   = SAL_tools_recv.DDSSubcriber("camera","camera_logevent_endReadout", Stype="Event")
+    FK5Target = SAL_tools.DDSSubcriber("tcs","tcs_kernel_FK5Target", Stype="Telemetry")
+    Filter    = SAL_tools.DDSSubcriber("camera","camera_Filter",Stype="Telemetry")
+    Readout   = SAL_tools.DDSSubcriber("camera","camera_logevent_endReadout", Stype="Event")
         
     FK5Target.start()
     Filter.start()

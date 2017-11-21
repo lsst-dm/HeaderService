@@ -2,7 +2,7 @@
 
 import time
 import HeaderService
-import HeaderService.SAL_tools_recv as SAL_tools_recv
+import HeaderService.SAL_tools as SAL_tools
 
 if __name__ == "__main__":
 
@@ -10,9 +10,9 @@ if __name__ == "__main__":
     htempl= HeaderService.HDRTEMPL()
 
     # Initialize subscribers -- we do this only once.
-    FK5Target = SAL_tools_recv.tcs_kernel_FK5Target()
-    Filter    = SAL_tools_recv.camera_Filter()
-    Readout   = SAL_tools_recv.camera_logevent_endReadout(tsleep=0.005)
+    FK5Target = SAL_tools.tcs_kernel_FK5Target()
+    Filter    = SAL_tools.camera_Filter()
+    Readout   = SAL_tools.camera_logevent_endReadout(tsleep=0.005)
 
     loop_n = 0
     while True:

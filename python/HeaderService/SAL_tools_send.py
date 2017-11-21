@@ -3,15 +3,15 @@
 
 import time
 import sys
+import SALPY_dmHeaderService
 import SALPY_camera 
 import SALPY_tcs
-import SALPY_dmHeaderService
 import logging
 import HeaderService.hutils as hutils
 
 """ Functions to send simply telemetry """
 
-LOGGER = hutils.create_logger(level=logging.NOTSET,name='SAL_SEND')
+LOGGER = hutils.create_logger(level=logging.NOTSET,name=__name__)
 
 # TODO:
 # Make these function classes to avoid init overhead
@@ -87,33 +87,3 @@ def dmHeaderService_logevent_LargeFileObjectAvailable(**kwargs):
     mgr.salShutdown()
     return
 
-def command_sequencer(commands,Device='dmHeaderService',wait_time=1, sleep_time=3):
-
-    # Trick to import modules dynamically as needed/depending on the Device we want
-    try:
-        exec "import SALPY_{}".format(Device)
-    except:
-        raise ValueError("import SALPY_{}: failed".format(Device))
-    import time
-
-    # We get the equivalent of:
-    #  mgr = SALPY_dmHeaderService.SAL_dmHeaderService()
-    SALPY_lib = globals()['SALPY_{}'.format(Device)]
-    mgr = getattr(SALPY_lib,'SAL_{}'.format(Device))()
-    myData = {}
-    issueCommand = {}
-    waitForCompletion = {}
-    for cmd in commands:
-        myData[cmd] = getattr(SALPY_lib,'dmHeaderService_command_{}C'.format(cmd))()
-        issueCommand[cmd] = getattr(mgr,'issueCommand_{}'.format(cmd))
-        waitForCompletion[cmd] = getattr(mgr,'waitForCompletion_{}'.format(cmd))
-        
-    for cmd in commands:
-        LOGGER.info("Issuing command: {}".format(cmd)) 
-        LOGGER.info("Wait for Completion: {}".format(cmd)) 
-        cmdId = issueCommand[cmd](myData[cmd])
-        waitForCompletion[cmd](cmdId,wait_time)
-        LOGGER.info("Done: {}".format(cmd)) 
-        time.sleep(sleep_time)
-
-    return

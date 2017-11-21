@@ -5,7 +5,7 @@ import sys
 import itertools
 import logging
 import HeaderService
-import HeaderService.SAL_tools_recv as SAL_tools_recv
+import HeaderService.SAL_tools as SAL_tools
 import HeaderService.hutils as hutils
 import time
 spinner = itertools.cycle(['-', '/', '|', '\\'])
@@ -19,9 +19,9 @@ if __name__ == "__main__":
 
     LOGGER = htempl.logger
     
-    FK5Target = SAL_tools_recv.DDSSubcriber("tcs","tcs_kernel_FK5Target", Stype="Telemetry")
-    Filter    = SAL_tools_recv.DDSSubcriber("camera","camera_Filter",Stype="Telemetry")
-    Readout   = SAL_tools_recv.DDSSubcriber("camera","camera_logevent_endReadout", tsleep=0.05, Stype="Event")
+    FK5Target = SAL_tools.DDSSubcriber("tcs","tcs_kernel_FK5Target", Stype="Telemetry")
+    Filter    = SAL_tools.DDSSubcriber("camera","camera_Filter",Stype="Telemetry")
+    Readout   = SAL_tools.DDSSubcriber("camera","camera_logevent_endReadout", tsleep=0.05, Stype="Event")
         
     FK5Target.start()
     Filter.start()

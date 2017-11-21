@@ -1,13 +1,25 @@
 
 import time
 import sys
-import SALPY_dmHeaderService
 import threading
 import logging
 import HeaderService.hutils as hutils
 import HeaderService.states as states
 import inspect
+# For now we only load 'dmHeaderService','tcs' and 'camera', but we might need them all.
+import SALPY_dmHeaderService
+import SALPY_camera 
+import SALPY_tcs
 
+"""
+Here we store the SAL classes and tools that we use to:
+ - Control devices
+ - Gather telemetry/events
+ - Send Control commands (to sim OCS)
+ 
+"""
+
+spinner = hutils.spinner
 LOGGER = hutils.create_logger(level=logging.NOTSET,name=__name__)
 SAL__CMD_COMPLETE=303
 
@@ -78,7 +90,7 @@ class DeviceState:
     def get_current_state(self):
         '''Function to get the current state'''
         return self.current_state
-    
+
 
 class DDSController(threading.Thread):
     
@@ -140,7 +152,6 @@ class DDSController(threading.Thread):
                 self.reply_to_transition(cmdId)
                 self.newControl = True
             time.sleep(self.tsleep)
-            
 
     def reply_to_transition(self,cmdId):
 
@@ -156,9 +167,12 @@ class DDSController(threading.Thread):
             LOGGER.info("WARNING: INVALID TRANSITION from {} --> {}".format(self.State.current_state, self.next_state))
             self.State.send_logEvent('RejectedCommand',rejected_state=self.COMMAND)
             #self.State.send_RejectedCommand(rejected_state=self.COMMAND)
-        
+
 
 def validate_transition(current_state, new_state):
+    """
+    Stand-alone function to validate transition. It returns true/false
+    """
     current_index = states.state_enumeration[current_state]
     new_index = states.state_enumeration[new_state]
     transition_is_valid = states.state_matrix[current_index][new_index]
@@ -167,3 +181,157 @@ def validate_transition(current_state, new_state):
     else:
         LOGGER.info("Transition from {} --> {} is INVALID".format(current_state, new_state))
     return transition_is_valid 
+
+
+class DDSSubcriber(threading.Thread):
+
+    def __init__(self, module, topic, threadID='1', Stype='Telemetry',tsleep=0.5,timeout=3600,nkeep=100):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.module = module
+        self.topic  = topic
+        self.tsleep = tsleep
+        self.Stype  = Stype
+        self.timeout = timeout
+        self.nkeep   = nkeep
+        self.daemon = True
+        self.subscribe()
+        
+    def subscribe(self):
+
+        # This section does the equivalent of:
+        # self.mgr = SALPY_tcs.SAL_tcs()
+        # The steps are:
+        # - 'figure out' the SALPY_xxxx module name
+        # - find the library pointer using globals()
+        # - create a mananger
+
+        self.newTelem = False
+        self.newEvent = False
+        SALPY_lib_name = 'SALPY_%s' % self.module
+        SALPY_lib = globals()[SALPY_lib_name]
+        self.mgr = getattr(SALPY_lib, 'SAL_%s' % self.module)()
+
+        if self.Stype=='Telemetry':
+            self.mgr.salTelemetrySub(self.topic)
+            self.myData = getattr(SALPY_lib,self.topic+'C')()
+            LOGGER.info("%s subscriber ready for topic: %s" % (self.Stype,self.topic))
+        elif self.Stype=='Event':
+            self.mgr.salEvent(self.topic)
+            self.event = getattr(SALPY_lib,self.topic+'C')()
+            self.event_topic = self.topic.split("_")[-1]
+            self.getEvent_topic = getattr(self.mgr,'getEvent_'+self.event_topic)
+            self.getEvent_topic(self.event)
+            LOGGER.info("%s subscriber ready for topic: %s" % (self.Stype,self.topic))
+
+    def run(self):
+        ''' The run method for the threading'''
+        if self.Stype == 'Telemetry':
+            self.run_Telemetry()
+        elif self.Stype == 'Event':
+            self.run_Event()
+        else:
+            raise ValueError("Stype=%s not defined\n" % self.Stype)
+
+    def run_Telemetry(self):
+
+        # Generic method to get for example: self.mgr.getNextSample_kernel_FK5Target
+        self.nextsample_topic = self.topic.split(self.module)[-1]
+        self.getNextSample = getattr(self.mgr,"getNextSample" + self.nextsample_topic)
+
+        self.myDatalist = []
+        self.newTelem = False
+        while True:
+            retval = self.getNextSample(self.myData)
+            if retval == 0:
+                self.myDatalist.append(self.myData)
+                self.myDatalist = self.myDatalist[-self.nkeep:] # Keep only nkeep entries
+                self.newTelem = True
+            time.sleep(self.tsleep)
+        return 
+
+    def getCurrentTelemetry(self):
+        if len(self.myDatalist) > 0:
+            Telem = self.myDatalist[-1]
+            self.newTelem = False
+        else:
+            Telem = None
+        return Telem
+    
+    def run_Event(self):
+        
+        '''Generic method to get for example: self.mgr.getEvent_camera_logevent_endReadout)'''
+        self.newEvent = False
+        while True:
+            retval = self.getEvent_topic(self.event)
+            if retval==0:
+                self.newEvent = True
+            time.sleep(self.tsleep)
+        return 
+
+    def waitEvent(self,tsleep=None,timeout=None):
+
+        """ Loop for waiting for new event """
+        if not tsleep:
+            tsleep = self.tsleep
+        if not timeout:
+            timeout = self.timeout
+            
+        t0 =  time.time()
+        while not self.newEvent:
+            sys.stdout.flush()
+            sys.stdout.write("Wating for %s event.. [%s]" % (self.topic, spinner.next()))
+            sys.stdout.write('\r') 
+            if time.time() - t0 > timeout:
+                LOGGER.info("WARNING: Timeout reading for Event %s" % self.topic)
+                self.newEvent = False
+                break
+            time.sleep(tsleep)
+        return self.newEvent
+
+    def resetEvent(self):
+        ''' Simple function to set it back'''
+        self.newEvent=False
+
+    def get_filter_name(self):
+        # Need to move these filter definitions to a better place
+        self.filter_names = ['u','g','r','i','z','Y']
+        self.filter_name = self.filter_names[self.myData.REB_ID] 
+        return self.filter_name 
+
+    
+def command_sequencer(commands,Device='dmHeaderService',wait_time=1, sleep_time=3):
+
+    """
+    Stand-alone function to send a sequence of OCS Commands
+    """
+
+    # Trick to import modules dynamically as needed/depending on the Device we want
+    try:
+        exec "import SALPY_{}".format(Device)
+    except:
+        raise ValueError("import SALPY_{}: failed".format(Device))
+    import time
+
+    # We get the equivalent of:
+    #  mgr = SALPY_dmHeaderService.SAL_dmHeaderService()
+    SALPY_lib = globals()['SALPY_{}'.format(Device)]
+    mgr = getattr(SALPY_lib,'SAL_{}'.format(Device))()
+    myData = {}
+    issueCommand = {}
+    waitForCompletion = {}
+    for cmd in commands:
+        myData[cmd] = getattr(SALPY_lib,'dmHeaderService_command_{}C'.format(cmd))()
+        issueCommand[cmd] = getattr(mgr,'issueCommand_{}'.format(cmd))
+        waitForCompletion[cmd] = getattr(mgr,'waitForCompletion_{}'.format(cmd))
+        
+    for cmd in commands:
+        LOGGER.info("Issuing command: {}".format(cmd)) 
+        LOGGER.info("Wait for Completion: {}".format(cmd)) 
+        cmdId = issueCommand[cmd](myData[cmd])
+        waitForCompletion[cmd](cmdId,wait_time)
+        LOGGER.info("Done: {}".format(cmd)) 
+        time.sleep(sleep_time)
+
+    return
+

@@ -3,13 +3,8 @@
 import time
 import sys
 import os
-import logging
 import HeaderService
-import HeaderService.SAL_tools_recv as SAL_tools_recv
-import HeaderService.SAL_tools_send as SAL_tools_send
-import HeaderService.SAL_validate as SAL_validate
-import HeaderService.SAL_controller as SAL_controller
-import HeaderService.states as states
+import HeaderService.SAL_tools as SAL_tools
 import HeaderService.hutils as hutils
 
 spinner = hutils.spinner
@@ -19,7 +14,7 @@ if __name__ == "__main__":
     # Init the device and send the current state vis SummaryState.
     # This needs to be done before we star the SAL controller thread,
     # as they use the DeviveState object for the current state
-    State = SAL_controller.DeviceState()
+    State = SAL_tools.DeviceState()
     State.send_logEvent('SummaryState')
     
     # Create threads for the controller we want to listen to
@@ -31,7 +26,7 @@ if __name__ == "__main__":
                        'Disable']
     tControl = {}
     for ctrl_name in controller_list:
-        tControl[ctrl_name] = SAL_controller.DDSController(ctrl_name,State=State)
+        tControl[ctrl_name] = SAL_tools.DDSController(ctrl_name,State=State)
         tControl[ctrl_name].start()
 
     keep_loop = True
