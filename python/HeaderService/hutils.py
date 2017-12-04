@@ -8,6 +8,7 @@ import logging
 import multiprocessing
 import hashlib
 import itertools
+import copy
 spinner = itertools.cycle(['-', '/', '|', '\\'])
 
 
@@ -149,23 +150,39 @@ class HDRTEMPL_TestCamera:
                 write_header_string(arg)
         return
 
-    def write_header_single(self,filename,delimiter='END',newline=False):
+    def write_header_emptyHDU(self,filename):
 
+        data=None
+        with fitsio.FITS(filename,'rw',clobber=True) as fits:
+            for extname in self.HDRLIST:
+
+                hdr = copy.deepcopy(self.header[extname])
+                fits.write(data,ignore_empty=True)
+                hdr.clean()
+                # Keep NAXIS1/NAXIS2 intact if present in the template header
+                if self.header[extname].get('NAXIS1') and self.header[extname].get('NAXIS2'):
+                    hdr.add_record(get_record(self.header[extname],'NAXIS1'))
+                    hdr.add_record(get_record(self.header[extname],'NAXIS2'))
+                fits[-1].write_keys(hdr, clean=False)
+
+    def write_header(self,filename,delimiter='END',newline=False):
+        
         """
-        Write the header using the strict FITS notation (newline=False)
-        or more human readable (newline=True)
+        Writes the single header file using the strict FITS notation (newline=False)
+        or the more human readable (newline=True) with a delimiter for multiple HDU's
         """
         if newline:
+            # Update header to a single string
+            selt.string_header(delimiter=delimiter)
             with open(filename,'w') as fobj:
                 fobj.write(self.hstring)
         else:
-            data=None
-            for extname in self.HDRLIST:
-                fitsio.write(filename, data, header=self.header[extname])
-        #LOGGER.info("Wrote header to: %s" % filename)
+            self.write_header_emptyHDU(filename)
         return
 
-    def write_header(self,filename,delimiter='END',newline=False):
+
+
+        
         self.write_header_single(filename,delimiter=delimiter,newline=newline)
 
 class HDRTEMPL_SciCamera:

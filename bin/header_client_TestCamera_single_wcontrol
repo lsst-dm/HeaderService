@@ -7,9 +7,6 @@ import logging
 import HeaderService
 import HeaderService.SAL_tools as SAL_tools
 import HeaderService.SAL_tools_send as SAL_tools_send
-#import HeaderService.SAL_validate as SAL_validate
-#import HeaderService.SAL_controller as SAL_controller
-#import HeaderService.states as states
 import HeaderService.hutils as hutils
 
 spinner = hutils.spinner
@@ -55,11 +52,9 @@ def run_enable(State,vendor='ITL'):
                 # Manually Update a header param
                 htempl.update_record('FILTER',filter_name, 'PRIMARY_HDU')
                 htempl.update_record('IMAGETAG',visitID,'PRIMARY_HDU')
-                # Update header to a single string
-                htempl.string_header()
                 # Write the header it out
                 hout_file = "LSSTCam_%08d.header" % visitID
-                htempl.write_header(hout_file, newline=True)
+                htempl.write_header(hout_file, newline=False)
                 LOGGER.info("Wrote header to: %s" % hout_file)
                 LOGGER.info("------------------------------------------")
                 # Get the md5 for the header file
