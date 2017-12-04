@@ -11,7 +11,7 @@ import HeaderService.hutils as hutils
 
 spinner = hutils.spinner
 
-def run_enable(State,vendor='ITL'):
+def run_enable(State,vendor='ITL',filepath='.'):
     
     # Load up the header template
     htempl= HeaderService.HDRTEMPL_TestCamera(vendor=vendor)
@@ -24,6 +24,12 @@ def run_enable(State,vendor='ITL'):
     FK5Target.start()
     Filter.start()
     Readout.start()
+
+    # Make sure that we have a place to put the files
+    if not os.path.exists(filepath):
+        os.makedirs(filepath)
+        LOGGER.info("Created dirname:{}".format(filepath))
+            
     loop_n = 0
     while True:
         
@@ -53,7 +59,7 @@ def run_enable(State,vendor='ITL'):
                 htempl.update_record('FILTER',filter_name, 'PRIMARY_HDU')
                 htempl.update_record('IMAGETAG',visitID,'PRIMARY_HDU')
                 # Write the header it out
-                hout_file = "LSSTCam_%08d.header" % visitID
+                hout_file = os.path.join(filepath,"LSSTCam_%08d.header" % visitID)
                 htempl.write_header(hout_file, newline=False)
                 LOGGER.info("Wrote header to: %s" % hout_file)
                 LOGGER.info("------------------------------------------")
@@ -103,5 +109,5 @@ if __name__ == "__main__":
         tControl[ctrl_name] = SAL_tools.DDSController(ctrl_name,State=State)
         tControl[ctrl_name].start()
 
-    run_enable(State)
+    run_enable(State,vendor='ITL',filepath='HeaderTester')
     
