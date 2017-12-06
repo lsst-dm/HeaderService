@@ -163,6 +163,7 @@ class HDRTEMPL_TestCamera:
                 if self.header[extname].get('NAXIS1') and self.header[extname].get('NAXIS2'):
                     hdr.add_record(get_record(self.header[extname],'NAXIS1'))
                     hdr.add_record(get_record(self.header[extname],'NAXIS2'))
+                    #print get_record(self.header[extname],'NAXIS')
                 fits[-1].write_keys(hdr, clean=False)
 
     def write_header(self,filename,delimiter='END',newline=False):
@@ -179,11 +180,6 @@ class HDRTEMPL_TestCamera:
         else:
             self.write_header_emptyHDU(filename)
         return
-
-
-
-        
-        self.write_header_single(filename,delimiter=delimiter,newline=newline)
 
 class HDRTEMPL_SciCamera:
 

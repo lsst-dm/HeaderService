@@ -42,7 +42,7 @@ def run_enable(State,vendor='ITL',filepath='.'):
 
             LOGGER.info("New value for FK5 Target")
             myData = FK5Target.getCurrentTelemetry()
-            ra,dec,visitID = myData.ra, myData.dec, int(myData.rv)
+            ra,dec,visitID = myData.pmRA, myData.pmDec, int(myData.rv)
             LOGGER.info("Received: RA=%s, DEC=%s" % (ra,dec))
             LOGGER.info("Received: visitID=%s" % visitID)
             filter_name = Filter.get_filter_name()

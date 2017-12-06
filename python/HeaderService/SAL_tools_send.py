@@ -45,8 +45,8 @@ def send_FK5Target(ra,dec,visitID):
     myData.epoc = 2000
     myData.equinox = 2000
     myData.parallax = 1.0
-    myData.pmDec = 1.0
-    myData.pmRA = 1.0
+    myData.pmDec = ra
+    myData.pmRA = dec
     #myData.rv = 1.0
     myData.rv = visitID
     retval = mgr.putSample_kernel_FK5Target(myData)
