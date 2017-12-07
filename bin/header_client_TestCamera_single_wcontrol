@@ -16,10 +16,12 @@ def run_enable(State,vendor='ITL',filepath='.'):
     # Load up the header template
     htempl= HeaderService.HDRTEMPL_TestCamera(vendor=vendor)
     LOGGER = htempl.logger
+
     
-    FK5Target = SAL_tools.DDSSubcriber("tcs","tcs_kernel_FK5Target", Stype="Telemetry")
     Filter    = SAL_tools.DDSSubcriber("camera","camera_Filter",Stype="Telemetry")
     Readout   = SAL_tools.DDSSubcriber("camera","camera_logevent_endReadout", Stype="Event")
+    FK5Target = SAL_tools.DDSSubcriber("tcs","tcs_kernel_FK5Target", Stype="Telemetry")
+
         
     FK5Target.start()
     Filter.start()
@@ -90,6 +92,7 @@ def run_enable(State,vendor='ITL',filepath='.'):
         loop_n +=1    
 
 if __name__ == "__main__":
+
 
     # Init the device and send the current state vis SummaryState.
     # This needs to be done before we star the SAL controller thread,

@@ -211,7 +211,6 @@ class DDSSubcriber(threading.Thread):
         SALPY_lib_name = 'SALPY_%s' % self.module
         SALPY_lib = globals()[SALPY_lib_name]
         self.mgr = getattr(SALPY_lib, 'SAL_%s' % self.module)()
-
         if self.Stype=='Telemetry':
             self.mgr.salTelemetrySub(self.topic)
             self.myData = getattr(SALPY_lib,self.topic+'C')()
