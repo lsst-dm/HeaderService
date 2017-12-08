@@ -37,7 +37,7 @@ if __name__ == "__main__":
     SAL_tools_send.send_FK5Target(args.ra,args.dec,args.visitID)
 
     # Send Filter
-    time.sleep(1)
+    time.sleep(2)
     SAL_tools_send.send_Filter(args.band)
 
     # Send Readout end event after integration is finished

@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+import time
+import sys
+import os
+import logging
+import HeaderService
+import HeaderService.SAL_tools as SAL_tools
+import HeaderService.SAL_tools_send as SAL_tools_send
+import HeaderService.hutils as hutils
+
+spinner = hutils.spinner
+LOGGER = hutils.create_logger(level=logging.NOTSET,name=__name__)
+
+if __name__ == "__main__":
+
+    FK5Target = SAL_tools.DDSSubcriber("tcs","tcs_kernel_FK5Target", Stype="Telemetry")
+    FK5Target.start()
+
+    loop_n = 0
+    while True:
+        
+        if FK5Target.newTelem:
+            LOGGER.info("New value for FK5 Target")
+            myData = FK5Target.getCurrentTelemetry()
+            ra,dec,visitID = myData.pmRA, myData.pmDec, int(myData.rv)
+            LOGGER.info("Received: RA=%s, DEC=%s" % (ra,dec))
+            LOGGER.info("Received: visitID=%s" % visitID)
+        else:
+            sys.stdout.flush()
+            sys.stdout.write("FK5...[{}]".format(spinner.next()))
+            sys.stdout.write('\r') 
+            time.sleep(0.5)
+
+        time.sleep(0.5)
+        loop_n +=1    
+

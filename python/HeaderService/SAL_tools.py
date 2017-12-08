@@ -185,7 +185,7 @@ def validate_transition(current_state, new_state):
 
 class DDSSubcriber(threading.Thread):
 
-    def __init__(self, module, topic, threadID='1', Stype='Telemetry',tsleep=0.5,timeout=3600,nkeep=100):
+    def __init__(self, module, topic, threadID='1', Stype='Telemetry',tsleep=0.01,timeout=3600,nkeep=100):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.module = module
@@ -294,8 +294,10 @@ class DDSSubcriber(threading.Thread):
 
     def get_filter_name(self):
         # Need to move these filter definitions to a better place
+
+        myData = self.getCurrentTelemetry()
         self.filter_names = ['u','g','r','i','z','Y']
-        self.filter_name = self.filter_names[self.myData.REB_ID] 
+        self.filter_name = self.filter_names[myData.REB_ID] 
         return self.filter_name 
 
     
