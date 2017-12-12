@@ -29,7 +29,9 @@ class DeviceState:
                  tsleep=0.5,
                  eventlist = ['SummaryState',
                               'SettingVersions',
-                              'RejectedCommand'] ):
+                              'RejectedCommand',
+                              'SettingsApplied',
+                              'AppliedSettingsMatchStart'] ):
 
         self.current_state = default_state
         self.tsleep = tsleep
@@ -161,12 +163,23 @@ class DDSController(threading.Thread):
             self.mgr_ackCommand(cmdId, SAL__CMD_COMPLETE, 0, "Done : OK");
             # Update the current state
             self.State.current_state = self.next_state
-            self.State.send_logEvent('SummaryState')
-            self.State.send_logEvent("SettingVersions",recommendedSettingsVersion='blah')
+
+            if self.COMMAND == 'ENTERCONTROL':
+                self.State.send_logEvent("SettingVersions",recommendedSettingsVersion='blah')
+                self.State.send_logEvent('SummaryState')
+            elif self.COMMAND == 'START':
+                # Extract 'myData.configure' for START, eventually we
+                # will apply the setting for this configuration, for now we
+                LOGGER.info("From {} received configure: {}".format(self.COMMAND,self.myData.configure))
+                # Here we should apply the setting in the future
+                self.State.send_logEvent('SettingsApplied')
+                self.State.send_logEvent('AppliedSettingsMatchStart',appliedSettingsMatchStartIsTrue=1)
+                self.State.send_logEvent('SummaryState')
+            else:
+                self.State.send_logEvent('SummaryState')
         else:
             LOGGER.info("WARNING: INVALID TRANSITION from {} --> {}".format(self.State.current_state, self.next_state))
             self.State.send_logEvent('RejectedCommand',rejected_state=self.COMMAND)
-            #self.State.send_RejectedCommand(rejected_state=self.COMMAND)
 
 
 def validate_transition(current_state, new_state):
@@ -297,7 +310,11 @@ class DDSSubcriber(threading.Thread):
 
         myData = self.getCurrentTelemetry()
         self.filter_names = ['u','g','r','i','z','Y']
-        self.filter_name = self.filter_names[myData.REB_ID] 
+        try:
+            self.filter_name = self.filter_names[myData.REB_ID] 
+        except:
+            self.filter_name = 'zzz'
+
         return self.filter_name 
 
     
@@ -325,6 +342,9 @@ def command_sequencer(commands,Device='dmHeaderService',wait_time=1, sleep_time=
         myData[cmd] = getattr(SALPY_lib,'dmHeaderService_command_{}C'.format(cmd))()
         issueCommand[cmd] = getattr(mgr,'issueCommand_{}'.format(cmd))
         waitForCompletion[cmd] = getattr(mgr,'waitForCompletion_{}'.format(cmd))
+        # If Start we send some non-sense value
+        if cmd == 'Start':
+            myData[cmd].configure = 'blah.json'
         
     for cmd in commands:
         LOGGER.info("Issuing command: {}".format(cmd)) 
