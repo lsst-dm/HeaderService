@@ -22,7 +22,7 @@ if __name__ == "__main__":
         
         if FK5Target.newTelem:
             LOGGER.info("New value for FK5 Target")
-            myData = FK5Target.getCurrentTelemetry()
+            myData = FK5Target.getCurrent()
             ra,dec,visitID = myData.pmRA, myData.pmDec, int(myData.rv)
             LOGGER.info("Received: RA=%s, DEC=%s" % (ra,dec))
             LOGGER.info("Received: visitID=%s" % visitID)
@@ -30,8 +30,8 @@ if __name__ == "__main__":
             sys.stdout.flush()
             sys.stdout.write("FK5...[{}]".format(spinner.next()))
             sys.stdout.write('\r') 
-            time.sleep(0.5)
+            time.sleep(0.1)
 
-        time.sleep(0.5)
+        time.sleep(0.1)
         loop_n +=1    
 

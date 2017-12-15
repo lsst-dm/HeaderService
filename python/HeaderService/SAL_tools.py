@@ -224,63 +224,57 @@ class DDSSubcriber(threading.Thread):
         SALPY_lib_name = 'SALPY_%s' % self.module
         SALPY_lib = globals()[SALPY_lib_name]
         self.mgr = getattr(SALPY_lib, 'SAL_%s' % self.module)()
+        self.myData = getattr(SALPY_lib,self.topic+'C')()
         if self.Stype=='Telemetry':
             self.mgr.salTelemetrySub(self.topic)
-            self.myData = getattr(SALPY_lib,self.topic+'C')()
+            # Generic method to get for example: self.mgr.getNextSample_kernel_FK5Target
+            self.nextsample_topic = self.topic.split(self.module)[-1]
+            self.getNext = getattr(self.mgr,"getNextSample" + self.nextsample_topic)
             LOGGER.info("%s subscriber ready for topic: %s" % (self.Stype,self.topic))
         elif self.Stype=='Event':
             self.mgr.salEvent(self.topic)
-            self.event = getattr(SALPY_lib,self.topic+'C')()
+            # Generic method to get for example: self.mgr.getEvent_startIntegration(event)
             self.event_topic = self.topic.split("_")[-1]
-            self.getEvent_topic = getattr(self.mgr,'getEvent_'+self.event_topic)
-            self.getEvent_topic(self.event)
+            self.getNext = getattr(self.mgr,'getEvent_'+self.event_topic)
             LOGGER.info("%s subscriber ready for topic: %s" % (self.Stype,self.topic))
-
+            
     def run(self):
+
         ''' The run method for the threading'''
         if self.Stype == 'Telemetry':
-            self.run_Telemetry()
+            self.newTelem = False
         elif self.Stype == 'Event':
-            self.run_Event()
+            self.newEvent = False
         else:
             raise ValueError("Stype=%s not defined\n" % self.Stype)
 
-    def run_Telemetry(self):
-
-        # Generic method to get for example: self.mgr.getNextSample_kernel_FK5Target
-        self.nextsample_topic = self.topic.split(self.module)[-1]
-        self.getNextSample = getattr(self.mgr,"getNextSample" + self.nextsample_topic)
-
         self.myDatalist = []
-        self.newTelem = False
         while True:
-            retval = self.getNextSample(self.myData)
+            #retval = self.getNextSample(self.myData)
+            retval = self.getNext(self.myData)
             if retval == 0:
                 self.myDatalist.append(self.myData)
                 self.myDatalist = self.myDatalist[-self.nkeep:] # Keep only nkeep entries
                 self.newTelem = True
-            time.sleep(self.tsleep)
-        return 
-
-    def getCurrentTelemetry(self):
-        if len(self.myDatalist) > 0:
-            Telem = self.myDatalist[-1]
-            self.newTelem = False
-        else:
-            Telem = None
-        return Telem
-    
-    def run_Event(self):
-        
-        '''Generic method to get for example: self.mgr.getEvent_camera_logevent_endReadout)'''
-        self.newEvent = False
-        while True:
-            retval = self.getEvent_topic(self.event)
-            if retval==0:
                 self.newEvent = True
             time.sleep(self.tsleep)
         return 
 
+    def getCurrent(self):
+        if len(self.myDatalist) > 0:
+            Current = self.myDatalist[-1]
+            self.newTelem = False
+            self.newEvent = False
+        else:
+            Current = None
+        return Current
+
+    def getCurrentTelemetry(self):
+        return self.getCurrent()
+    
+    def getCurrentEvent(self):
+        return self.getCurrent()
+    
     def waitEvent(self,tsleep=None,timeout=None):
 
         """ Loop for waiting for new event """

@@ -15,14 +15,17 @@ LOGGER = hutils.create_logger(level=logging.NOTSET,name=__name__)
 if __name__ == "__main__":
 
     
-    Filter    = SAL_tools.DDSSubcriber("camera","camera_Filter",Stype="Telemetry")
+    #Filter    = SAL_tools.DDSSubcriber("camera","camera_Filter",Stype="Telemetry")
+    Filter    = SAL_tools.DDSSubcriber("camera","camera_logevent_endSetFilter",Stype="Event")
     Filter.start()
 
     loop_n = 0
     while True:
         
-        if Filter.newTelem:
-            filter_name = Filter.get_filter_name()
+        if Filter.newEvent:
+            event = Filter.getCurrent()
+            #print Filter.event
+            filter_name = event.filterName
             LOGGER.info("Received: Filter=%s" % filter_name)
         else:
             sys.stdout.flush()

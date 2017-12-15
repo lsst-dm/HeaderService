@@ -7,13 +7,14 @@ import HeaderService.SAL_tools_send as SAL_tools_send
 
 if __name__ == "__main__":
 
-    SAL_tools_send.send_Filter('z')
-    time.sleep(2)
-    SAL_tools_send.send_Filter('r')
-    time.sleep(2)
-    SAL_tools_send.send_Filter('g')
-    time.sleep(2)
-    SAL_tools_send.send_Filter('i')
-    time.sleep(2)
+    #SAL_tools_send.send_Filter('z')
+    SAL_tools_send.send_camera_logevent_endSetFilter('z')
+    time.sleep(1)
+    SAL_tools_send.send_camera_logevent_endSetFilter('r')
+    time.sleep(1)
+    SAL_tools_send.send_camera_logevent_endSetFilter('g')
+    time.sleep(1)
+    SAL_tools_send.send_camera_logevent_endSetFilter('i')
+    time.sleep(1)
 
     print "Bye..."

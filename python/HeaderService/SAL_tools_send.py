@@ -16,6 +16,31 @@ LOGGER = hutils.create_logger(level=logging.NOTSET,name=__name__)
 # TODO:
 # Make these function classes to avoid init overhead
 
+def send_camera_logevent_startIntegration(**kw):
+    """imageSequenceName imageName imageIndex timeStamp priority"""
+    mgr = SALPY_camera.SAL_camera()
+    mgr.salEvent("camera_logevent_startIntegration")
+    myData = SALPY_camera.camera_logevent_startIntegrationC()
+    myData.imageSequenceName=kw.get("imageSequenceName")
+    myData.imageName=kw.get("imageName")
+    myData.imageIndex=kw.get("imageIndex")
+    myData.timeStamp=kw.get("timeStamp",time.time())
+    myData.priority=kw.get("priority")
+    priority=int(myData.priority)
+    mgr.logEvent_startIntegration(myData, priority)
+    time.sleep(1)
+    mgr.salShutdown()
+
+def send_camera_logevent_endSetFilter(filterName,priority=1):
+    mgr = SALPY_camera.SAL_camera()
+    mgr.salEvent("camera_logevent_endSetFilter")
+    myData = SALPY_camera.camera_logevent_endSetFilterC()
+    myData.filterName=filterName
+    myData.priority=priority
+    mgr.logEvent_endSetFilter(myData, priority)
+    time.sleep(1)
+    mgr.salShutdown()
+
 def send_Filter(fname):
     
     filter_names = ['u','g','r','i','z','Y']
@@ -35,7 +60,7 @@ def send_Filter(fname):
     LOGGER.info("Sent FILTER=%s" % fname)
     return retval
 
-def send_FK5Target(ra,dec,visitID):
+def send_FK5Target(ra,dec,visitID=1):
 
     mgr = SALPY_tcs.SAL_tcs()
     mgr.salTelemetryPub("tcs_kernel_FK5Target")
@@ -45,14 +70,14 @@ def send_FK5Target(ra,dec,visitID):
     myData.epoc = 2000
     myData.equinox = 2000
     myData.parallax = 1.0
-    myData.pmDec = ra
-    myData.pmRA = dec
+    myData.pmRA = ra
+    myData.pmDec = dec
     #myData.rv = 1.0
     myData.rv = visitID
     retval = mgr.putSample_kernel_FK5Target(myData)
     mgr.salShutdown()
     LOGGER.info("Sent RA:%s, DEC:%s" % (ra,dec))
-    LOGGER.info("Sent visitID:%s" % visitID)
+    #LOGGER.info("Sent visitID:%s" % visitID)
     return
 
 def camera_logevent_endReadout(priority=1):
