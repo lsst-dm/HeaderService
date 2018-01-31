@@ -266,7 +266,10 @@ class DDSSubcriber(threading.Thread):
             self.newTelem = False
             self.newEvent = False
         else:
-            Current = None
+            # Current = None
+            # For now we're passing the empty value of the object, we might want to revise this in the future
+            LOGGER.info("WARNING: No value received for: '{}' yet, sending empty object anyway".format(self.topic))
+            Current = self.myData
         return Current
 
     def getCurrentTelemetry(self):
