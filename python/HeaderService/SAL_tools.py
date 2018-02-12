@@ -10,6 +10,7 @@ import inspect
 import SALPY_dmHeaderService
 import SALPY_camera 
 import SALPY_tcs
+import copy
 
 """
 Here we store the SAL classes and tools that we use to:
@@ -314,6 +315,163 @@ class DDSSubcriber(threading.Thread):
 
         return self.filter_name 
 
+
+class DDSSend(threading.Thread):
+    
+
+    def __init__(self, Device, sleeptime=1,timeout=5, threadID=1):
+
+        # Trick to import modules dynamically as needed/depending on the Device we want
+        try:
+            exec "import SALPY_{}".format(Device)
+        except:
+            raise ValueError("import SALPY_{}: failed".format(Device))
+
+        threading.Thread.__init__(self)
+        self.daemon = True
+        self.threadID = threadID
+        
+        self.sleeptime = sleeptime
+        self.timeout = timeout
+        self.Device = Device
+        LOGGER.info("Loading Device: {}".format(self.Device)) 
+        self.SALPY_lib = globals()['SALPY_{}'.format(self.Device)]
+
+    def run(self):
+        ''' Function for threading'''
+        self.waitForCompletion_Command()
+
+    def get_mgr(self):
+        # We get the equivalent of:
+        #  mgr = SALPY_dmHeaderService.SAL_dmHeaderService()
+        mgr = getattr(self.SALPY_lib,'SAL_{}'.format(self.Device))()
+        return mgr
+
+    def send_Command(self,cmd,**kwargs):
+        ''' Send a Command to a Device'''
+        timeout   = int(kwargs.pop('timeout',self.timeout))
+        sleeptime = kwargs.pop('sleeptime',self.sleeptime)
+        wait_command = kwargs.pop('wait_command',False)
+
+        # Get the mgr handle
+        mgr = self.get_mgr()
+        mgr.salProcessor("{}_command_{}".format(self.Device,cmd))
+        # Get the myData object
+        myData = getattr(self.SALPY_lib,'{}_command_{}C'.format(self.Device,cmd))()
+        LOGGER.info('Updating myData object with kwargs')
+        myData = self.update_myData(myData,**kwargs)
+        # Make it visible outside
+        self.myData = myData
+        self.cmd    = cmd
+        self.timeout = timeout
+        # For a Command we need the functions:
+        # 1) issueCommand
+        # 2) waitForCompletion -- this can be run separately
+        self.issueCommand = getattr(mgr,'issueCommand_{}'.format(cmd))
+        self.waitForCompletion = getattr(mgr,'waitForCompletion_{}'.format(cmd))
+        LOGGER.info("Issuing command: {}".format(cmd)) 
+        self.cmdId = self.issueCommand(myData)
+        self.cmdId_time = time.time()
+        if wait_command:
+            LOGGER.info("Will wait for Command Completion")
+            self.waitForCompletion_Command()
+        else:
+            LOGGER.info("Will NOT wait Command Completion")
+        return self.cmdId 
+            
+    def waitForCompletion_Command(self):
+        #timeout = time.time() - self.cmdId_time - self.timeout
+        LOGGER.info("Wait {} sec for Completion: {}".format(self.timeout,self.cmd)) 
+        retval = self.waitForCompletion(self.cmdId,self.timeout)
+        LOGGER.info("Done: {}".format(self.cmd)) 
+        
+    def ackCommand(self,cmd,cmdId):
+        """ Just send the ACK for a command, it need the cmdId as input"""
+        LOGGER.info("Sending ACK for Id: {} for Command: {}".format(cmdId,cmd))
+        mgr = self.get_mgr()
+        mgr.salProcessor("{}_command_{}".format(self.Device,cmd))
+        ackCommand = getattr(mgr,'ackCommand_{}'.format(cmd))
+        ackCommand(cmdId, SAL__CMD_COMPLETE, 0, "Done : OK");
+
+    def acceptCommand(self,cmd):
+        mgr = self.get_mgr()
+        mgr.salProcessor("{}_command_{}".format(self.Device,cmd))
+        acceptCommand = getattr(mgr,'acceptCommand_{}'.format(cmd))
+        myData = getattr(self.SALPY_lib,'{}_command_{}C'.format(self.Device,cmd))()
+        while True:
+            cmdId = acceptCommand(myData)
+            if cmdId > 0:
+                print("numImages = " + str(myData.numImages))
+                print("expTime = " + str(myData.expTime))
+                print("shutter = " + str(myData.shutter))
+                print("science = " + str(myData.science))
+                print("guide = " + str(myData.guide))
+                print("wfs = " + str(myData.wfs))
+                print("imageSequenceName = " + str(myData.imageSequenceName))
+                time.sleep(1)
+                break
+        cmdId = acceptCommand(myData)            
+        LOGGER.info("Accpeting cmdId: {} for Command: {}".format(cmdId,cmd))
+        return cmdId
+    
+    def send_Event(self,event,**kwargs):
+        ''' Send an Event from a Device'''
+
+        sleeptime = kwargs.pop('sleep_time',self.sleeptime)
+        priority  = kwargs.pop('priority',1)
+
+        # Get the myData object
+        myData = getattr(self.SALPY_lib,'{}_logevent_{}C'.format(self.Device,event))()
+        LOGGER.info('Updating myData object with kwargs')
+        myData = self.update_myData(myData,**kwargs)
+        # Make it visible outside
+        self.myData = myData
+        # Get the logEvent object to send myData
+        mgr = self.get_mgr()
+        mgr.salEvent("{}_logevent_{}".format(self.Device,event))
+        logEvent = getattr(mgr,'logEvent_{}'.format(event))
+        LOGGER.info("Sending Event: {}".format(event)) 
+        logEvent(myData, priority)
+        LOGGER.info("Done: {}".format(event)) 
+        time.sleep(sleeptime)
+
+    def send_Telemetry(self,topic,**kwargs):
+        ''' Send an Telemetry from a Device'''
+
+        sleeptime = kwargs.pop('sleep_time',self.sleeptime)
+        # Get the myData object
+        myData = getattr(self.SALPY_lib,'{}_{}C'.format(self.Device,topic))()
+        LOGGER.info('Updating myData object with kwargs')
+        myData = self.update_myData(myData,**kwargs)
+        # Make it visible outside
+        self.myData = myData
+        # Get the Telemetry object to send myData
+        mgr = self.get_mgr()
+        mgr.salTelemetryPub("{}_{}".format(self.Device,topic))
+        putSample = getattr(mgr,'putSample_{}'.format(topic))
+        LOGGER.info("Sending Telemetry: {}".format(topic)) 
+        putSample(myData)
+        LOGGER.info("Done: {}".format(topic)) 
+        time.sleep(sleeptime)
+
+    @staticmethod
+    def update_myData(myData,**kwargs):
+        """ Updating myData with kwargs """
+        myData_keys = [a[0] for a in inspect.getmembers(myData) if not(a[0].startswith('__') and a[0].endswith('__'))]
+        for key in kwargs:
+            if key in myData_keys:
+                setattr(myData,key,kwargs.get(key))
+            else:
+                LOGGER.info('key {} not in myData'.format(key))
+        return myData
+
+    def get_myData(self):
+        """ Make a dictionary representation of the myData C objects"""
+        myData_dic = {}
+        myData_keys = [a[0] for a in inspect.getmembers(self.myData) if not(a[0].startswith('__') and a[0].endswith('__'))]
+        for key in myData_keys:
+            myData_dic[key] =  getattr(self.myData,key)
+        return myData_dic
     
 def command_sequencer(commands,Device='dmHeaderService',wait_time=1, sleep_time=3):
 
@@ -336,7 +494,7 @@ def command_sequencer(commands,Device='dmHeaderService',wait_time=1, sleep_time=
     issueCommand = {}
     waitForCompletion = {}
     for cmd in commands:
-        myData[cmd] = getattr(SALPY_lib,'dmHeaderService_command_{}C'.format(cmd))()
+        myData[cmd] = getattr(SALPY_lib,'{}_command_{}C'.format(Device,cmd))()
         issueCommand[cmd] = getattr(mgr,'issueCommand_{}'.format(cmd))
         waitForCompletion[cmd] = getattr(mgr,'waitForCompletion_{}'.format(cmd))
         # If Start we send some non-sense value
@@ -352,4 +510,7 @@ def command_sequencer(commands,Device='dmHeaderService',wait_time=1, sleep_time=
         time.sleep(sleep_time)
 
     return
+
+
+    
 

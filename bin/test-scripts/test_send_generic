@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+
+import time
+import sys
+import os
+import logging
+import HeaderService.hutils as hutils
+import HeaderService.SAL_tools as SAL_tools
+spinner = hutils.spinner
+LOGGER = hutils.create_logger(level=logging.NOTSET,name=__name__)
+
+if __name__ == "__main__":
+
+    kw = {'numImages':2,
+          'expTime':15,
+          'imageSequenceName':'TEST123',
+          'timeout':30}
+    camera = SAL_tools.DDSSend("camera")
+    camera.send_Command("takeImages",**kw)
+    camera.send_Event("endReadout")
+    camera.send_Telemetry("Filter",REB_ID=1,Loader_telemetry=1)
+    exit()
