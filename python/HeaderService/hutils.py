@@ -9,8 +9,8 @@ import multiprocessing
 import hashlib
 import itertools
 import copy
+from camera_coords import CCDGeom
 spinner = itertools.cycle(['-', '/', '|', '\\'])
-
 
 # TODO:
 # Merge/inherit HDRTEMPL_XXXX into a master/common class
@@ -20,7 +20,6 @@ try:
 except:
     HEADERSERVICE_DIR = __file__.split('python')[0]
 
-WORDFILE = os.path.join(HEADERSERVICE_DIR,'etc','words.txt')
 HDRLIST = ['camera','observatory','primary_hdu','telescope']
 
 def create_logger(level=logging.NOTSET,name='default'):
@@ -266,87 +265,167 @@ class HDRTEMPL_SciCamera:
             fitsio.write(filename, data, header=self.header)
         return
 
-class RANWORDS():
 
-    """ Class to generate random words from a dictionary """
-    
-    def __init__(self, wordfile=WORDFILE,nparray=True): 
+class HDRTEMPL_ATSCam:
 
-        self.wordfile = wordfile
-        self.nparray = nparray
-        self.load_words()
-        self.get_words()
+    def __init__(self, 
+                 section='ATSCam',
+                 vendor='ITL',
+                 segname='Segment',
+                 templ_path=None,
+                 templ_primary_name='primary_hdu.header',
+                 templ_segment_name='segment_hdu.header'):
 
+        self.section = section
+        self.vendor = vendor
+        self.segname = segname
+        self.templ_path = templ_path
+        self.templ_primary_name = templ_primary_name
+        self.templ_segment_name = templ_segment_name
+
+        # Create logger
+        self.logger = create_logger(level=logging.NOTSET,name='HEADERSERVICE_ATSCam')
+
+        # Build the segments names
+        self.build_segment_list()
+
+        # Build the HDRLIST (PRIMARY,Segment01,...,Segment17)
+        self.build_hdrlist()
+
+        # Set template file names
+        self.set_template_filenames()
+
+        # Init the class with geometry for a vendor
+        self.CCDGEOM = CCDGeom(self.vendor,segname=self.segname)
         
-    def load_words(self):
-        """ Load in the wordlist"""
-        self.all_words_keys = open(self.wordfile).read().splitlines()
-        self.all_words_vals = [len(w) for w in self.all_words_keys]
-        self.nwords = len(self.all_words_keys)
+        # Load them up
+        self.load_templates()
 
-        # Make the arrays numpy array
-        if self.nparray:
-            self.all_words_keys = numpy.array(self.all_words_keys)
-            self.all_words_vals = numpy.array(self.all_words_vals)
+    def set_template_filenames(self):
+        """Set the filenames of the primary and segment header templates"""
+        # The path for the templates
+        if not self.templ_path:
+            self.templ_path = os.path.join(HEADERSERVICE_DIR,'etc', self.section)
+        self.templ_primary_file = os.path.join(self.templ_path, self.templ_primary_name)
+        self.templ_segment_file = os.path.join(self.templ_path, self.templ_segment_name)
 
-    def get_words(self,N=1000):
-        idx = numpy.random.choice(self.nwords,N,replace=False)
-        idx.sort()
-        self.words_keys = self.all_words_keys[idx]
-        self.words_vals = self.all_words_vals[idx]
+    def build_segment_list(self,nx=2,ny=8):
+        """ Function to create the names and keys for Segments"""
+        self.segment_names = []
+        for i in range(nx):
+            for j in range(ny):
+                segment_name = '{}{}'.format(i,j)
+                self.segment_names.append(segment_name)
 
+    def build_hdrlist(self):
+        self.HDRLIST = ['PRIMARY']
+        for SEG in self.segment_names:
+            EXTNAME = '{}{}'.format(self.segname,format(SEG))
+            self.HDRLIST.append(EXTNAME)
 
-class TELEMSIM(HDRTEMPL_SciCamera):
+    def load_templates(self):
 
-    """ A class to generate and send telemetry for the header client"""
-    
-    def __init__(self, wordfile=WORDFILE,nparray=True,hrdlist=HDRLIST, visitID_start=1):
+        self.header = {}
+        # Read in the primary and segment templates with fitsio
+        self.header_segment = fitsio.read_scamp_head(self.templ_segment_file)
+        self.header_primary = fitsio.read_scamp_head(self.templ_primary_file)
+
+        # Load up the template for the PRIMARY header
+        LOGGER.info("Loading template for: {}".format('PRIMARY'))
+        self.header['PRIMARY'] = self.header_primary
         
-        HDRTEMPL.__init__(self, hrdlist=HDRLIST, visitID_start=1)
+        # Update PRIMARY with new value in self.CCDGEOM
+        LOGGER.info("Updating GEOM in template for: {}".format('PRIMARY'))
+        PRIMARY_DATA = self.CCDGEOM.get_extension('PRIMARY')
+        self.update_records(PRIMARY_DATA,'PRIMARY')
 
-    def get_stream(self):
+        # For the Segments, we load it once and then copy and modify each segment
+        for SEG in self.segment_names:
+            EXTNAME = '{}{}'.format(self.segname,format(SEG))
+            LOGGER.info("Loading template for: {}".format(EXTNAME))
+            self.header[EXTNAME] = copy.deepcopy(self.header_segment)
+            # Now get the new value for the SEGMENT
+            LOGGER.info("Updating GEOM in template for: {}".format(SEG))
+            EXTENSION_DATA = self.CCDGEOM.get_extension(SEG)
+            self.update_records(EXTENSION_DATA,EXTNAME)
 
-        """ We merge the set of random words we selected with the current header"""
-        # Update header as array
-        self.header_as_arrays()
+    def get_record(self,keyword,extname):
+        return get_record(self.header[extname],keyword)
 
-class HOSER(HDRTEMPL_SciCamera,RANWORDS):
+    def get_header_values(self):
+        return get_values(self.header[extname])
 
-    """ A class to send a telemetry stream """
+    def update_record(self,keyword,value,extname):
+        """ Update record for key with value """
+        rec = self.get_record(keyword,extname)
+        rec['value'] = value
+        rec['card_string'] = self.header[extname]._record2card(rec)
 
-    SEND_EXE    = 'Telemetry_send'
-    RECEIVE_EXE = 'Telemetry_receive'
+    def update_records(self,newdict,extname):
+        """
+        Update all records in a new dictionary, it calls self.update_record()
+        """
+        for keyword,value in newdict.items():
+            try:
+                self.update_record(keyword,value,extname)
+                LOGGER.info("Updating {}".format(keyword))
+            except:
+                LOGGER.info("WARNING: Could not update {}".format(keyword))
+                
+    def string_header(self,delimiter='END'):
+        """ Format a header as a string """
+        self.hstring = ''
+        for extname in self.HDRLIST:
+            self.hstring = self.hstring + str(self.header[extname]) + '\n' + delimiter
+        return self.hstring 
 
-    """
-    TODO:
-     - send the using SEND_EXE
-     - Resolve if want to send telescope/camera/ccd separatelty
-    """
 
-    def __init__(self, wordfile=WORDFILE,nparray=True,hrdlist=HDRLIST, visitID_start=1):
+    def write_headers(self,filenames, MP=False, NP=2, md5=False):
 
-        HDRTEMPL.__init__(self, hrdlist=HDRLIST, visitID_start=1)
-        RANWORDS.__init__(self, wordfile=WORDFILE,nparray=True)
-
-    def get_stream(self,shuffle=True):
-        """ We merge the set of random words we selected with the current header"""
-
-        # Update header as array
-        self.header_as_arrays()
-        
-        # Make the streams as numpy arrays
-        self.stream_keys = numpy.concatenate((self.header_keys, self.words_keys))
-        self.stream_vals = numpy.concatenate((self.header_vals, self.words_vals))
-        self.stream_size = len(self.stream_keys)
-
-        if shuffle:
-            idx = numpy.arange(self.stream_size)
-            numpy.random.shuffle(idx)
-            self.stream = dict(zip(self.stream_keys[idx].tolist(), self.stream_vals[idx].tolist()))
+        """
+        Write one header per CCD (all the same) for now in order to test I/O performance
+        """
+        if MP:
+            pool = multiprocessing.Pool(processes=NP)
+            args = [ (filename, self.hstring, md5) for filename in filenames]
+            pool.map(write_header_string, args)
+            pool.close()
+            pool.join()
         else:
-            self.stream = dict(zip(self.stream_keys.tolist(), self.stream_vals.tolist()))
+            for filename in filenames:
+                arg = filename, self.hstring, md5
+                write_header_string(arg)
+        return
 
-        return self.stream
+    def write_header_emptyHDU(self,filename):
+
+        data=None
+        with fitsio.FITS(filename,'rw',clobber=True) as fits:
+            for extname in self.HDRLIST:
+                hdr = copy.deepcopy(self.header[extname])
+                fits.write(data,ignore_empty=True)
+                hdr.clean()
+                # Keep NAXIS1/NAXIS2 intact if present in the template header
+                if self.header[extname].get('NAXIS1') and self.header[extname].get('NAXIS2'):
+                    hdr.add_record(get_record(self.header[extname],'NAXIS1'))
+                    hdr.add_record(get_record(self.header[extname],'NAXIS2'))
+                    #print get_record(self.header[extname],'NAXIS')
+                fits[-1].write_keys(hdr, clean=False)
+
+    def write_header(self,filename,delimiter='END',newline=False):
+        
+        """
+        Writes the single header file using the strict FITS notation (newline=False)
+        or the more human readable (newline=True) with a delimiter for multiple HDU's
+        """
+        if newline:
+            # Update header to a single string
+            selt.string_header(delimiter=delimiter)
+            with open(filename,'w') as fobj:
+                fobj.write(self.hstring)
+        else:
+            self.write_header_emptyHDU(filename)
+        return
 
 
 def md5Checksum(filePath,blocksize=1024*512):

@@ -199,10 +199,10 @@ def validate_transition(current_state, new_state):
 
 class DDSSubcriber(threading.Thread):
 
-    def __init__(self, module, topic, threadID='1', Stype='Telemetry',tsleep=0.01,timeout=3600,nkeep=100):
+    def __init__(self, Device, topic, threadID='1', Stype='Telemetry',tsleep=0.01,timeout=3600,nkeep=100):
         threading.Thread.__init__(self)
         self.threadID = threadID
-        self.module = module
+        self.Device = Device
         self.topic  = topic
         self.tsleep = tsleep
         self.Stype  = Stype
@@ -216,48 +216,75 @@ class DDSSubcriber(threading.Thread):
         # This section does the equivalent of:
         # self.mgr = SALPY_tcs.SAL_tcs()
         # The steps are:
-        # - 'figure out' the SALPY_xxxx module name
+        # - 'figure out' the SALPY_xxxx Device name
         # - find the library pointer using globals()
         # - create a mananger
 
         self.newTelem = False
         self.newEvent = False
-        SALPY_lib_name = 'SALPY_%s' % self.module
+        SALPY_lib_name = 'SALPY_%s' % self.Device
         SALPY_lib = globals()[SALPY_lib_name]
-        self.mgr = getattr(SALPY_lib, 'SAL_%s' % self.module)()
-        self.myData = getattr(SALPY_lib,self.topic+'C')()
+        self.mgr = getattr(SALPY_lib, 'SAL_%s' % self.Device)()
         if self.Stype=='Telemetry':
-            self.mgr.salTelemetrySub(self.topic)
+            self.myData = getattr(SALPY_lib,'{}_{}C'.format(self.Device,self.topic))()
+            self.mgr.salTelemetrySub("{}_{}".format(self.Device,self.topic))
             # Generic method to get for example: self.mgr.getNextSample_kernel_FK5Target
-            self.nextsample_topic = self.topic.split(self.module)[-1]
-            self.getNext = getattr(self.mgr,"getNextSample" + self.nextsample_topic)
-            LOGGER.info("%s subscriber ready for topic: %s" % (self.Stype,self.topic))
+            self.getNextSample = getattr(self.mgr,"getNextSample_{}".format(self.topic))
+            LOGGER.info("{} subscriber ready for Device:{} topic:{}".format(self.Stype,self.Device,self.topic))
         elif self.Stype=='Event':
-            self.mgr.salEvent(self.topic)
+            self.myData = getattr(SALPY_lib,'{}_logevent_{}C'.format(self.Device,self.topic))()
+            self.mgr.salEvent("{}_logevent_{}".format(self.Device,self.topic))
             # Generic method to get for example: self.mgr.getEvent_startIntegration(event)
-            self.event_topic = self.topic.split("_")[-1]
-            self.getNext = getattr(self.mgr,'getEvent_'+self.event_topic)
-            LOGGER.info("%s subscriber ready for topic: %s" % (self.Stype,self.topic))
+            self.getEvent = getattr(self.mgr,'getEvent_{}'.format(self.topic))
+            LOGGER.info("{} subscriber ready for Device:{} topic:{}".format(self.Stype,self.Device,self.topic))
+        elif self.Stype=='Command':
+            self.myData = getattr(SALPY_lib,'{}_command_{}C'.format(self.Device,self.topic))()
+            self.mgr.salProcessor("{}_command_{}".format(self.Device,self.topic))
+            # Generic method to get for example: self.mgr.acceptCommand_takeImages(event)
+            self.acceptCommand = getattr(self.mgr,'acceptCommand_{}'.format(self.topic))
+            LOGGER.info("{} subscriber ready for Device:{} topic:{}".format(self.Stype,self.Device,self.topic))
             
     def run(self):
-
         ''' The run method for the threading'''
+        self.myDatalist = []
         if self.Stype == 'Telemetry':
             self.newTelem = False
+            self.run_Telem()
         elif self.Stype == 'Event':
             self.newEvent = False
+            self.run_Event()
+        elif self.Stype == 'Command':
+            self.newCommand = False
+            self.run_Command()
         else:
             raise ValueError("Stype=%s not defined\n" % self.Stype)
 
-        self.myDatalist = []
+    def run_Telem(self):
         while True:
-            #retval = self.getNextSample(self.myData)
-            retval = self.getNext(self.myData)
+            retval = self.getNextSample(self.myData)
             if retval == 0:
                 self.myDatalist.append(self.myData)
                 self.myDatalist = self.myDatalist[-self.nkeep:] # Keep only nkeep entries
                 self.newTelem = True
+            time.sleep(self.tsleep)
+        return 
+    
+    def run_Event(self):
+        while True:
+            retval = self.getEvent(self.myData)
+            if retval == 0:
+                self.myDatalist.append(self.myData)
+                self.myDatalist = self.myDatalist[-self.nkeep:] # Keep only nkeep entries
                 self.newEvent = True
+            time.sleep(self.tsleep)
+        return 
+    def run_Command(self):
+        while True:
+            self.cmdId = self.acceptCommand(self.myData)
+            if self.cmdId > 0:
+                self.myDatalist.append(self.myData)
+                self.myDatalist = self.myDatalist[-self.nkeep:] # Keep only nkeep entries
+                self.newCommand = True
             time.sleep(self.tsleep)
         return 
 
@@ -277,6 +304,9 @@ class DDSSubcriber(threading.Thread):
         return self.getCurrent()
     
     def getCurrentEvent(self):
+        return self.getCurrent()
+
+    def getCurrentCommand(self):
         return self.getCurrent()
     
     def waitEvent(self,tsleep=None,timeout=None):
@@ -302,18 +332,6 @@ class DDSSubcriber(threading.Thread):
     def resetEvent(self):
         ''' Simple function to set it back'''
         self.newEvent=False
-
-    def get_filter_name(self):
-        # Need to move these filter definitions to a better place
-
-        myData = self.getCurrentTelemetry()
-        self.filter_names = ['u','g','r','i','z','Y']
-        try:
-            self.filter_name = self.filter_names[myData.REB_ID] 
-        except:
-            self.filter_name = 'zzz'
-
-        return self.filter_name 
 
 
 class DDSSend(threading.Thread):
@@ -401,13 +419,6 @@ class DDSSend(threading.Thread):
         while True:
             cmdId = acceptCommand(myData)
             if cmdId > 0:
-                print("numImages = " + str(myData.numImages))
-                print("expTime = " + str(myData.expTime))
-                print("shutter = " + str(myData.shutter))
-                print("science = " + str(myData.science))
-                print("guide = " + str(myData.guide))
-                print("wfs = " + str(myData.wfs))
-                print("imageSequenceName = " + str(myData.imageSequenceName))
                 time.sleep(1)
                 break
         cmdId = acceptCommand(myData)            

@@ -6,34 +6,42 @@ import os
 import logging
 import HeaderService
 import HeaderService.SAL_tools as SAL_tools
-import HeaderService.SAL_tools_send as SAL_tools_send
 import HeaderService.hutils as hutils
+from datetime import datetime
+import socket
 
 spinner = hutils.spinner
 
 def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1):
-    
-    # Load up the header template
-    htempl= HeaderService.HDRTEMPL_TestCamera(vendor=vendor)
-    LOGGER = htempl.logger
 
     Filter    = SAL_tools.DDSSubcriber("camera","endSetFilter",Stype="Event")
     StartInt  = SAL_tools.DDSSubcriber("camera","startIntegration",Stype="Event")
     Readout   = SAL_tools.DDSSubcriber("camera","endReadout", Stype="Event")
+    takeImages= SAL_tools.DDSSubcriber("camera","takeImages", Stype="Command")
     FK5Target = SAL_tools.DDSSubcriber("tcs","kernel_FK5Target", Stype="Telemetry")
+    # And the object to send DMHS messages
+    dmhs      = SAL_tools.DDSSend("dmHeaderService")
         
     FK5Target.start()
     Filter.start()
     Readout.start()
     StartInt.start()
-
+    takeImages.start()
+    
     # Make sure that we have a place to put the files
     if not os.path.exists(filepath):
         os.makedirs(filepath)
         LOGGER.info("Created dirname:{}".format(filepath))
 
+    # Get the hostname and IP address
+    ip_adress = socket.gethostbyname(socket.gethostname())
+    
+    # Load up the header template
+    HDR = HeaderService.HDRTEMPL_ATSCam(vendor=vendor)
+    LOGGER = HDR.logger
+    
     # For testing start ENABLE
-    #State.current_state = 'ENABLE'
+    State.current_state = 'ENABLE'
     loop_n = 0
     while True:
 
@@ -44,6 +52,9 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1):
 
         elif StartInt.newEvent:
 
+            # Build the DATE of observation
+            DATE_OBS = (datetime.now()).isoformat()
+
             sys.stdout.flush()
             LOGGER.info("Received: startIntegration Event")
             LOGGER.info("Extracting value for imageName")
@@ -51,11 +62,21 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1):
             imageName = myData.imageName
             LOGGER.info("Received: {}".format(imageName))
 
+            # Construct the hdr and fits filename
+            filename_HDR  = os.path.join(filepath,"{}.header".format(imageName))
+            filename_FITS = "{}.fits".format(imageName)
+
+            # Get takeImages Meta-data
+            LOGGER.info("Extracting values for takeImages")
+            myData = takeImages.getCurrent()
+            exptime, sequenceName = myData.expTime, myData.imageSequenceName
+            LOGGER.info("Received: Exptime={}, imageSequenceName={}".format(exptime, sequenceName))
+
             # Get FK5 Meta-data
             LOGGER.info("Extracting values for FK5 Target")
             myData = FK5Target.getCurrent()
-            ra,dec,visitID = myData.pmRA, myData.pmDec, int(myData.rv)
-            LOGGER.info("Received: RA=%s, DEC=%s" % (ra,dec))
+            ra,dec,visitID = myData.ra, myData.dec, int(myData.rv)
+            LOGGER.info("Received: RA={}, DEC={}".format(ra,dec))
             
             # Get Filter Meta-data
             LOGGER.info("Extracting value for Filter")
@@ -69,29 +90,37 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1):
             if Readout.newEvent:
                 sys.stdout.flush()
                 LOGGER.info("Received: Readout Signal")
-                # Manually Update a header param
-                htempl.update_record('FILTER',filter_name, 'PRIMARY_HDU')
-                htempl.update_record('IMAGETAG',imageName,'PRIMARY_HDU')
-                # Write the header it out
-                hout_file = os.path.join(filepath,"{}.header".format(imageName))
-                htempl.write_header(hout_file, newline=False)
-                LOGGER.info("Wrote header to: %s" % hout_file)
+                # Manually Update a header param -- we need to move it a function soon
+                HDR.update_record('FILTER',filter_name, 'PRIMARY')
+                HDR.update_record('RA',ra,'PRIMARY')
+                HDR.update_record('DEC',dec,'PRIMARY')
+                HDR.update_record('RATEL',ra,'PRIMARY')
+                HDR.update_record('DECTEL',dec,'PRIMARY')
+                HDR.update_record('IMGNAME',imageName,'PRIMARY')
+                HDR.update_record('DATE-OBS',DATE_OBS,'PRIMARY')
+                HDR.update_record('DATE',(datetime.now()).isoformat(),'PRIMARY')
+                HDR.update_record('SEQNAME',sequenceName,'PRIMARY')
+                HDR.update_record('FILENAME',filename_FITS,'PRIMARY')
+                HDR.update_record('EXPTIME',exptime,'PRIMARY')
+                # Write the header 
+                HDR.write_header(filename_HDR, newline=False)
+                LOGGER.info("Wrote header to: %s" % filename_HDR)
                 LOGGER.info("------------------------------------------")
                 # Get the md5 for the header file
-                md5value = hutils.md5Checksum(hout_file) #,blocksize=1024*512):
-                bytesize = os.path.getsize(hout_file)
+                md5value = hutils.md5Checksum(filename_HDR) #,blocksize=1024*512):
+                bytesize = os.path.getsize(filename_HDR)
                 LOGGER.info("Got MD5SUM: %s" % md5value)
                 # Now we publish filename and MD5
                 # Build the kwargs
                 kw = {'Byte_Size':bytesize,
                       'Checksum':md5value,
-                      'Generator':'DM_header_test',
+                      'Generator':'DM Header Service',
                       'Mime':'FITS',
-                      'URL': hout_file,
+                      'URL': "{}:{}".format(ip_adress,filename_HDR),
                       'Version': 1,
                       'priority':1,
                       }
-                SAL_tools_send.dmHeaderService_logevent_LargeFileObjectAvailable(**kw)
+                dmhs.send_Event('LargeFileObjectAvailable',**kw)
                 Readout.newEvent = False
         else:
             sys.stdout.flush()
