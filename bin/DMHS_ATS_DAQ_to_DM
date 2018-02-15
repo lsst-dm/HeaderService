@@ -7,10 +7,18 @@ import logging
 import HeaderService
 import HeaderService.SAL_tools as SAL_tools
 import HeaderService.hutils as hutils
-from datetime import datetime
 import socket
-
+    
 spinner = hutils.spinner
+
+def get_date(time=None,format='fits'):
+    from astropy.time import Time
+    from datetime import datetime
+    if time is None:
+        time = (datetime.now()).isoformat()
+    t = Time(time, format=format, scale='utc')
+    return t
+
 
 def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1):
 
@@ -53,7 +61,7 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1):
         elif StartInt.newEvent:
 
             # Build the DATE of observation
-            DATE_OBS = (datetime.now()).isoformat()
+            DATE_OBS = get_date()
 
             sys.stdout.flush()
             LOGGER.info("Received: startIntegration Event")
@@ -91,17 +99,22 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1):
                 sys.stdout.flush()
                 LOGGER.info("Received: Readout Signal")
                 # Manually Update a header param -- we need to move it a function soon
+                # These ones are from Telemetry
                 HDR.update_record('FILTER',filter_name, 'PRIMARY')
                 HDR.update_record('RA',ra,'PRIMARY')
                 HDR.update_record('DEC',dec,'PRIMARY')
                 HDR.update_record('RATEL',ra,'PRIMARY')
                 HDR.update_record('DECTEL',dec,'PRIMARY')
                 HDR.update_record('IMGNAME',imageName,'PRIMARY')
-                HDR.update_record('DATE-OBS',DATE_OBS,'PRIMARY')
-                HDR.update_record('DATE',(datetime.now()).isoformat(),'PRIMARY')
-                HDR.update_record('SEQNAME',sequenceName,'PRIMARY')
-                HDR.update_record('FILENAME',filename_FITS,'PRIMARY')
                 HDR.update_record('EXPTIME',exptime,'PRIMARY')
+                # These values are computed by the DMHS
+                HDR.update_record('FILENAME',filename_FITS,'PRIMARY')
+                HDR.update_record('DATE-OBS',DATE_OBS.fits,'PRIMARY')
+                HDR.update_record('MJD-OBS',DATE_OBS.mjd,'PRIMARY')
+                # The creation date -- now!!
+                DATE = get_date()
+                HDR.update_record('DATE',DATE.fits,'PRIMARY')
+                HDR.update_record('MJD',DATE.mjd,'PRIMARY')
                 # Write the header 
                 HDR.write_header(filename_HDR, newline=False)
                 LOGGER.info("Wrote header to: %s" % filename_HDR)
