@@ -7,9 +7,25 @@ import logging
 import HeaderService
 import HeaderService.SAL_tools as SAL_tools
 import HeaderService.hutils as hutils
-import socket
+import argparse
+#import socket
     
 spinner = hutils.spinner
+
+def cmdline():
+
+    # Make conf_parser that hold values from a config.ini file
+    parser = argparse.ArgumentParser(description="DM Header Service")
+    parser.add_argument("--vendor", action="store",default='ITL', 
+                        help="CCD Vendor Name")
+    parser.add_argument("--filepath", action="store",default=os.path.join(os.getcwd(),'DMHS_filerepo'),
+                        help="Filepath where we write the headers")
+    parser.add_argument("--tsleep", action="store",default=0.1, type=float, 
+                        help="Sleep Time for loop")
+    parser.add_argument("--start_state", action="store",default=None, 
+                        help="Initial start State of device")
+    args = parser.parse_args()
+    return args
 
 def get_date(time=None,format='fits'):
     from astropy.time import Time
@@ -19,8 +35,7 @@ def get_date(time=None,format='fits'):
     t = Time(time, format=format, scale='utc')
     return t
 
-
-def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1):
+def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'):
 
     Filter    = SAL_tools.DDSSubcriber("camera","endSetFilter",Stype="Event")
     StartInt  = SAL_tools.DDSSubcriber("camera","startIntegration",Stype="Event")
@@ -36,20 +51,20 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1):
     StartInt.start()
     takeImages.start()
     
+    # Load up the header template
+    HDR = HeaderService.HDRTEMPL_ATSCam(vendor=vendor)
+    LOGGER = HDR.logger
+
     # Make sure that we have a place to put the files
     if not os.path.exists(filepath):
         os.makedirs(filepath)
         LOGGER.info("Created dirname:{}".format(filepath))
 
     # Get the hostname and IP address
-    ip_adress = socket.gethostbyname(socket.gethostname())
-    
-    # Load up the header template
-    HDR = HeaderService.HDRTEMPL_ATSCam(vendor=vendor)
-    LOGGER = HDR.logger
+    #ip_adress = socket.gethostbyname(socket.gethostname())
     
     # For testing start ENABLE
-    State.current_state = 'ENABLE'
+    #State.current_state = 'ENABLE'
     loop_n = 0
     while True:
 
@@ -129,7 +144,8 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1):
                       'Checksum':md5value,
                       'Generator':'DM Header Service',
                       'Mime':'FITS',
-                      'URL': "{}:{}".format(ip_adress,filename_HDR),
+                      #'URL': "{}:{}".format(ip_adress,filename_HDR),
+                      'URL': "{}".format(os.path.abspath(filename_HDR)),
                       'Version': 1,
                       'priority':1,
                       }
@@ -146,6 +162,9 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1):
 
 if __name__ == "__main__":
 
+
+    # Get the args from the command-line
+    args = cmdline()
 
     # Init the device and send the current state vis SummaryState.
     # This needs to be done before we star the SAL controller thread,
@@ -165,5 +184,9 @@ if __name__ == "__main__":
         tControl[ctrl_name] = SAL_tools.DDSController(ctrl_name,State=State)
         tControl[ctrl_name].start()
 
-    run_enable(State,vendor='ITL',filepath='HeaderTester')
+    # Set the initial state
+    if args.start_state:
+        State.current_state = args.start_state
+
+    run_enable(State,vendor=args.vendor,filepath=args.filepath,tsleep=args.tsleep)
     

@@ -10,8 +10,6 @@ LOGGER = hutils.create_logger(name=__name__)
 
 def cmdline():
 
-    DATE = (datetime.now()).isoformat()
-
     # Make conf_parser that hold values from a config.ini file
     parser = argparse.ArgumentParser(description="Send telemetry to Header Client")
 
@@ -22,17 +20,20 @@ def cmdline():
                         help="The DEC of the visit")
     parser.add_argument("--band", action="store",default=None, 
                         help="Number of CCDs to build")
-    parser.add_argument("--imageSequenceName", action="store",default='LSST',
+    parser.add_argument("--imageSequenceName", action="store",default='LSSTTEST',
                         help="ImageSequenceName")
     parser.add_argument("--NSequence", action="store",default=2, type=int, 
                         help="Number of exposure in sequence")
     parser.add_argument("--exptime", action="store",default=15, type=float, 
                         help="Exposure time in seconds")
+    parser.add_argument("--sleeptime", action="store",default=1, type=float, 
+                        help="Sleep Time between step, in seconds")
     args = parser.parse_args()
     return args
 
 if __name__ == "__main__":
 
+    # Get the args from the command-line
     args = cmdline()
     
     # Initialize the classes for each device
@@ -44,13 +45,13 @@ if __name__ == "__main__":
     
     # Send target postion
     tcs.send_Telemetry("kernel_FK5Target",ra=args.ra,dec=args.dec)
-    print tcs.get_myData()
-    time.sleep(1)
+    LOGGER.info("Sending kernel_FK5Targer: {}".format(tcs.get_myData()))
+    time.sleep(args.sleeptime)
 
     # Send endSetFilter
     cam.send_Event("endSetFilter",filterName=args.band)
-    print cam.get_myData()
-    time.sleep(1)
+    LOGGER.info("Sending endSetFilter: {}".format(cam.get_myData()))
+    time.sleep(args.sleeptime)
 
     # Send the takeImages command
     kw = {'numImages':args.NSequence,
@@ -58,31 +59,36 @@ if __name__ == "__main__":
           'imageSequenceName': args.imageSequenceName,
           'timeout':10}
     camCommand.send_Command('takeImages',**kw)
+    LOGGER.info("Sending takeImages {}".format(camCommand.get_myData()))
     #camCommand.start()
-
     
     LOGGER.info("---Starting Image loop---")
     # Loop over nsequence
     for k in range(args.NSequence):
 
-        LOGGER.info("----Starting Integration {}".format(k))
+        seqN = k+1
+        LOGGER.info("----Starting Integration {}".format(seqN))
 
         # Send startIntegration k
+        LOGGER.info("Sending starIntegration")
         kw = {'imageSequenceName':args.imageSequenceName,
-              'imageName':'{}_{}'.format(args.imageSequenceName,k),
-              'imageIndex':str(k),
+              'imageName':'{}_{:02d}'.format(args.imageSequenceName,seqN),
+              'imageIndex':str(seqN),
               'timeStamp':time.time(),
               'priority':1}
         cam.send_Event("startIntegration",**kw)
+        LOGGER.info("Sending startIntergration: {}".format(kw))        
         time.sleep(args.exptime)
 
         # Send startReadout Event after integration is finished
+        LOGGER.info("Sending startReadout")
         cam.send_Event('startReadout')
-        time.sleep(1)
+        time.sleep(args.sleeptime)
 
         # Send endReadout event 
+        LOGGER.info("Sending endReadout")
         cam.send_Event('endReadout')
-        time.sleep(1)
+        time.sleep(args.sleeptime)
 
     # Send the ACK
     cam.ackCommand('takeImages',camCommand.cmdId)
