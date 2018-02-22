@@ -24,6 +24,8 @@ def cmdline():
                         help="Sleep Time for loop")
     parser.add_argument("--start_state", action="store",default=None, 
                         help="Initial start State of device")
+    parser.add_argument("--send_efd_message", action="store_true",default=False, 
+                        help="Send and EDF message as well?")
     args = parser.parse_args()
     return args
 
@@ -151,7 +153,8 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
                       'priority':1,
                       }
                 dmhs.send_Event('LargeFileObjectAvailable',**kw)
-                efd.send_Event('LargeFileObjectAvailable',**kw)
+                if args.send_efd_message:
+                    efd.send_Event('LargeFileObjectAvailable',**kw)
                 EndTelem.newEvent = False
         else:
             sys.stdout.flush()
