@@ -73,8 +73,9 @@ if __name__ == "__main__":
         LOGGER.info("Sending starIntegration")
         kw = {'imageSequenceName':args.imageSequenceName,
               'imageName':'{}_{:02d}'.format(args.imageSequenceName,seqN),
-              'imageIndex':str(seqN),
+              'imageIndex':seqN,
               'timeStamp':time.time(),
+              'exposureTime':args.exptime,
               'priority':1}
         cam.send_Event("startIntegration",**kw)
         LOGGER.info("Sending startIntergration: {}".format(kw))        
@@ -87,7 +88,11 @@ if __name__ == "__main__":
 
         # Send endReadout event 
         LOGGER.info("Sending endReadout")
-        cam.send_Event('endReadout')
+        cam.send_Event('endReadout',**kw)
+        time.sleep(0.1)
+
+        LOGGER.info("Sending endOfImageTelemetry")
+        cam.send_Event('endOfImageTelemetry',**kw)
         time.sleep(args.sleeptime)
 
     # Send the ACK

@@ -10,6 +10,7 @@ import inspect
 import SALPY_dmHeaderService
 import SALPY_camera 
 import SALPY_tcs
+import SALPY_efd
 import copy
 
 """
@@ -339,20 +340,27 @@ class DDSSend(threading.Thread):
 
     def __init__(self, Device, sleeptime=1,timeout=5, threadID=1):
 
-        # Trick to import modules dynamically as needed/depending on the Device we want
-        try:
-            exec "import SALPY_{}".format(Device)
-        except:
-            raise ValueError("import SALPY_{}: failed".format(Device))
 
         threading.Thread.__init__(self)
         self.daemon = True
         self.threadID = threadID
-        
         self.sleeptime = sleeptime
         self.timeout = timeout
         self.Device = Device
+        self.SALPY_lib = None
         LOGGER.info("Loading Device: {}".format(self.Device)) 
+        self.SALPY_lib = globals()['SALPY_{}'.format(self.Device)]
+
+    def load_SALPY(self):
+        if self.SALPY_lib:
+            return
+        else:
+            LOGGER.info('importing SALPY_{}'.format(self.Device))
+        # Trick to import modules dynamically as needed/depending on the Device we want
+        try:
+            exec "import SALPY_{}".format(self.Device)
+        except:
+            raise ValueError("import SALPY_{}: failed".format(self.Device))
         self.SALPY_lib = globals()['SALPY_{}'.format(self.Device)]
 
     def run(self):
@@ -360,6 +368,7 @@ class DDSSend(threading.Thread):
         self.waitForCompletion_Command()
 
     def get_mgr(self):
+        #self.load_SALPY()
         # We get the equivalent of:
         #  mgr = SALPY_dmHeaderService.SAL_dmHeaderService()
         mgr = getattr(self.SALPY_lib,'SAL_{}'.format(self.Device))()
@@ -429,9 +438,8 @@ class DDSSend(threading.Thread):
         ''' Send an Event from a Device'''
 
         sleeptime = kwargs.pop('sleep_time',self.sleeptime)
-        priority  = kwargs.pop('priority',1)
+        priority  = kwargs.get('priority',1)
 
-        # Get the myData object
         myData = getattr(self.SALPY_lib,'{}_logevent_{}C'.format(self.Device,event))()
         LOGGER.info('Updating myData object with kwargs')
         myData = self.update_myData(myData,**kwargs)
@@ -439,6 +447,7 @@ class DDSSend(threading.Thread):
         self.myData = myData
         # Get the logEvent object to send myData
         mgr = self.get_mgr()
+        name = "{}_logevent_{}".format(self.Device,event)
         mgr.salEvent("{}_logevent_{}".format(self.Device,event))
         logEvent = getattr(mgr,'logEvent_{}'.format(event))
         LOGGER.info("Sending Event: {}".format(event)) 

@@ -39,17 +39,18 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
 
     Filter    = SAL_tools.DDSSubcriber("camera","endSetFilter",Stype="Event")
     StartInt  = SAL_tools.DDSSubcriber("camera","startIntegration",Stype="Event")
-    Readout   = SAL_tools.DDSSubcriber("camera","endReadout", Stype="Event")
+    EndTelem  = SAL_tools.DDSSubcriber("camera","endOfImageTelemetry",Stype="Event")
     takeImages= SAL_tools.DDSSubcriber("camera","takeImages", Stype="Command")
     FK5Target = SAL_tools.DDSSubcriber("tcs","kernel_FK5Target", Stype="Telemetry")
     # And the object to send DMHS messages
-    dmhs      = SAL_tools.DDSSend("dmHeaderService")
+    dmhs = SAL_tools.DDSSend("dmHeaderService")
+    efd  = SAL_tools.DDSSend('efd')
         
     FK5Target.start()
     Filter.start()
-    Readout.start()
     StartInt.start()
     takeImages.start()
+    EndTelem.start()
     
     # Load up the header template
     HDR = HeaderService.HDRTEMPL_ATSCam(vendor=vendor)
@@ -108,11 +109,11 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
             LOGGER.info("Received: Filter=%s" % filter_name)
 
             # Get the readout
-            LOGGER.info("Current State is {} -- waiting for Camera Readout event".format(State.current_state))
-            Readout.waitEvent()
-            if Readout.newEvent:
+            LOGGER.info("Current State is {} -- waiting for Camera endOfImageTelemetry event".format(State.current_state))
+            EndTelem.waitEvent()
+            if EndTelem.newEvent:
                 sys.stdout.flush()
-                LOGGER.info("Received: Readout Signal")
+                LOGGER.info("Received: endOfImageTelemetry Signal")
                 # Manually Update a header param -- we need to move it a function soon
                 # These ones are from Telemetry
                 HDR.update_record('FILTER',filter_name, 'PRIMARY')
@@ -150,7 +151,8 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
                       'priority':1,
                       }
                 dmhs.send_Event('LargeFileObjectAvailable',**kw)
-                Readout.newEvent = False
+                efd.send_Event('LargeFileObjectAvailable',**kw)
+                EndTelem.newEvent = False
         else:
             sys.stdout.flush()
             sys.stdout.write("Current State is {} -- wating for startIntegration Event...[{}]".format(State.current_state,spinner.next()))
