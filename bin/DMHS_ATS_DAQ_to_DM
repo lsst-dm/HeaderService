@@ -42,7 +42,6 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
     Filter    = SAL_tools.DDSSubcriber("camera","endSetFilter",Stype="Event")
     StartInt  = SAL_tools.DDSSubcriber("camera","startIntegration",Stype="Event")
     EndTelem  = SAL_tools.DDSSubcriber("camera","endOfImageTelemetry",Stype="Event")
-    takeImages= SAL_tools.DDSSubcriber("camera","takeImages", Stype="Command")
     FK5Target = SAL_tools.DDSSubcriber("tcs","kernel_FK5Target", Stype="Telemetry")
     # And the object to send DMHS messages
     dmhs = SAL_tools.DDSSend("dmHeaderService")
@@ -51,7 +50,6 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
     FK5Target.start()
     Filter.start()
     StartInt.start()
-    takeImages.start()
     EndTelem.start()
     
     # Load up the header template
@@ -86,17 +84,12 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
             LOGGER.info("Extracting value for imageName")
             myData = StartInt.getCurrent()
             imageName = myData.imageName
-            LOGGER.info("Received: {}".format(imageName))
+            exptime = myData.exposureTime
+            LOGGER.info("Received: Filter={}, exptime={}".format(imageName,exptime))
 
             # Construct the hdr and fits filename
             filename_HDR  = os.path.join(filepath,"{}.header".format(imageName))
             filename_FITS = "{}.fits".format(imageName)
-
-            # Get takeImages Meta-data
-            LOGGER.info("Extracting values for takeImages")
-            myData = takeImages.getCurrent()
-            exptime, sequenceName = myData.expTime, myData.imageSequenceName
-            LOGGER.info("Received: Exptime={}, imageSequenceName={}".format(exptime, sequenceName))
 
             # Get FK5 Meta-data
             LOGGER.info("Extracting values for FK5 Target")
@@ -108,7 +101,7 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
             LOGGER.info("Extracting value for Filter")
             myData = Filter.getCurrent()
             filter_name = myData.filterName
-            LOGGER.info("Received: Filter=%s" % filter_name)
+            LOGGER.info("Received: Filter={}".format(filter_name))
 
             # Get the readout
             LOGGER.info("Current State is {} -- waiting for Camera endOfImageTelemetry event".format(State.current_state))
