@@ -85,7 +85,7 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
             myData = StartInt.getCurrent()
             imageName = myData.imageName
             exptime = myData.exposureTime
-            LOGGER.info("Received: Filter={}, exptime={}".format(imageName,exptime))
+            LOGGER.info("Received: imageName={}, exptime={}".format(imageName,exptime))
 
             # Construct the hdr and fits filename
             filename_HDR  = os.path.join(filepath,"{}.header".format(imageName))
