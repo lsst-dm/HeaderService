@@ -29,11 +29,11 @@ def cmdline():
     args = parser.parse_args()
     return args
 
-def get_date(time=None,format='fits'):
+def get_date_utc(time=None,format='fits'):
     from astropy.time import Time
     from datetime import datetime
     if time is None:
-        time = (datetime.now()).isoformat()
+        time = (datetime.utcnow()).isoformat()
     t = Time(time, format=format, scale='utc')
     return t
 
@@ -77,7 +77,7 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
         elif StartInt.newEvent:
 
             # Build the DATE of observation
-            DATE_OBS = get_date()
+            DATE_OBS = get_date_utc()
 
             sys.stdout.flush()
             LOGGER.info("Received: startIntegration Event")
@@ -123,7 +123,7 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
                 HDR.update_record('DATE-OBS',DATE_OBS.fits,'PRIMARY')
                 HDR.update_record('MJD-OBS',DATE_OBS.mjd,'PRIMARY')
                 # The creation date -- now!!
-                DATE = get_date()
+                DATE = get_date_utc()
                 HDR.update_record('DATE',DATE.fits,'PRIMARY')
                 HDR.update_record('MJD',DATE.mjd,'PRIMARY')
                 # Write the header 
