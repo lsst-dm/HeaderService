@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+
+import HeaderService
+import HeaderService.hutils as hutils
+
+vendor = 'ITL'
+filename = 'example_{}'.format(vendor)
+
+# Load up the header template
+HDR = HeaderService.HDRTEMPL_ATSCam(vendor='ITL')
+# Write the header 
+HDR.write_header('{}.header'.format(filename))
+HDR.write_fits('{}.fits'.format(filename),dtype='random')

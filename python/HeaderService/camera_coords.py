@@ -162,10 +162,10 @@ class CCDGeom:
         
         #EXTENSION_DATA = collections.OrderedDict()
         EXTENSION_DATA = {}
-        EXTENSION_DATA['DTM1_1'] = 1 - 2*Sx
+        EXTENSION_DATA['DTM1_1'] = 1. - 2.0*Sx
         EXTENSION_DATA['DTM1_2'] = 0
         EXTENSION_DATA['DTM2_1'] = 0
-        EXTENSION_DATA['DTM2_2'] = 2*Sx - 1
+        EXTENSION_DATA['DTM2_2'] = 2.0*Sx - 1.
         EXTENSION_DATA['DTV1']   = (self.dimh + 1 + 2*self.preh)*Sx + Sy*self.dimh - self.preh
         EXTENSION_DATA['DTV2']   = (2*self.dimv + 1)*(1 - Sx)
         EXTENSION_DATA['DETSEC'] = "[{:d}:{:d},{:d}:{:d}]".format(dsx1,dsx2,dsy1,dsy2)
@@ -180,18 +180,18 @@ class CCDGeom:
         
         #EXTENSION_DATA = collections.OrderedDict()
         EXTENSION_DATA = {}
-        EXTENSION_DATA['DTM1_1'] = -1
+        EXTENSION_DATA['DTM1_1'] = -1.0
         EXTENSION_DATA['DTM1_2'] = 0
         EXTENSION_DATA['DTM2_1'] = 0
-        EXTENSION_DATA['DTM2_2'] = 2*Sx - 1
+        EXTENSION_DATA['DTM2_2'] = 2.0*Sx - 1
         EXTENSION_DATA['DTV1']   = self.dimh + 1 + Sy*self.dimh + self.preh
         EXTENSION_DATA['DTV2']   = (2*self.dimv + 1)*(1 - Sx)
         EXTENSION_DATA['DETSEC'] = "[{:d}:{:d},{:d}:{:d}]".format(dsx1,dsx2,dsy1,dsy2)
         return EXTENSION_DATA
 
 
-    def get_chanel(self,Segment):
-        return
+    def get_channel(self,Segment):
+        return CHANNEL[self.vendor][Segment]
 
     def wcs_tan_matrix(self,ra,dec,rot_angle=0):
 

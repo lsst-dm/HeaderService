@@ -1,6 +1,7 @@
 """ Collection of simple functions to handle header mock library """
 
 import os
+import time
 import fitsio
 import numpy
 import random
@@ -403,15 +404,52 @@ class HDRTEMPL_ATSCam:
         with fitsio.FITS(filename,'rw',clobber=True) as fits:
             for extname in self.HDRLIST:
                 hdr = copy.deepcopy(self.header[extname])
-                fits.write(data,ignore_empty=True)
+                fits.write(data,extname=extname, ignore_empty=True)
                 hdr.clean()
-                # Keep NAXIS1/NAXIS2 intact if present in the template header
-                if self.header[extname].get('NAXIS1') and self.header[extname].get('NAXIS2'):
-                    hdr.add_record(get_record(self.header[extname],'NAXIS1'))
-                    hdr.add_record(get_record(self.header[extname],'NAXIS2'))
-                    #print get_record(self.header[extname],'NAXIS')
+                ## We do not need this -- as NAXIS1/2 should be done by the
+                ## entity in charge of building the FITS file
+                ## Keep NAXIS1/NAXIS2 intact if present in the template header
+                ##if self.header[extname].get('NAXIS1') and self.header[extname].get('NAXIS2'):
+                ##    hdr.add_record(get_record(self.header[extname],'NAXIS1'))
+                ##    hdr.add_record(get_record(self.header[extname],'NAXIS2'))
+                ##    #print get_record(self.header[extname],'NAXIS')
                 fits[-1].write_keys(hdr, clean=False)
 
+    def write_fits(self,filename,dtype='random',naxis1=None,naxis2=None,btype='int32'):
+
+        """ Write a dummy fits file -- use for testing only"""
+
+        # Figure out the dimensions following the camera geometry
+        if not naxis1:
+            naxis1 = self.CCDGEOM.dimh + 2*self.CCDGEOM.overh + self.CCDGEOM.preh
+        if not naxis2:
+            naxis2 = self.CCDGEOM.dimv + self.CCDGEOM.overv 
+
+        t0 = time.time()
+        with fitsio.FITS(filename,'rw',clobber=True) as fits:
+
+            # Write the PRIMARY First, with no data
+            data = None
+            hdr = copy.deepcopy(self.header['PRIMARY'])
+            fits.write(data,extname='PRIMARY',ignore_empty=True)
+            hdr.clean()
+            fits[-1].write_keys(hdr, clean=False)
+
+            # Loop over the extensions
+            for extname in self.HDRLIST[1:]:
+                if dtype == 'random':
+                    data = numpy.random.uniform(1,2**18-1,size=(naxis2,naxis1)).astype(btype)
+                elif dtype == 'zero' or dtype == 'zeros':
+                    data = numpy.zeros((naxis2,naxis1)).astype(btype)
+                elif dtype == 'seq' or dtype == 'sequence':
+                    data = numpy.zeros((naxis2,naxis1)).astype(btype) + int(extname[-2:])
+                else:
+                    raise NameError("Data Type: '{}' not implemented".format(dtype))
+                hdr = copy.deepcopy(self.header[extname])
+                LOGGER.debug("Writing: {}".format(extname))
+                fits.write(data,extname=extname,header=hdr)
+        LOGGER.info("FITS write time:{}".format(elapsed_time(t0)))
+        
     def write_header(self,filename,delimiter='END',newline=False):
         
         """
@@ -424,7 +462,9 @@ class HDRTEMPL_ATSCam:
             with open(filename,'w') as fobj:
                 fobj.write(self.hstring)
         else:
+            t0 = time.time()
             self.write_header_emptyHDU(filename)
+            LOGGER.info("Header write time:{}".format(elapsed_time(t0)))
         return
 
 
