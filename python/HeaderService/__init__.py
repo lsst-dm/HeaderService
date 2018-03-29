@@ -9,6 +9,6 @@ from .hutils import HDRTEMPL_TestCamera
 from .hutils import HDRTEMPL_ATSCam
 from .camera_coords import CCDGeom
 from . import SAL_tools
-from . import SAL_tools_send
+#from . import SAL_tools_send
 from . import states
 

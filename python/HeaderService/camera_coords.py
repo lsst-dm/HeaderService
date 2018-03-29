@@ -107,7 +107,7 @@ class CCDGeom:
         self.dimh = SCAN_GEOM[vendor]['dimh']
         self.dimv = SCAN_GEOM[vendor]['dimv']
 
-        # Update the primary, we do this only once at __init__
+        # Update the primary, we do this only once at __init__ unless we change overh/overv/dimh/dimv
         self.primary()
 
 
@@ -116,6 +116,7 @@ class CCDGeom:
         """ A common function to get the extension key/value dicti"""
         
         if extname == 'PRIMARY':
+            self.primary()
             return self.PRIMARY
         else:
             return self.extension(extname)

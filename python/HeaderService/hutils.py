@@ -300,7 +300,7 @@ class HDRTEMPL_ATSCam:
         self.CCDGEOM = CCDGeom(self.vendor,segname=self.segname)
         
         # Load them up
-        self.load_templates()
+        #self.load_templates()
 
     def set_template_filenames(self):
         """Set the filenames of the primary and segment header templates"""

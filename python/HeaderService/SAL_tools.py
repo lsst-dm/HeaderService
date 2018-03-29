@@ -6,12 +6,8 @@ import logging
 import HeaderService.hutils as hutils
 import HeaderService.states as states
 import inspect
-# For now we only load 'dmHeaderService','tcs' and 'camera', but we might need them all.
-import SALPY_dmHeaderService
-import SALPY_camera 
-import SALPY_tcs
-import SALPY_efd
 import copy
+
 
 """
 Here we store the SAL classes and tools that we use to:
@@ -19,15 +15,35 @@ Here we store the SAL classes and tools that we use to:
  - Gather telemetry/events
  - Send Control commands (to sim OCS)
  
+
+NOTE: all import of SALPY_{moduleName} are done on the fly using the fuction load_SALPYlib()
 """
 
 spinner = hutils.spinner
 LOGGER = hutils.create_logger(level=logging.NOTSET,name=__name__)
 SAL__CMD_COMPLETE=303
 
+def load_SALPYlib(Device):
+    '''Trick to import modules dynamically as needed/depending on the Device we want'''
+
+    # Make sure is not already loaded i.e. visible in globals
+    try:
+        SALPY_lib = globals()['SALPY_{}'.format(Device)]
+        LOGGER.info('SALPY_{} is already in globals'.format(Device))
+        return SALPY_lib
+    except:
+        LOGGER.info('importing SALPY_{}'.format(Device))
+        exec "import SALPY_{}".format(Device)
+    else:
+        raise ValueError("import SALPY_{}: failed".format(Device))
+    SALPY_lib = locals()['SALPY_{}'.format(Device)]
+    # Update to make it visible elsewhere -- not sure if this works
+    globals()['SALPY_{}'.format(Device)] = SALPY_lib
+    return SALPY_lib
+
 class DeviceState:
 
-    def __init__(self, module='dmHeaderService',default_state='OFFLINE',
+    def __init__(self, Device='atHeaderService',default_state='OFFLINE',
                  tsleep=0.5,
                  eventlist = ['SummaryState',
                               'SettingVersions',
@@ -37,11 +53,13 @@ class DeviceState:
 
         self.current_state = default_state
         self.tsleep = tsleep
-        self.module = module
+        self.Device = Device
         
-        LOGGER.info('HeaderService Init beginning')
+        LOGGER.info('{} Init beginning'.format(Device))
         LOGGER.info('Starting with default state: {}'.format(default_state))
 
+        # Load (if not in globals already) SALPY_{deviceName} into class
+        self.SALPY_lib = load_SALPYlib(self.Device)
         # Subscribe to all events in list
         self.subscribe_list(eventlist)
 
@@ -83,13 +101,17 @@ class DeviceState:
         return True
 
     def subscribe_logEvent(self,eventname):
-        '''Create a subscription for the dmHeaderService_logevent_{eventnname}'''
-        self.mgr[eventname] = SALPY_dmHeaderService.SAL_dmHeaderService()
-        self.mgr[eventname].salEvent("dmHeaderService_logevent_{}".format(eventname))
+        '''
+        Create a subscription for the {Device}_logevent_{eventnname}
+        This step need to be done before we call send_logEvent
+        '''
+        self.mgr[eventname] = getattr(self.SALPY_lib, 'SAL_{}'.format(self.Device))()
+        self.mgr[eventname].salEvent("{}_logevent_{}".format(self.Device,eventname))
         self.logEvent[eventname] = getattr(self.mgr[eventname],'logEvent_{}'.format(eventname))
-        self.myData[eventname] = getattr(SALPY_dmHeaderService,'dmHeaderService_logevent_{}C'.format(eventname))()
+        self.myData[eventname] = getattr(self.SALPY_lib,'{}_logevent_{}C'.format(self.Device,eventname))()
+            
         self.myData_keys[eventname] = [a[0] for a in inspect.getmembers(self.myData[eventname]) if not(a[0].startswith('__') and a[0].endswith('__'))]
-        LOGGER.info('Initializing: dmHeaderService_logevent_{}'.format(eventname))
+        LOGGER.info('Initializing: {}_logevent_{}'.format(self.Device,eventname))
         
     def get_current_state(self):
         '''Function to get the current state'''
@@ -98,7 +120,7 @@ class DeviceState:
 
 class DDSController(threading.Thread):
     
-    def __init__(self, command, module='dmHeaderService', topic=None, threadID='1', tsleep=0.5, State=None):
+    def __init__(self, command, module='atHeaderService', topic=None, threadID='1', tsleep=0.5, State=None):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.module = module
@@ -128,13 +150,14 @@ class DDSController(threading.Thread):
         # - find the library pointer using globals()
         # - create a mananger
         # Here we do the equivalent of:
-        # mgr.salProcessor("dmHeaderService_command_EnterControl")
+        # mgr.salProcessor("atHeaderService_command_EnterControl")
 
         self.newControl = False
 
         # Get the mgr
-        SALPY_lib_name = 'SALPY_{}'.format(self.module)
-        SALPY_lib = globals()[SALPY_lib_name]
+        #SALPY_lib_name = 'SALPY_{}'.format(self.module)
+        #SALPY_lib = globals()[SALPY_lib_name]
+        SALPY_lib = globals()['SALPY_{}'.format(self.module)]
         self.mgr = getattr(SALPY_lib, 'SAL_{}'.format(self.module))()
         self.mgr.salProcessor(self.topic)
         self.myData = getattr(SALPY_lib,self.topic+'C')()
@@ -223,9 +246,11 @@ class DDSSubcriber(threading.Thread):
 
         self.newTelem = False
         self.newEvent = False
-        SALPY_lib_name = 'SALPY_%s' % self.Device
-        SALPY_lib = globals()[SALPY_lib_name]
-        self.mgr = getattr(SALPY_lib, 'SAL_%s' % self.Device)()
+
+        # Load (if not in globals already) SALPY_{deviceName} into class
+        self.SALPY_lib = load_SALPYlib(self.Device)
+        self.mgr = getattr(self.SALPY_lib, 'SAL_{}'.format(self.Device))()
+
         if self.Stype=='Telemetry':
             self.myData = getattr(SALPY_lib,'{}_{}C'.format(self.Device,self.topic))()
             self.mgr.salTelemetrySub("{}_{}".format(self.Device,self.topic))
@@ -233,7 +258,7 @@ class DDSSubcriber(threading.Thread):
             self.getNextSample = getattr(self.mgr,"getNextSample_{}".format(self.topic))
             LOGGER.info("{} subscriber ready for Device:{} topic:{}".format(self.Stype,self.Device,self.topic))
         elif self.Stype=='Event':
-            self.myData = getattr(SALPY_lib,'{}_logevent_{}C'.format(self.Device,self.topic))()
+            self.myData = getattr(self.SALPY_lib,'{}_logevent_{}C'.format(self.Device,self.topic))()
             self.mgr.salEvent("{}_logevent_{}".format(self.Device,self.topic))
             # Generic method to get for example: self.mgr.getEvent_startIntegration(event)
             self.getEvent = getattr(self.mgr,'getEvent_{}'.format(self.topic))
@@ -347,30 +372,17 @@ class DDSSend(threading.Thread):
         self.sleeptime = sleeptime
         self.timeout = timeout
         self.Device = Device
-        self.SALPY_lib = None
         LOGGER.info("Loading Device: {}".format(self.Device)) 
-        self.SALPY_lib = globals()['SALPY_{}'.format(self.Device)]
-
-    def load_SALPY(self):
-        if self.SALPY_lib:
-            return
-        else:
-            LOGGER.info('importing SALPY_{}'.format(self.Device))
-        # Trick to import modules dynamically as needed/depending on the Device we want
-        try:
-            exec "import SALPY_{}".format(self.Device)
-        except:
-            raise ValueError("import SALPY_{}: failed".format(self.Device))
-        self.SALPY_lib = globals()['SALPY_{}'.format(self.Device)]
+        # Load SALPY_lib into the class
+        self.SALPY_lib = load_SALPYlib(self.Device)
 
     def run(self):
         ''' Function for threading'''
         self.waitForCompletion_Command()
 
     def get_mgr(self):
-        #self.load_SALPY()
         # We get the equivalent of:
-        #  mgr = SALPY_dmHeaderService.SAL_dmHeaderService()
+        #  mgr = SALPY_atHeaderService.SAL_atHeaderService()
         mgr = getattr(self.SALPY_lib,'SAL_{}'.format(self.Device))()
         return mgr
 
@@ -493,22 +505,17 @@ class DDSSend(threading.Thread):
             myData_dic[key] =  getattr(self.myData,key)
         return myData_dic
     
-def command_sequencer(commands,Device='dmHeaderService',wait_time=1, sleep_time=3):
+def command_sequencer(commands,Device='atHeaderService',wait_time=1, sleep_time=3):
 
     """
     Stand-alone function to send a sequence of OCS Commands
     """
-
-    # Trick to import modules dynamically as needed/depending on the Device we want
-    try:
-        exec "import SALPY_{}".format(Device)
-    except:
-        raise ValueError("import SALPY_{}: failed".format(Device))
-    import time
-
+    
     # We get the equivalent of:
-    #  mgr = SALPY_dmHeaderService.SAL_dmHeaderService()
-    SALPY_lib = globals()['SALPY_{}'.format(Device)]
+    #  mgr = SALPY_atHeaderService.SAL_atHeaderService()
+    # Load (if not in globals already) SALPY_{deviceName}
+    SALPY_lib = load_SALPYlib(Device)
+
     mgr = getattr(SALPY_lib,'SAL_{}'.format(Device))()
     myData = {}
     issueCommand = {}
