@@ -40,17 +40,6 @@ def get_date_utc(time=None,format='fits'):
 
 def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'):
 
-    # Load up the header template
-    #HDR = HeaderService.HDRTEMPL_ATSCam(vendor=vendor)
-    #HDR.load_templates()
-
-    #print HDR.header['PRIMARY'] 
-    #HDR.CCDGEOM.dimh = 10
-    #HDR.CCDGEOM.dimv = 20
-    #HDR.load_templates()
-    #print HDR.header['PRIMARY'] 
-    #exit()
-
     StartInt  = SAL_tools.DDSSubcriber("atcamera","startIntegration",Stype="Event")
     EndTelem  = SAL_tools.DDSSubcriber("atcamera","endOfImageTelemetry",Stype="Event")
     Exptime   = SAL_tools.DDSSubcriber("atcamera","shutterMotionProfile",Stype="Event")
@@ -68,7 +57,6 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
     HDR = HeaderService.HDRTEMPL_ATSCam(vendor=vendor)
     HDR.load_templates()
     LOGGER = HDR.logger
-
 
     # Make sure that we have a place to put the files
     if not os.path.exists(filepath):
