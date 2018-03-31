@@ -40,10 +40,14 @@ def get_date_utc(time=None,format='fits'):
 
 def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'):
 
-    StartInt  = SAL_tools.DDSSubcriber("atcamera","startIntegration",Stype="Event")
-    EndTelem  = SAL_tools.DDSSubcriber("atcamera","endOfImageTelemetry",Stype="Event")
-    Exptime   = SAL_tools.DDSSubcriber("atcamera","shutterMotionProfile",Stype="Event")
-    Target    = SAL_tools.DDSSubcriber("atScheduler", "target",Stype="Event")
+    # Subscribe to all channel from where we want Telem/Events, eventually this will
+    # be governed by a configuration file
+    StartInt = SAL_tools.DDSSubcriber("atcamera","startIntegration",Stype="Event")
+    EndTelem = SAL_tools.DDSSubcriber("atcamera","endOfImageTelemetry",Stype="Event")
+    Exptime  = SAL_tools.DDSSubcriber("atcamera","shutterMotionProfile",Stype="Event")
+    ImParam  = SAL_tools.DDSSubcriber("atcamera","imageReadoutParameters",Stype="Event")
+    Target   = SAL_tools.DDSSubcriber("atScheduler", "target",Stype="Event")
+
     # And the object to send DMHS messages
     dmhs = SAL_tools.DDSSend("atHeaderService")
     efd  = SAL_tools.DDSSend('efd')
@@ -52,6 +56,7 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
     EndTelem.start()
     Exptime.start()
     Target.start()
+    ImParam.start()
     
     # Load up the header template
     HDR = HeaderService.HDRTEMPL_ATSCam(vendor=vendor)
@@ -106,12 +111,22 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
             if EndTelem.newEvent:
                 sys.stdout.flush()
                 LOGGER.info("Received: endOfImageTelemetry Signal")
+
+                # We get these after we get endOfImageTelemetry Signal
+                # Exposure Time
                 LOGGER.info("Extracting Actual Exposure time")
                 myData = Exptime.getCurrent()
                 measuredExptime = myData.measuredExposureTime
                 LOGGER.info("Received: measuredExptime={}".format(measuredExptime))
+
+                # Image paramters
+                LOGGER.info("Extracting Image Parameters")
+                myData = ImParam.getCurrent()
+                overv, overh, preh = myData.overRows, myData.overCols,myData.preRows
+                LOGGER.info("Received: overv={}, overh={}, preh={}".format(overv, overh, preh))
+
                 # Manually Update a header param -- we need to move it a function soon
-                # These ones are from Telemetry
+                # These ones were captured from DDS
                 HDR.update_record('FILTER',filter_name, 'PRIMARY')
                 HDR.update_record('GRATING',grating, 'PRIMARY')
                 HDR.update_record('RA',ra,'PRIMARY')
@@ -123,6 +138,9 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
                 HDR.update_record('DECTEL',dec,'PRIMARY')
                 HDR.update_record('IMGNAME',imageName,'PRIMARY')
                 HDR.update_record('EXPTIME',measuredExptime,'PRIMARY')
+                HDR.update_record('OVERH',overh,'PRIMARY')
+                HDR.update_record('OVERV',overv,'PRIMARY')
+                HDR.update_record('PREH',preh,'PRIMARY')
                 # These values are computed by the DMHS
                 HDR.update_record('FILENAME',filename_FITS,'PRIMARY')
                 HDR.update_record('DATE-OBS',DATE_OBS.fits,'PRIMARY')
@@ -133,12 +151,11 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
                 HDR.update_record('MJD',DATE.mjd,'PRIMARY')
                 # Write the header 
                 HDR.write_header(filename_HDR, newline=False)
-                LOGGER.info("Wrote header to: %s" % filename_HDR)
-                LOGGER.info("------------------------------------------")
+                LOGGER.info("Wrote header to: {}".format(filename_HDR))
                 # Get the md5 for the header file
                 md5value = hutils.md5Checksum(filename_HDR) #,blocksize=1024*512):
                 bytesize = os.path.getsize(filename_HDR)
-                LOGGER.info("Got MD5SUM: %s" % md5value)
+                LOGGER.info("Got MD5SUM: {}".format(md5value))
                 # Now we publish filename and MD5
                 # Build the kwargs
                 kw = {'Byte_Size':bytesize,
@@ -151,9 +168,12 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
                       'priority':1,
                       }
                 dmhs.send_Event('LargeFileObjectAvailable',**kw)
+                LOGGER.info("Sent LargeFileObjectAvailable: {}".format(kw))
                 if args.send_efd_message:
                     efd.send_Event('LargeFileObjectAvailable',**kw)
                 EndTelem.newEvent = False
+                LOGGER.info("------------------------------------------")
+
         else:
             sys.stdout.flush()
             sys.stdout.write("Current State is {} -- wating for startIntegration Event...[{}]".format(State.current_state,spinner.next()))

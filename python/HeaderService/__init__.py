@@ -1,5 +1,5 @@
 __author__  = "LSST/Felipe Menanteau"
-__version__ = 'DAQ_to_DM'
+__version__ = '1VNIA'
 version = __version__
 
 from . import hutils

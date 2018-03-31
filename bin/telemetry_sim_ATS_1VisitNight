@@ -49,12 +49,14 @@ if __name__ == "__main__":
     #camCommand = SAL_tools.DDSSend("camera")
     camCommand = cam
 
-    # Send the imageReadoutParameters
-    #overh = 22
-    #overv = 46
-    #kw = {'overRows':overv,
-    #      'overCols':overh}
-    #cam.send_Event('imageReadoutParameters',**kw)
+    # Send sub-set of imageReadoutParameters -- here we populate only a few fields
+    preh  = 3
+    overh = 32
+    overv = 48
+    kw = {'overRows':overv,
+          'overCols':overh,
+          'preRows': preh}
+    cam.send_Event('imageReadoutParameters',**kw)
 
     # Send the target event -- here we populate only a few fields
     kw = {#'targetId': 1,
