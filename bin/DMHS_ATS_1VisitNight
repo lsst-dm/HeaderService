@@ -96,6 +96,11 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
             LOGGER.info("Received: RA={}, DEC={}, ANGLE={}, AIRMASS={}".format(ra,dec,angle,airmass))
             filter_name, grating = myData.filters, myData.grating
             LOGGER.info("Received: filter={}, grating={}".format(filter_name,grating))
+            # And zenith distance:
+            try:
+                zd = (math.acos(1.0/airmass))*189/math.pi
+            except:
+                zd = -99.0
 
             # Get the readout
             LOGGER.info("Current State is {} -- waiting for Camera endOfImageTelemetry event".format(State.current_state))
@@ -125,9 +130,9 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
                 HDR.update_record('DEC',dec,'PRIMARY')
                 HDR.update_record('ROTANGLE',angle,'PRIMARY')
                 HDR.update_record('AIRMASS',airmass,'PRIMARY')
-                HDR.update_record('ZD', (math.acos(1.0/airmass))*189/math.pi, 'PRIMARY')
                 HDR.update_record('RATEL',ra,'PRIMARY')
                 HDR.update_record('DECTEL',dec,'PRIMARY')
+                HDR.update_record('ZD', zd, 'PRIMARY')
                 HDR.update_record('IMGNAME',imageName,'PRIMARY')
                 HDR.update_record('EXPTIME',measuredExptime,'PRIMARY')
                 HDR.update_record('OVERH',overh,'PRIMARY')
