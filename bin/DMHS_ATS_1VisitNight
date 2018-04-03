@@ -142,7 +142,7 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
                 HDR.update_record('DATE',DATE.fits,'PRIMARY')
                 HDR.update_record('MJD',DATE.mjd,'PRIMARY')
                 # The obs-nite
-                HDR.update_record('OBS-NITE',hutils.get_obsnite(DATE),'PRIMARY')
+                HDR.update_record('OBS-NITE',hutils.get_obsnite(),'PRIMARY')
                 # Write the header 
                 HDR.write_header(filename_HDR, newline=False)
                 LOGGER.info("Wrote header to: {}".format(filename_HDR))
