@@ -30,14 +30,6 @@ def cmdline():
     args = parser.parse_args()
     return args
 
-def get_date_utc(time=None,format='fits'):
-    from astropy.time import Time
-    from datetime import datetime
-    if time is None:
-        time = (datetime.utcnow()).isoformat()
-    t = Time(time, format=format, scale='utc')
-    return t
-
 def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'):
 
     # Subscribe to all channel from where we want Telem/Events, eventually this will
@@ -83,7 +75,7 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
         elif StartInt.newEvent:
 
             # Build the DATE of observation
-            DATE_OBS = get_date_utc()
+            DATE_OBS = hutils.get_date_utc()
 
             sys.stdout.flush()
             LOGGER.info("Received: startIntegration Event")
@@ -146,9 +138,11 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
                 HDR.update_record('DATE-OBS',DATE_OBS.fits,'PRIMARY')
                 HDR.update_record('MJD-OBS',DATE_OBS.mjd,'PRIMARY')
                 # The creation date -- now!!
-                DATE = get_date_utc()
+                DATE = hutils.get_date_utc()
                 HDR.update_record('DATE',DATE.fits,'PRIMARY')
                 HDR.update_record('MJD',DATE.mjd,'PRIMARY')
+                # The obs-nite
+                HDR.update_record('OBS-NITE',hutils.get_obsnite(DATE),'PRIMARY')
                 # Write the header 
                 HDR.write_header(filename_HDR, newline=False)
                 LOGGER.info("Wrote header to: {}".format(filename_HDR))

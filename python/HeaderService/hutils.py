@@ -477,3 +477,27 @@ def md5Checksum(filePath,blocksize=1024*512):
                 break
             m.update(data)
     return m.hexdigest()
+
+
+def get_obsnite(date=None, thresh_hour=14, format='{year}{month:02d}{day:02d}'):
+
+    import datetime
+    """
+    Get the obs-nite from a 'datetime.datetime.now()' kind of data object, but it will not
+    work 'datetime.date.today()' has it has no hour
+    """
+    if date is None:
+        date = datetime.datetime.now()
+    # If hour < 14 we are still in the previous night date
+    if date.hour < thresh_hour:
+        date = date - datetime.timedelta(days=1)
+    obsnite = format.format(year=date.year,month=date.month, day=date.day)
+    return obsnite
+
+def get_date_utc(time=None,format='fits'):
+    from astropy.time import Time
+    from datetime import datetime
+    if time is None:
+        time = (datetime.utcnow()).isoformat()
+    t = Time(time, format=format, scale='utc')
+    return t

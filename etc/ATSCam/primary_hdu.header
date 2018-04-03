@@ -10,6 +10,7 @@ MJD-OBS =                -99.0 / Modified Julian Date of observation
 OBS-LONG=           -70.749417 / [deg] Observatory east longitude
 OBS-LAT =           -30.244639 / [deg] Observatory latitude
 OBS-ELEV=               2663.0 / [m] Observatory elevation
+OBS-NITE= ''                   / Night of the observation
 TELESCOP= 'LSST AuxTelescope'  / Telescope name
 INSTRUME= 'ATSCAM'             / Instrument used to obtain these data
 RATEL   = ''                   / Telescope RA of observation (hr)
