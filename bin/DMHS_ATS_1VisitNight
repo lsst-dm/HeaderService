@@ -98,7 +98,7 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
             LOGGER.info("Received: filter={}, grating={}".format(filter_name,grating))
             # And zenith distance:
             try:
-                zd = (math.acos(1.0/airmass))*189/math.pi
+                zd = (math.acos(1.0/airmass))*180./math.pi
             except:
                 zd = -99.0
 
