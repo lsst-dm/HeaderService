@@ -62,6 +62,9 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
 
     # Get the hostname and IP address
     ip_adress = socket.gethostbyname(socket.gethostname())
+
+    # The user running the process
+    USER = os.environ['USER']
     
     # For testing start ENABLE
     loop_n = 0
@@ -161,7 +164,7 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
                       'Checksum':md5value,
                       'Generator':'AT',
                       'Mime':'FITS',
-                      'URL': "scp://felipe@{}:{}".format(ip_adress,filename_HDR),
+                      'URL': "scp://{}@{}:{}".format(USER,ip_adress,filename_HDR),
                       #'URL': "{}".format(os.path.abspath(filename_HDR)),
                       'Version': 1,
                       'priority':1,
