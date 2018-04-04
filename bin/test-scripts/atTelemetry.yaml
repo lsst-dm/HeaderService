@@ -1,0 +1,84 @@
+# Configuration file for the AuxTelescope
+
+# The camera vendor
+vendor: 'ITL'
+
+# The Events that we use to define where we collect 
+start_collection_event: 
+  device: atcamera
+  topic: startIntegration
+
+end_collection_event:
+  device: atcamera
+  topic: endOfImageTelemetry
+
+# Telemetry values for images meta-data
+telemetry:
+
+ IMGNAME:
+  device: atcamera
+  Stype: Event
+  topic: startIntegration
+  value: imageName
+  collect_at: start
+
+ EXPTIME:
+  device: atcamera
+  Stype: Event
+  topic: shutterMotionProfile
+  value: measuredExptime 
+  collect_after: end
+
+ RA:
+  device: atScheduler
+  Stype: Event
+  topic: target
+  value: ra
+
+ DEC:
+  device: atScheduler
+  Stype: Event
+  topic: target
+  value: decl
+
+ ROTANGLE:
+  device: atScheduler
+  Stype: Event
+  topic: target
+  value: angle
+
+ AIRMASS:
+  device: atScheduler
+  Stype: Event
+  topic: target
+  value: airmass
+
+ GRATING:
+  device: atScheduler
+  Stype: Event
+  topic: target
+  value: grating
+
+ FILTER:
+  device: atScheduler
+  Stype: Event
+  topic: target
+  value: filters
+
+ OVERH:
+  device: atcamera
+  Stype: Event
+  topic: imageReadoutParameters
+  value: overh
+
+ OVERV:
+  device: atcamera
+  Stype: Event
+  topic: imageReadoutParameters
+  value: overv
+
+ PREH:
+  device: atcamera
+  Stype: Event
+  topic: imageReadoutParameters
+  value: preh
