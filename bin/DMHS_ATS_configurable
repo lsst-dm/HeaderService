@@ -44,10 +44,30 @@ def cmdline():
     parser.set_defaults(**conf_defaults)
     args = parser.parse_args(args=remaining_argv)
 
+    # Get the channels we need to subscribe
+    args.channels = get_telemetry_channels(args.telemetry,
+                                           start_collection_event=args.start_collection_event,
+                                           end_collection_event=args.end_collection_event)
+    print ("Will use:")
+    for k, v in vars(args).items():
+        print ("   {}: {}".format(k, v))
+    exit()
     return args
 
-def get_telemetry_channels(telem):
+def get_telemetry_channels(telem,start_collection_event=None,end_collection_event=None):
     ''' Get the unique telemetry channels that we need to subscribe to'''
+
+    # ----------------------------------------------------------
+    # TODO: This function need to be moved to an outside library
+    # ----------------------------------------------------------
+
+
+    # Add 'start_collection_event' and 'end_collection_event' to
+    # telemetry to make sure we add them to the channels
+    #if start_collection_event:
+    #    telem['start_collection_event'] = start_collection_event
+    #if end_collection_event:
+    #    telem['end_collection_event'] = start_collection_event
     channels = {}
     for key in telem:
         # Make the name of the channel unique by appending device
@@ -57,9 +77,14 @@ def get_telemetry_channels(telem):
         name = '{}_{}'.format(c['device'],c['topic'])
         if name not in channels.keys():
             channels[name] = c
+
+    #for k, v in channels.items():
+    #    print ("{}: {}".format(k, v))
     return channels
 
 def run_enable(State,telemetry={},vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'):
+
+    # TODO: Rename this function and probably pass all of the args or kwargs
 
     # Extract the unique channel by topic/device
     channels = get_telemetry_channels(telemetry)
@@ -70,17 +95,16 @@ def run_enable(State,telemetry={},vendor='ITL',filepath='.',tsleep=0.1, start_st
     for name, c in channels.items():
         SAL_connection[name] = SAL_tools.DDSSubcriber(c['device'],c['topic'],Stype=c['Stype'])
         SAL_connection[name].start()
-    
+
     # And the object to send DMHS messages
     dmhs = SAL_tools.DDSSend("atHeaderService")
     efd  = SAL_tools.DDSSend('efd')
 
     # Load up the header template
     HDR = HeaderService.HDRTEMPL_ATSCam(vendor=vendor)
-    HDR.load_templates()
+    HDR.load_templates() # TODO: We should do this later ----
     LOGGER = HDR.logger
 
-    #exit()
 
     # Make sure that we have a place to put the files
     if not os.path.exists(filepath):
@@ -89,10 +113,13 @@ def run_enable(State,telemetry={},vendor='ITL',filepath='.',tsleep=0.1, start_st
 
     # Get the hostname and IP address
     ip_adress = socket.gethostbyname(socket.gethostname())
+
+    # TODO: this should be configurable options
     # The user running the process
     USER = os.environ['USER']
     # The protocol
     PROTOCOL = 'scp'
+    # --------------------------
     
     # For testing start ENABLE
     loop_n = 0
