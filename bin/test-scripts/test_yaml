@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
 import yaml
-telem = yaml.load(open('telemetry.yaml'))
+telem = yaml.load(open('atTelemetry.yaml'))
 
 print telem
 
+# Select unique channels to which we need to subscribe
 channels = []
 for key in telem:
     c = {'device':telem[key]['device'],    
@@ -13,23 +14,30 @@ for key in telem:
     if c not in channels:
         channels.append(c)
 
+print ('-------')
 for c in channels:
     print c
+
+print ('-------')
+print telem['AIRMASS']['value']
+print telem['AIRMASS']['topic']
+
 exit()
 
-# channels = []
-# for key in telem:
-#     c = [ telem[key]['device'],    
-#           telem[key]['topic'],
-#           telem[key]['Stype'],
-#           ]
-#     if c not in channels:
-#         channels.append(c)
+channels = []
+for key in telem:
+    c = [ telem[key]['device'],    
+          telem[key]['topic'],
+          telem[key]['Stype'],
+          ]
+    if c not in channels:
+        channels.append(c)
         
+print ('-------')
 for c in channels:
     print c
-#    device = telem[key]['device']
-#    if device not in devices:
-#        device
-#    setattr(telem[key],'device',telem[key]['device'])
+    device = telem[key]['device']
+    if device not in devices:
+        device
+        setattr(telem[key],'device',telem[key]['device'])
 

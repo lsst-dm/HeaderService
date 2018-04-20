@@ -14,7 +14,8 @@ from camera_coords import CCDGeom
 spinner = itertools.cycle(['-', '/', '|', '\\'])
 
 # TODO:
-# Merge/inherit HDRTEMPL_XXXX into a master/common class
+# - Merge/inherit HDRTEMPL_XXXX into a master/common class
+# - Move the utilities to its own file and the HDRTEMPL to another one
 
 try:
     HEADERSERVICE_DIR = os.environ['HEADERSERVICE_DIR']
