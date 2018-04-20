@@ -3,7 +3,7 @@
 import time
 import argparse
 from datetime import datetime
-import HeaderService.SAL_tools as SAL_tools
+import salpytools
 import HeaderService.hutils as hutils
 LOGGER = hutils.create_logger(name=__name__)
 
@@ -44,9 +44,9 @@ if __name__ == "__main__":
     
     # Initialize the classes for each device
     # Note that we need a separate object for Commands if we want to wait
-    sch = SAL_tools.DDSSend("atScheduler")
-    cam = SAL_tools.DDSSend("atcamera")
-    #camCommand = SAL_tools.DDSSend("camera")
+    sch = salpytools.DDSSend("atScheduler")
+    cam = salpytools.DDSSend("atcamera")
+    #camCommand = salpytools.DDSSend("camera")
     camCommand = cam
 
     # Send sub-set of imageReadoutParameters -- here we populate only a few fields

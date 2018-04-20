@@ -5,7 +5,7 @@ import sys
 import os
 import logging
 import HeaderService
-import HeaderService.SAL_tools as SAL_tools
+import salpytools
 import HeaderService.hutils as hutils
 import argparse
 import socket
@@ -34,15 +34,15 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
 
     # Subscribe to all channel from where we want Telem/Events, eventually this will
     # be governed by a configuration file
-    StartInt = SAL_tools.DDSSubcriber("atcamera","startIntegration",Stype="Event")
-    EndTelem = SAL_tools.DDSSubcriber("atcamera","endOfImageTelemetry",Stype="Event")
-    Exptime  = SAL_tools.DDSSubcriber("atcamera","shutterMotionProfile",Stype="Event")
-    ImParam  = SAL_tools.DDSSubcriber("atcamera","imageReadoutParameters",Stype="Event")
-    Target   = SAL_tools.DDSSubcriber("atScheduler", "target",Stype="Event")
+    StartInt = salpytools.DDSSubcriber("atcamera","startIntegration",Stype="Event")
+    EndTelem = salpytools.DDSSubcriber("atcamera","endOfImageTelemetry",Stype="Event")
+    Exptime  = salpytools.DDSSubcriber("atcamera","shutterMotionProfile",Stype="Event")
+    ImParam  = salpytools.DDSSubcriber("atcamera","imageReadoutParameters",Stype="Event")
+    Target   = salpytools.DDSSubcriber("atScheduler", "target",Stype="Event")
 
     # And the object to send DMHS messages
-    dmhs = SAL_tools.DDSSend("atHeaderService")
-    efd  = SAL_tools.DDSSend('efd')
+    dmhs = salpytools.DDSSend("atHeaderService")
+    efd  = salpytools.DDSSend('efd')
         
     StartInt.start()
     EndTelem.start()
@@ -194,7 +194,7 @@ if __name__ == "__main__":
     # Init the device and send the current state vis SummaryState.
     # This needs to be done before we star the SAL controller thread,
     # as they use the DeviveState object for the current state
-    State = SAL_tools.DeviceState()
+    State = salpytools.DeviceState()
     State.send_logEvent('SummaryState')
     
     # Create threads for the controller we want to listen to
@@ -206,7 +206,7 @@ if __name__ == "__main__":
                        'disable']
     tControl = {}
     for ctrl_name in controller_list:
-        tControl[ctrl_name] = SAL_tools.DDSController(ctrl_name,State=State)
+        tControl[ctrl_name] = salpytools.DDSController(ctrl_name,State=State)
         tControl[ctrl_name].start()
 
     # Set the initial state
