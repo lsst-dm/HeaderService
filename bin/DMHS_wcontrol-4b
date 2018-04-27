@@ -5,8 +5,7 @@ import sys
 import os
 import logging
 import HeaderService
-import HeaderService.SAL_tools as SAL_tools
-import HeaderService.SAL_tools_send as SAL_tools_send
+import salpytools as SAL_tools
 import HeaderService.hutils as hutils
 
 spinner = hutils.spinner
@@ -26,6 +25,8 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1):
     Filter.start()
     Readout.start()
     StartInt.start()
+
+    dmhs = salpytools.DDSSend("dmHeaderService")
 
     # Make sure that we have a place to put the files
     if not os.path.exists(filepath):
@@ -91,7 +92,7 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1):
                       'Version': 1,
                       'priority':1,
                       }
-                SAL_tools_send.dmHeaderService_logevent_LargeFileObjectAvailable(**kw)
+                dmhs.send_Event('LargeFileObjectAvailable',**kw)
                 Readout.newEvent = False
         else:
             sys.stdout.flush()

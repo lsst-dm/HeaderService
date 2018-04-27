@@ -51,6 +51,38 @@ def elapsed_time(t1,verb=False):
         print >>sys.stderr,"Elapsed time: %s" % stime
     return stime
 
+def md5Checksum(filePath,blocksize=1024*512):
+    with open(filePath, 'rb') as fh:
+        m = hashlib.md5()
+        while True:
+            data = fh.read(blocksize)
+            if not data:
+                break
+            m.update(data)
+    return m.hexdigest()
+
+def get_obsnite(date=None, thresh_hour=14, format='{year}{month:02d}{day:02d}'):
+    import datetime
+    """
+    Get the obs-nite from a 'datetime.datetime.now()' kind of data object, but it will not
+    work 'datetime.date.today()' has it has no hour
+    """
+    if date is None:
+        date = datetime.datetime.now()
+    # If hour < 14 we are still in the previous night date
+    if date.hour < thresh_hour:
+        date = date - datetime.timedelta(days=1)
+    obsnite = format.format(year=date.year,month=date.month, day=date.day)
+    return obsnite
+
+def get_date_utc(time=None,format='fits'):
+    from astropy.time import Time
+    from datetime import datetime
+    if time is None:
+        time = (datetime.utcnow()).isoformat()
+    t = Time(time, format=format, scale='utc')
+    return t
+
 def write_header_string(arg):
     """
     Simple method to write a header string to a filename that can be
@@ -65,6 +97,74 @@ def write_header_string(arg):
         md5value = md5Checksum(filename) #,blocksize=1024*512):
         LOGGER.info("Got MD5SUM: %s" % md5value)
     return
+
+def md5Checksum(filePath,blocksize=1024*512):
+    with open(filePath, 'rb') as fh:
+        m = hashlib.md5()
+        while True:
+            data = fh.read(blocksize)
+            if not data:
+                break
+            m.update(data)
+    return m.hexdigest()
+
+def get_obsnite(date=None, thresh_hour=14, format='{year}{month:02d}{day:02d}'):
+
+    import datetime
+    """
+    Get the obs-nite from a 'datetime.datetime.now()' kind of data object, but it will not
+    work 'datetime.date.today()' has it has no hour
+    """
+    if date is None:
+        date = datetime.datetime.now()
+    # If hour < 14 we are still in the previous night date
+    if date.hour < thresh_hour:
+        date = date - datetime.timedelta(days=1)
+    obsnite = format.format(year=date.year,month=date.month, day=date.day)
+    return obsnite
+
+def get_date_utc(time=None,format='fits'):
+    from astropy.time import Time
+    from datetime import datetime
+    if time is None:
+        time = (datetime.utcnow()).isoformat()
+    t = Time(time, format=format, scale='utc')
+    return t
+
+
+def get_image_size_from_imageReadoutParameters(myData):
+
+    ''' The stucture of the myData object for the imageReadoutParameters is:
+     imageName    # string 
+     ccdNames     # string 
+     ccdType      # short  
+     overRows     # int    
+     overCols     # int    
+     readRows     # int    
+     readCols     # int    
+     readCols2    # int    
+     preCols      # int    
+     preRows      # int    
+     postCols     # int    
+     priority     # long   
+     '''
+
+    # -----------------
+    # REVISE!!!!
+    # in write_fits:
+    # naxis1 = self.CCDGEOM.dimh + 2*self.CCDGEOM.overh + self.CCDGEOM.preh
+    # naxis2 = self.CCDGEOM.dimv + self.CCDGEOM.overv 
+    geom = {
+        NAXIS1: myData.ReadCols + myData.ReadCols2 + myData.OverCols,
+        NAXIS2: myData.ReadRows + myData.OverRows,
+        overv : myData.OverRows,
+        overh : myData.OverCols,
+        #dimh = SegCols
+        #dimv = SegRows
+        preh : myData.preRows,
+        }
+    return geom
+    
 
 class HDRTEMPL_TestCamera:
 
@@ -182,91 +282,6 @@ class HDRTEMPL_TestCamera:
             self.write_header_emptyHDU(filename)
         return
 
-class HDRTEMPL_SciCamera:
-
-    # TODO: We might want to add the ability to separate the header by type
-
-    def __init__(self, hrdlist=HDRLIST, visitID_start=1):
-        self.hdrlist = hrdlist
-        self.visitID_start = visitID_start
-        self.visitID = "%08d" % self.visitID_start
-        # Create logger
-        self.logger = create_logger(level=logging.NOTSET,name='HEADERSERVICE')
-        self.load_templates()
-        self.header_as_arrays()
-
-    def load_templates(self):
-        """ Load in all of the header templates """
-        self.header = fitsio.FITSHDR()
-        for hdrname in self.hdrlist:
-            hdrfile = os.path.join(HEADERSERVICE_DIR,'etc','SciCamera',"%s.header" % hdrname)
-            # We read and append at the same time, but we might want
-            # to de-couple these two actions, if we want to keept the
-            # sections separated so they can be streamed independently
-            self.header = fitsio.read_scamp_head(hdrfile,header=self.header)
-                    
-    def get_record(self,keyword):
-        return get_record(self.header,keyword)
-
-    def get_header_values(self):
-        return get_values(self.header)
-
-    def update_record(self,keyword,value):
-        """ Update record for key with value """
-        rec = self.get_record(keyword)
-        rec['value'] = value
-        rec['card_string'] = self.header._record2card(rec)
-        #self.header.write_keys([rec])
-        #self.header.add_record(rec)
-        
-            
-    def next_visit(self,filter='r'):
-        """ Rev up the visitID counter """
-        self.filter = filter
-        self.visitID = "%08d" % (int(self.visitID) + 1)
-        self.header['VISITID'] = self.visitID
-        self.next_pointing()
-
-    def next_pointing(self,RA=None,DEC=None):
-        """ Generate a random RA,DEC pointing """
-        if not RA and not DEC:
-            self.RA  = random.uniform(0, 360)
-            self.DEC = random.uniform(10, -70)
-        elif RA and DEC:
-            self.RA  = RA
-            self.DEC = DEC
-        else:
-            exit("Both RA/DEC need to be defined or undefine")
-
-        self.header['RA']  = self.RA
-        self.header['DEC'] = self.DEC
-
-    def header_as_arrays(self):
-        """ Make numpy array representations of the header keys and values """
-        
-        head_keys = self.header.keys()
-        head_vals = [self.header[key] for key in self.header.keys()]
-
-        # Make numpy arrays of the heads
-        self.header_keys = numpy.array(head_keys)
-        self.header_vals = numpy.array(head_vals)
-
-    def write_header(self,filename,newline=False, md5=False):
-
-        """
-        Write the header using the strict FITS notation (newline=False)
-        or more human readable (newline=True)
-        """
-
-        if newline:
-            with open(filename,'w') as fobj:
-                hstring = str(self.header)
-                fobj.write(hstring)
-        else:
-            data=None
-            fitsio.write(filename, data, header=self.header)
-        return
-
 
 class HDRTEMPL_ATSCam:
 
@@ -381,7 +396,6 @@ class HDRTEMPL_ATSCam:
             self.hstring = self.hstring + str(self.header[extname]) + '\n' + delimiter
         return self.hstring 
 
-
     def write_headers(self,filenames, MP=False, NP=2, md5=False):
 
         """
@@ -469,36 +483,3 @@ class HDRTEMPL_ATSCam:
         return
 
 
-def md5Checksum(filePath,blocksize=1024*512):
-    with open(filePath, 'rb') as fh:
-        m = hashlib.md5()
-        while True:
-            data = fh.read(blocksize)
-            if not data:
-                break
-            m.update(data)
-    return m.hexdigest()
-
-
-def get_obsnite(date=None, thresh_hour=14, format='{year}{month:02d}{day:02d}'):
-
-    import datetime
-    """
-    Get the obs-nite from a 'datetime.datetime.now()' kind of data object, but it will not
-    work 'datetime.date.today()' has it has no hour
-    """
-    if date is None:
-        date = datetime.datetime.now()
-    # If hour < 14 we are still in the previous night date
-    if date.hour < thresh_hour:
-        date = date - datetime.timedelta(days=1)
-    obsnite = format.format(year=date.year,month=date.month, day=date.day)
-    return obsnite
-
-def get_date_utc(time=None,format='fits'):
-    from astropy.time import Time
-    from datetime import datetime
-    if time is None:
-        time = (datetime.utcnow()).isoformat()
-    t = Time(time, format=format, scale='utc')
-    return t
