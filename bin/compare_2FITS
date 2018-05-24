@@ -19,9 +19,11 @@ def compare2fits(file1,file2,write=False):
 
     # Make sure that have the same number of hdus
     fits1 = fitsio.FITS(file1) 
-    hdus1 = xrange(len(fits1))
+    hdus1 = range(len(fits1))
     fits2 = fitsio.FITS(file2) 
-    hdus2 = xrange(len(fits2))
+    hdus2 = range(len(fits2))
+    if hdus1 != hdus2:
+        print ("# number of HDU's are different, proceeding until failure")
     
     for hdu in hdus1:
         data1,header1 = fitsio.read(file1,ext=hdu,header=True)
@@ -59,6 +61,7 @@ if __name__ == "__main__":
     except:
         sys.exit("ERROR: Need two files to compare")
 
+    # For now we do not want to write, change write to True if file is needed.
     compare2fits(file1,file2,write=False)
 
 
