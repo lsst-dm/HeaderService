@@ -155,14 +155,16 @@ def get_image_size_from_imageReadoutParameters(myData):
     # naxis1 = self.CCDGEOM.dimh + 2*self.CCDGEOM.overh + self.CCDGEOM.preh
     # naxis2 = self.CCDGEOM.dimv + self.CCDGEOM.overv 
     geom = {
-        NAXIS1: myData.ReadCols + myData.ReadCols2 + myData.OverCols,
-        NAXIS2: myData.ReadRows + myData.OverRows,
-        overv : myData.OverRows,
-        overh : myData.OverCols,
-        #dimh = SegCols
-        #dimv = SegRows
-        preh : myData.preRows,
+        'NAXIS1': myData.readCols + myData.readCols2 + myData.overCols,
+        'NAXIS2': myData.readRows + myData.overRows,
+        'overv' : myData.overRows,
+        'overh' : myData.overCols,
+        'preh'  : myData.preRows,
+        #dimh = SegCols -- not in myData
+        #dimv = SegRows -- not in myData
         }
+    geom['naxis1'] = geom['NAXIS1']
+    geom['naxis2'] = geom['NAXIS2']
     return geom
     
 

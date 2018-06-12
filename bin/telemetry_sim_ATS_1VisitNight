@@ -53,9 +53,19 @@ if __name__ == "__main__":
     preh  = 3
     overh = 32
     overv = 48
+    overRows = overv
+    overCols = overh
+    preRows = preh
+    readCols = 512
+    readCols2 = 0
+    readRows = 2020
     kw = {'overRows':overv,
           'overCols':overh,
-          'preRows': preh}
+          'preRows': preh,
+          'readCols': readCols,
+          'readCols2': readCols2,
+          'readRows': readRows,
+          }
     cam.send_Event('imageReadoutParameters',**kw)
 
     # Send the target event -- here we populate only a few fields
