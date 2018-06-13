@@ -155,11 +155,11 @@ def get_image_size_from_imageReadoutParameters(myData):
     # naxis1 = self.CCDGEOM.dimh + 2*self.CCDGEOM.overh + self.CCDGEOM.preh
     # naxis2 = self.CCDGEOM.dimv + self.CCDGEOM.overv 
     geom = {
-        'NAXIS1': myData.readCols + myData.readCols2 + myData.overCols,
+        'NAXIS1': myData.readCols + myData.readCols2 + myData.overCols + myData.preCols,
         'NAXIS2': myData.readRows + myData.overRows,
         'overv' : myData.overRows,
         'overh' : myData.overCols,
-        'preh'  : myData.preRows,
+        'preh'  : myData.preCols,
         #'dimh' : myData.readCols  -- not in myData, in case we want to fudge it
         #'dimv' : myData.readRows  -- not in myData, in case we want to fudge it
         }
@@ -304,6 +304,9 @@ class HDRTEMPL_ATSCam:
         # Create logger
         self.logger = create_logger(level=logging.NOTSET,name='HEADERSERVICE_ATSCam')
 
+        # Init the class with geometry for a vendor
+        self.CCDGEOM = CCDGeom(self.vendor,segname=self.segname)
+
         # Build the segments names
         self.build_segment_list()
 
@@ -313,8 +316,6 @@ class HDRTEMPL_ATSCam:
         # Set template file names
         self.set_template_filenames()
 
-        # Init the class with geometry for a vendor
-        self.CCDGEOM = CCDGeom(self.vendor,segname=self.segname)
         
         # Load them up
         #self.load_templates()
@@ -327,13 +328,13 @@ class HDRTEMPL_ATSCam:
         self.templ_primary_file = os.path.join(self.templ_path, self.templ_primary_name)
         self.templ_segment_file = os.path.join(self.templ_path, self.templ_segment_name)
 
-    def build_segment_list(self,nx=2,ny=8):
+    def build_segment_list(self,n=16):
         """ Function to create the names and keys for Segments"""
         self.segment_names = []
-        for i in range(nx):
-            for j in range(ny):
-                segment_name = '{}{}'.format(i,j)
-                self.segment_names.append(segment_name)
+        for k in range(n):
+            channel = k+1
+            segment_name = self.CCDGEOM.SEGNAME[channel]
+            self.segment_names.append(segment_name)
 
     def build_hdrlist(self):
         self.HDRLIST = ['PRIMARY']

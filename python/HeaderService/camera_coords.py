@@ -33,11 +33,14 @@ SCAN_GEOM['ITL'] = {'dimv':2000,
                     'preh' :3,
                     'overh':32,
                     'overv':48}
+
 SCAN_GEOM['E2V'] = {'dimv':2002,
                     'dimh':512,
                     'preh' :10,
-                    'overh':22,
+                    'overh':54,
                     'overv':46}
+
+# Mapping for the CHANNEL (Output number or HDU) keyword to the segments
 CHANNEL = {}
 CHANNEL['E2V'] = {'00':16,
                   '01':15,
@@ -48,7 +51,7 @@ CHANNEL['E2V'] = {'00':16,
                   '06':10,
                   '07': 9,
                   '10': 1, 
-                  '11': 2,  
+                  '11': 2,
                   '12': 3,
                   '13': 4,
                   '14': 5,
@@ -72,6 +75,12 @@ CHANNEL['ITL'] = {'00': 8,
                   '15':14,
                   '16':15, 
                   '17':16}
+
+# And now the inverse, the segment for each Output number or HDU
+SEGNAME = {}
+SEGNAME['E2V'] =  {v:k for k, v in CHANNEL['E2V'].items()}
+SEGNAME['ITL'] =  {v:k for k, v in CHANNEL['ITL'].items()}
+
 class CCDGeom:
 
     def __init__(self, vendor,
@@ -107,6 +116,10 @@ class CCDGeom:
         self.dimh = SCAN_GEOM[vendor]['dimh']
         self.dimv = SCAN_GEOM[vendor]['dimv']
 
+        # Make this info available as part of the class
+        self.CHANNEL = CHANNEL[vendor]
+        self.SEGNAME = SEGNAME[vendor]
+        
         # Update the primary, we do this only once at __init__ unless we change overh/overv/dimh/dimv
         self.primary()
 

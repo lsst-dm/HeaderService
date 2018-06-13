@@ -17,7 +17,7 @@ def cmdline():
 
     # Make conf_parser that hold values from a config.ini file
     parser = argparse.ArgumentParser(description="DM Header Service")
-    parser.add_argument("--vendor", action="store",default='ITL', 
+    parser.add_argument("--vendor", action="store",default='E2V', 
                         help="CCD Vendor Name")
     parser.add_argument("--filepath", action="store",default=os.path.join(os.getcwd(),'DMHS_filerepo'),
                         help="Filepath where we write the headers")

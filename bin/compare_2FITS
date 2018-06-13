@@ -26,11 +26,18 @@ def compare2fits(file1,file2,write=False):
         print ("# number of HDU's are different, proceeding until failure")
     
     for hdu in hdus1:
-        data1,header1 = fitsio.read(file1,ext=hdu,header=True)
-        data2,header2 = fitsio.read(file2,ext=hdu,header=True)
+
         # We skip the first HDU=0
         if hdu == 0:
             continue
+
+        # We will do the match by EXTNAME
+        extname = fits1[hdu].get_extname()
+
+        data1,header1 = fitsio.read(file1,ext=extname,header=True)
+        data2,header2 = fitsio.read(file2,ext=extname,header=True)
+        #data1,header1 = fitsio.read(file1,ext=hdu,header=True)
+        #data2,header2 = fitsio.read(file2,ext=hdu,header=True)
         diff = data1-data2
         Npix = diff.shape[0]*diff.shape[1]
         ix = numpy.where(diff != 0)
@@ -41,10 +48,10 @@ def compare2fits(file1,file2,write=False):
             v2    = diff[ix].max()
             vmean = diff[ix].mean()
             vmedian = numpy.median(diff[ix])
-            print ("# FILES ARE DIFERENT for HDU {} at {} pixels or {} perc".format(hdu,Ndiff,100*fraction))
+            print ("# FILES ARE DIFERENT for HDU {} at {} pixels or {} perc".format(extname,Ndiff,100*fraction))
             print ("# {},{},{},{} (min,max,mean,median)".format(v1,v2,vmean,vmedian))
         else:
-            print ("{} HDU {} -- {}".format(file1, hdu,Ndiff))
+            print ("# Images are the same: {} HDU {} -- {}".format(file1, extname,Ndiff))
 
         if write:
             base,ext = os.path.splitext(os.path.basename(file1))
