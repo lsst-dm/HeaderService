@@ -125,9 +125,8 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
                 myData = ImParam.getCurrent()
                 # in case we want to get NAXIS1/NAXIS2, etc.
                 geom = hutils.get_image_size_from_imageReadoutParameters(myData)
-
-                overv, overh, preh = myData.overRows, myData.overCols,myData.preRows
-                LOGGER.info("Received: overv={}, overh={}, preh={}".format(overv, overh, preh))
+                #overv, overh, preh = myData.overRows, myData.overCols,myData.preRows
+                LOGGER.info("Received: overv={}, overh={}, preh={}".format(geom['overv'], geom['overh'], geom['preh']))
                 # We update the headers and reload them
                 HDR.CCDGEOM.overh = geom['overh']
                 HDR.CCDGEOM.overv = geom['overv']
@@ -150,9 +149,9 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
                 HDR.update_record('ZD', zd, 'PRIMARY')
                 HDR.update_record('IMGNAME',imageName,'PRIMARY')
                 HDR.update_record('EXPTIME',measuredExptime,'PRIMARY')
-                HDR.update_record('OVERH',overh,'PRIMARY')
-                HDR.update_record('OVERV',overv,'PRIMARY')
-                HDR.update_record('PREH',preh,'PRIMARY')
+                HDR.update_record('OVERH',geom['overh'],'PRIMARY')
+                HDR.update_record('OVERV',geom['overv'],'PRIMARY')
+                HDR.update_record('PREH',geom['preh'],'PRIMARY')
                 # These values are computed by the DMHS
                 HDR.update_record('FILENAME',filename_FITS,'PRIMARY')
                 HDR.update_record('DATE-OBS',DATE_OBS.fits,'PRIMARY')
