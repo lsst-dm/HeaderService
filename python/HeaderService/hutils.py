@@ -160,13 +160,12 @@ def get_image_size_from_imageReadoutParameters(myData):
         'overv' : myData.overRows,
         'overh' : myData.overCols,
         'preh'  : myData.preRows,
-        #dimh = SegCols -- not in myData
-        #dimv = SegRows -- not in myData
+        #'dimh' : myData.readCols  -- not in myData, in case we want to fudge it
+        #'dimv' : myData.readRows  -- not in myData, in case we want to fudge it
         }
     geom['naxis1'] = geom['NAXIS1']
     geom['naxis2'] = geom['NAXIS2']
     return geom
-    
 
 class HDRTEMPL_TestCamera:
 

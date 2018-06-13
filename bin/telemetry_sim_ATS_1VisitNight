@@ -5,8 +5,12 @@ import argparse
 from datetime import datetime
 import salpytools
 import HeaderService.hutils as hutils
+import HeaderService.camera_coords as camera_coords
+
 LOGGER = hutils.create_logger(name=__name__)
 
+# Get the info from the camera_coords library for and ITL sensor
+_GEO = camera_coords.CCDGeom('ITL')
 
 def cmdline():
 
@@ -28,12 +32,18 @@ def cmdline():
                         help="ImageSequenceName")
     parser.add_argument("--NSequence", action="store",default=2, type=int, 
                         help="Number of exposure in sequence")
-    parser.add_argument("--exptime", action="store",default=15, type=int, 
+    parser.add_argument("--exptime", action="store",default=15, type=float, 
                         help="Exposure time in seconds")
     parser.add_argument("--airmass", action="store",default=1.237, type=float, 
                         help="Airmass")
     parser.add_argument("--sleeptime", action="store",default=1, type=float, 
                         help="Sleep Time between step, in seconds")
+    parser.add_argument("--preh", action="store",default=_GEO.preh, type=float, 
+                        help="prescan horizontal")
+    parser.add_argument("--overh", action="store",default=_GEO.overh, type=float, 
+                        help="overscal horizontal")
+    parser.add_argument("--overv", action="store",default=_GEO.overv, type=float, 
+                        help="overscal vertical")
     args = parser.parse_args()
     return args
 
@@ -50,21 +60,12 @@ if __name__ == "__main__":
     camCommand = cam
 
     # Send sub-set of imageReadoutParameters -- here we populate only a few fields
-    preh  = 3
-    overh = 32
-    overv = 48
-    overRows = overv
-    overCols = overh
-    preRows = preh
-    readCols = 512
-    readCols2 = 0
-    readRows = 2020
-    kw = {'overRows':overv,
-          'overCols':overh,
-          'preRows': preh,
-          'readCols': readCols,
-          'readCols2': readCols2,
-          'readRows': readRows,
+    kw = {'overRows':args.overv,
+          'overCols':args.overh,
+          'preRows': args.preh,
+          'readCols': _GEO.dimh,
+          'readCols2': 0,
+          'readRows': _GEO.dimv,
           }
     cam.send_Event('imageReadoutParameters',**kw)
 

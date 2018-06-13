@@ -6,19 +6,20 @@ import os
 import logging
 import HeaderService
 import salpytools
-#import HeaderService.SAL_tools as SAL_tools
 import HeaderService.hutils as hutils
+import HeaderService.hslib as hslib
 import argparse
 import socket
 import math
+import yaml
     
 spinner = hutils.spinner
 
+# Create a logger for all functions
+LOGGER = hutils.create_logger(level=logging.NOTSET,name='HEADERSERVICE')
+
 def cmdline():
 
-    import argparse
-    import yaml
-    
     # 1. We make a proto-parse use to read in the default yaml
     # configuration file, Turn off help, so we print all options in response to -h
     conf_parser = argparse.ArgumentParser(add_help=False)
@@ -36,7 +37,7 @@ def cmdline():
                         help="Filepath where we write the headers")
     parser.add_argument("--tsleep", action="store",default=0.1, type=float, 
                         help="Sleep Time for loop")
-    parser.add_argument("--start_state", action="store",default=None, 
+    parser.add_argument("--start_state", action="store",default='OFFLINE', 
                         help="Initial start State of device")
     parser.add_argument("--send_efd_message", action="store_true",default=False, 
                         help="Send and EDF message as well?")
@@ -45,58 +46,46 @@ def cmdline():
     parser.set_defaults(**conf_defaults)
     args = parser.parse_args(args=remaining_argv)
 
-    # Get the channels we need to subscribe
-    args.channels = get_telemetry_channels(args.telemetry,
-                                           start_collection_event=args.start_collection_event,
-                                           end_collection_event=args.end_collection_event)
-    print ("Will use:")
-    for k, v in vars(args).items():
-        print ("   {}: {}".format(k, v))
-    exit()
+    # Get the channels we need to subscribe here
+    #args.channels = hslib.get_telemetry_channels(args.telemetry,
+    #                                             start_collection_event=args.start_collection_event,
+    #                                             end_collection_event=args.end_collection_event)
+    #print ("Will use:")
+    #for k, v in vars(args).items():
+    #    print ("   {}: {}".format(k, v))
+    #    print ("-----------------------")
     return args
 
-def get_telemetry_channels(telem,start_collection_event=None,end_collection_event=None):
-    ''' Get the unique telemetry channels that we need to subscribe to'''
 
-    # ----------------------------------------------------------
-    # TODO: This function need to be moved to an outside library
-    # ----------------------------------------------------------
+def run_enable(State,**kwargs):
 
-
-    # Add 'start_collection_event' and 'end_collection_event' to
-    # telemetry to make sure we add them to the channels
-    #if start_collection_event:
-    #    telem['start_collection_event'] = start_collection_event
-    #if end_collection_event:
-    #    telem['end_collection_event'] = start_collection_event
-    channels = {}
-    for key in telem:
-        # Make the name of the channel unique by appending device
-        c = {'device':telem[key]['device'],    
-             'topic': telem[key]['topic'],
-             'Stype' :telem[key]['Stype']}
-        name = '{}_{}'.format(c['device'],c['topic'])
-        if name not in channels.keys():
-            channels[name] = c
-
-    #for k, v in channels.items():
-    #    print ("{}: {}".format(k, v))
-    return channels
-
-def run_enable(State,telemetry={},vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'):
-
-    # TODO: Rename this function and probably pass all of the args or kwargs
-
+    # Extract params from kwargs
+    telemetry = kwargs.pop('telemetry')
+    vendor    = kwargs.pop('vendor','ITL')
+    filepath  = kwargs.pop('filepath','.')
+    tsleep    = kwargs.pop('tsleep',0.1)
+    start_collection_event = kwargs.pop('start_collection_event',None)
+    end_collection_event   = kwargs.pop('end_collection_event',None)
+    
     # Extract the unique channel by topic/device
-    channels = get_telemetry_channels(telemetry)
+    LOGGER.info("Extracting Telemetry channels from telemetry dictionary")
+    channels = hslib.get_telemetry_channels(telemetry,
+                                            start_collection_event=start_collection_event,
+                                            end_collection_event=end_collection_event)
 
     # Subscribe to each of the channels we want to susbcribe and store
     # the connection in a dictionary
-    SAL_connection = {}
-    for name, c in channels.items():
-        SAL_connection[name] = salpytools.DDSSubcriber(c['device'],c['topic'],Stype=c['Stype'])
-        SAL_connection[name].start()
+    LOGGER.info("*** Starting Connections for Meta-data ***")
+    SAL_connection = hslib.subscribe_to_channels(channels,start=True)
 
+    # Select the start_collection
+    name_start = hslib.get_channel_name(start_collection_event)
+    StartInt = SAL_connection[name_start]
+
+    # Select the end_collection
+    name_end = hslib.get_channel_name(end_collection_event)
+    EndTelem = SAL_connection[name_end]
+    
     # And the object to send DMHS messages
     dmhs = salpytools.DDSSend("atHeaderService")
     efd  = salpytools.DDSSend('efd')
@@ -104,8 +93,6 @@ def run_enable(State,telemetry={},vendor='ITL',filepath='.',tsleep=0.1, start_st
     # Load up the header template
     HDR = HeaderService.HDRTEMPL_ATSCam(vendor=vendor)
     HDR.load_templates() # TODO: We should do this later ----
-    LOGGER = HDR.logger
-
 
     # Make sure that we have a place to put the files
     if not os.path.exists(filepath):
@@ -242,15 +229,25 @@ def run_enable(State,telemetry={},vendor='ITL',filepath='.',tsleep=0.1, start_st
         time.sleep(tsleep)
         loop_n +=1    
 
+
 if __name__ == "__main__":
 
     # Get the args from the command-line
     args = cmdline()
 
+    w = hslib.HSworker(**args.__dict__)
+    w.get_channels()
+    #w.init_State()
+    exit()
+
+    # to get them as dict
+    # myfunction(**args.__dict__)
+    # dict = vars(args)
+
     # Init the device and send the current state vis SummaryState.
     # This needs to be done before we star the SAL controller thread,
     # as they use the DeviveState object for the current state
-    State = salpytools.DeviceState()
+    State = salpytools.DeviceState(default_state=args.start_state)
     State.send_logEvent('SummaryState')
     
     # Create threads for the controller we want to listen to
@@ -265,9 +262,12 @@ if __name__ == "__main__":
         tControl[ctrl_name] = salpytools.DDSController(ctrl_name,State=State)
         tControl[ctrl_name].start()
 
-    # Set the initial state
-    if args.start_state:
-        State.current_state = args.start_state
-
-    run_enable(State,telemetry=args.telemetry,vendor=args.vendor,filepath=args.filepath,tsleep=args.tsleep)
-    
+    #run_enable(State,
+    #           telemetry=args.telemetry,
+    #           vendor=args.vendor,
+    #           filepath=args.filepath,
+    #           tsleep=args.tsleep,
+    #           start_collection_event=args.start_collection_event,
+    #           end_collection_event=args.end_collection_event,
+    #           )
+    #run_enable(State,**args.__dict__)
