@@ -177,6 +177,7 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
                       'Mime':'FITS',
                       'URL': "{}://{}@{}:{}".format(PROTOCOL,USER,ip_adress,filename_HDR),
                       #'URL': "{}".format(os.path.abspath(filename_HDR)),
+                      'ID': imageName,
                       'Version': 1,
                       'priority':1,
                       }
