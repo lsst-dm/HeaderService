@@ -1,7 +1,7 @@
 # Configuration file for the AuxTelescope
 
 # The camera vendor
-vendor: 'ITL'
+vendor: E2V
 
 # The Events that we use to define where we collect 
 start_collection_event: 

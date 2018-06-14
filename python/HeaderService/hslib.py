@@ -1,6 +1,9 @@
 import salpytools
+import HeaderService
 import HeaderService.hutils as hutils
 import logging
+import os
+import socket
 
 # the controller we want to listen to
 # TODO: This could be a configurable list
@@ -11,6 +14,8 @@ _CONTROLER_list = ['enterControl',
                    'enable',
                    'disable']
 
+
+spinner = hutils.spinner
 
 # Create a logger for all functions
 LOGGER = hutils.create_logger(level=logging.NOTSET,name='HEADERSERVICE')
@@ -31,6 +36,14 @@ class HSworker:
         # Inititalize the State class to keep track of the system's state
         self.init_State()
 
+        # Extract the unique channel by topic/device
+        LOGGER.info("Extracting Telemetry channels from telemetry dictionary")
+        self.get_channels()
+
+        # Get the hostname and IP address
+        self.ip_address = socket.gethostbyname(socket.gethostname())
+        LOGGER.info("Will use IP: {} for broadcasting".format(self.ip_address))
+
 
     def init_State(self,start_state=None):
         """
@@ -50,14 +63,42 @@ class HSworker:
 
 
     def get_channels(self):
-        
         """Extract the unique channel by topic/device"""
         LOGGER.info("Extracting Telemetry channels from telemetry dictionary")
-        self.channels = get_telemetry_channels(self.telemetry,
-                                               start_collection_event=self.start_collection_event,
-                                               end_collection_event=self.end_collection_event)        
+        self.channels = extract_telemetry_channels(self.telemetry,
+                                                   start_collection_event=self.start_collection_event,
+                                                   end_collection_event=self.end_collection_event)        
 
-    def run_enable(self,**keys):
+
+    def make_connections(self,start=True):
+
+        """
+        Make connection to channels and start the threads as defined
+        by the meta-data, and make additional connection for Start/End
+        of telemetry Events
+        """
+
+        # The dict containing all of the threads and connections
+        self.SALconn = {}
+        for name, c in self.channels.items():
+            self.SALconn[name] = salpytools.DDSSubcriber(c['device'],c['topic'],Stype=c['Stype'])
+            if start: self.SALconn[name].start()
+
+        # Select the start_collection channel
+        name_start = get_channel_name(self.start_collection_event)
+        self.StartInt = self.SALconn[name_start]
+        # Select the end_collection channel
+        name_end = get_channel_name(self.end_collection_event)
+        self.EndTelem = self.SALconn[name_end]
+
+
+    def check_outdir(self):
+        """ Make sure that we have a place to put the files"""
+        if not os.path.exists(self.filepath):
+            os.makedirs(self.filepath)
+            LOGGER.info("Created dirname:{}".format(self.filepath))
+
+    def run(self,**keys):
 
         # Unpack the dictionary of **keys into variables to do:
         # self.keyname = key['keyname']
@@ -65,26 +106,33 @@ class HSworker:
             setattr(self, k, v)
             print k,v
 
-        
-        # Extract the unique channel by topic/device
-        LOGGER.info("Extracting Telemetry channels from telemetry dictionary")
-        channels = hslib.get_telemetry_channels(telemetry,
-                                                start_collection_event=start_collection_event,
-                                                end_collection_event=end_collection_event)
+        # Subscribe to each of the channels we want to susbcribe and store
+        # the connection in a dictionary
+        LOGGER.info("*** Starting Connections for Meta-data ***")
+        self.make_connections()
 
+        # Make sure that we have a place to put the files
+        self.check_outdir()
 
-        
+        # And the object to send DMHS messages
+        dmhs = salpytools.DDSSend("atHeaderService")
+        if self.send_efd_message:
+            efd  = salpytools.DDSSend('efd')
+            
+        # Load up the header template
+        HDR = HeaderService.HDRTEMPL_ATSCam(vendor=self.vendor)
+        HDR.load_templates() # TODO: We should do this later ----
 
 
 def get_channel_name(c):
-    ''' Standard format the name of a channel across module'''
+    """ Standard format the name of a channel across module"""
     return '{}_{}'.format(c['device'],c['topic'])
 
-def get_telemetry_channels(telem,start_collection_event=None,end_collection_event=None):
-    '''
+def extract_telemetry_channels(telem,start_collection_event=None,end_collection_event=None):
+    """
     Get the unique telemetry channels from telemetry dictionary to define channel
     that we need to subscribe to
-    '''
+    """
     channels = {}
     for key in telem:
         # Make the name of the channel unique by appending device
@@ -114,8 +162,8 @@ def get_telemetry_channels(telem,start_collection_event=None,end_collection_even
 
     return channels
 
-
 def subscribe_to_channels(channels,start=True):
+    """ make connection to channels and start the threads"""
     SAL_connection = {}
     for name, c in channels.items():
         SAL_connection[name] = salpytools.DDSSubcriber(c['device'],c['topic'],Stype=c['Stype'])

@@ -31,7 +31,7 @@ def cmdline():
     parser = argparse.ArgumentParser(description="HeaderService",
                                      # Inherit options from config_parser
                                      parents=[conf_parser])
-    parser.add_argument("--vendor", action="store",default='ITL', 
+    parser.add_argument("--vendor", action="store",default='E2V', 
                         help="CCD Vendor Name")
     parser.add_argument("--filepath", action="store",default=os.path.join(os.getcwd(),'DMHS_filerepo'),
                         help="Filepath where we write the headers")
@@ -46,10 +46,6 @@ def cmdline():
     parser.set_defaults(**conf_defaults)
     args = parser.parse_args(args=remaining_argv)
 
-    # Get the channels we need to subscribe here
-    #args.channels = hslib.get_telemetry_channels(args.telemetry,
-    #                                             start_collection_event=args.start_collection_event,
-    #                                             end_collection_event=args.end_collection_event)
     #print ("Will use:")
     #for k, v in vars(args).items():
     #    print ("   {}: {}".format(k, v))
@@ -236,7 +232,7 @@ if __name__ == "__main__":
     args = cmdline()
 
     w = hslib.HSworker(**args.__dict__)
-    w.get_channels()
+    w.run()
     #w.init_State()
     exit()
 
