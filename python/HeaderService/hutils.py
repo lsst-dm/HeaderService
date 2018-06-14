@@ -149,11 +149,6 @@ def get_image_size_from_imageReadoutParameters(myData):
      priority     # long   
      '''
 
-    # -----------------
-    # REVISE!!!!
-    # in write_fits:
-    # naxis1 = self.CCDGEOM.dimh + 2*self.CCDGEOM.overh + self.CCDGEOM.preh
-    # naxis2 = self.CCDGEOM.dimv + self.CCDGEOM.overv 
     geom = {
         'NAXIS1': myData.readCols + myData.readCols2 + myData.overCols + myData.preCols,
         'NAXIS2': myData.readRows + myData.overRows,
@@ -288,7 +283,7 @@ class HDRTEMPL_ATSCam:
 
     def __init__(self, 
                  section='ATSCam',
-                 vendor='ITL',
+                 vendor='E2V',
                  segname='Segment',
                  templ_path=None,
                  templ_primary_name='primary_hdu.header',
@@ -438,7 +433,7 @@ class HDRTEMPL_ATSCam:
 
         # Figure out the dimensions following the camera geometry
         if not naxis1:
-            naxis1 = self.CCDGEOM.dimh + 2*self.CCDGEOM.overh + self.CCDGEOM.preh
+            naxis1 = self.CCDGEOM.dimh + self.CCDGEOM.overh + self.CCDGEOM.preh
         if not naxis2:
             naxis2 = self.CCDGEOM.dimv + self.CCDGEOM.overv 
 

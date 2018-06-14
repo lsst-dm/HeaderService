@@ -51,7 +51,7 @@ class HSworker:
 
     def get_channels(self):
         
-        # Extract the unique channel by topic/device
+        """Extract the unique channel by topic/device"""
         LOGGER.info("Extracting Telemetry channels from telemetry dictionary")
         self.channels = get_telemetry_channels(self.telemetry,
                                                start_collection_event=self.start_collection_event,
@@ -66,6 +66,13 @@ class HSworker:
             print k,v
 
         
+        # Extract the unique channel by topic/device
+        LOGGER.info("Extracting Telemetry channels from telemetry dictionary")
+        channels = hslib.get_telemetry_channels(telemetry,
+                                                start_collection_event=start_collection_event,
+                                                end_collection_event=end_collection_event)
+
+
         
 
 

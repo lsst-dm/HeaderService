@@ -163,7 +163,7 @@ def run_enable(State,vendor='ITL',filepath='.',tsleep=0.1, start_state='OFFLINE'
                 # Build the kwargs
                 kw = {'Byte_Size':bytesize,
                       'Checksum':md5value,
-                      'Generator':'AT',
+                      'Generator':'atHeaderService',
                       'Mime':'FITS',
                       'URL': "{}://{}@{}:{}".format(PROTOCOL,USER,ip_adress,filename_HDR),
                       #'URL': "{}".format(os.path.abspath(filename_HDR)),
