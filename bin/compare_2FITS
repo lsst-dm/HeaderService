@@ -4,8 +4,30 @@ import fitsio
 import numpy
 import os
 import sys
+import argparse
 
-def compare2fits(file1,file2,write=False):
+def cmdline():
+
+    # Make conf_parser that hold values from a config.ini file
+    parser = argparse.ArgumentParser(description="Simple FITS comparsion script")
+    parser.add_argument("file1", action="store",
+                        help="Name of the file 1")
+    parser.add_argument("file2", action="store",
+                        help="Name of the file 2")
+    parser.add_argument("--write_diff", action="store_true",default=False, 
+                        help="Write out the difference image")
+    parser.add_argument("--byhdu", action="store_true",default=False, 
+                        help="Compare by HDU number")
+    parser.add_argument("--byextname", action="store_true",default=True, 
+                        help="Compare by EXTNAME string")
+    args = parser.parse_args()
+
+    if args.byhdu:
+        args.byextname = False
+    return args
+
+
+def compare2fits(file1,file2,byhdu=False, byextname=True, write=False):
 
     # Make sure the exists
     exists1 = os.path.exists(file1)
@@ -31,13 +53,14 @@ def compare2fits(file1,file2,write=False):
         if hdu == 0:
             continue
 
-        # We will do the match by EXTNAME
-        extname = fits1[hdu].get_extname()
+        if byextname:
+            # We will do the match by EXTNAME
+            extname = fits1[hdu].get_extname()
+        elif byhdu:
+            extname = hdu
 
         data1,header1 = fitsio.read(file1,ext=extname,header=True)
         data2,header2 = fitsio.read(file2,ext=extname,header=True)
-        #data1,header1 = fitsio.read(file1,ext=hdu,header=True)
-        #data2,header2 = fitsio.read(file2,ext=hdu,header=True)
         diff = data1-data2
         Npix = diff.shape[0]*diff.shape[1]
         ix = numpy.where(diff != 0)
@@ -61,15 +84,11 @@ def compare2fits(file1,file2,write=False):
 
 
 if __name__ == "__main__":
-
-    try:
-        file1 = sys.argv[1]
-        file2 = sys.argv[2]
-    except:
-        sys.exit("ERROR: Need two files to compare")
-
+    
+    args = cmdline()
+    
     # For now we do not want to write, change write to True if file is needed.
-    compare2fits(file1,file2,write=False)
+    compare2fits(args.file1,args.file2,write=args.write_diff,byextname=args.byextname,byhdu=args.byhdu)
 
 
             
