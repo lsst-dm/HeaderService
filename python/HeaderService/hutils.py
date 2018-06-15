@@ -373,9 +373,9 @@ class HDRTEMPL_ATSCam:
         for keyword,value in newdict.items():
             try:
                 self.update_record(keyword,value,extname)
-                LOGGER.info("Updating {}".format(keyword))
+                LOGGER.debug("Updating {}".format(keyword))
             except:
-                LOGGER.info("WARNING: Could not update {}".format(keyword))
+                LOGGER.debug("WARNING: Could not update {}".format(keyword))
                 
     def string_header(self,delimiter='END'):
         """ Format a header as a string """

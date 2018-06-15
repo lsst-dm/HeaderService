@@ -72,7 +72,9 @@ class HSworker:
         LOGGER.info("Extracting Telemetry channels from telemetry dictionary")
         self.channels = extract_telemetry_channels(self.telemetry,
                                                    start_collection_event=self.start_collection_event,
-                                                   end_collection_event=self.end_collection_event)        
+                                                   end_collection_event=self.end_collection_event,
+                                                   imageParam_event=self.imageParam_event)
+
         # Now separate the keys to collect at the 'end' from the ones at 'start'
         t = self.telemetry # Short-cut
         self.keywords_start = [k for k in t.keys() if t[k]['collect_after_event'] == 'start_collection_event']
@@ -93,9 +95,12 @@ class HSworker:
         # Select the start_collection channel
         self.name_start = get_channel_name(self.start_collection_event)
         self.StartInt = self.SALconn[self.name_start]
+
         # Select the end_collection channel
         self.name_end = get_channel_name(self.end_collection_event)
         self.EndTelem = self.SALconn[self.name_end]
+
+        
 
     def check_outdir(self):
         """ Make sure that we have a place to put the files"""
@@ -125,9 +130,35 @@ class HSworker:
             efd  = salpytools.DDSSend('efd')
             
         # Load up the header template
-        HDR = HeaderService.HDRTEMPL_ATSCam(vendor=self.vendor)
-        HDR.load_templates() # TODO: We should do this later ----
+        self.HDR = HeaderService.HDRTEMPL_ATSCam(vendor=self.vendor)
+        self.HDR.load_templates()
+
+        # Go into the eternal loop
         self.run_loop()
+
+
+    def update_header_geometry(self):
+        
+        # Image paramters
+        LOGGER.info("Extracting Image Parameters")
+        # Extract from telemetry and identify the channel
+        name = get_channel_name(self.imageParam_event)
+        myData = self.SALconn[name].getCurrent()
+        # in case we want to get NAXIS1/NAXIS2, etc.
+        geom = hutils.get_image_size_from_imageReadoutParameters(myData)
+        # We update the headers and reload them
+        self.HDR.CCDGEOM.overh = geom['overh']
+        self.HDR.CCDGEOM.overv = geom['overv']
+        self.HDR.CCDGEOM.preh  = geom['preh']
+        LOGGER.info("Reloadling templates")
+        self.HDR.load_templates()
+        LOGGER.info("For reference NAXIS1:{}".format(geom['NAXIS1']))
+        LOGGER.info("For reference NAXIS2:{}".format(geom['NAXIS2']))
+        LOGGER.info("Received: overv={}, overh={}, preh={}".format(geom['overv'], geom['overh'], geom['preh']))
+
+    def update_header(self):
+
+        hello=1
 
     def get_filenames(self):
         """
@@ -135,9 +166,9 @@ class HSworker:
         'imageName' and define the output names based on that ID
         """
         # Extract from telemetry and identify the channel
-        name = get_channel_name(self.imageName_channel)
+        name = get_channel_name(self.imageName_event)
         myData = self.SALconn[name].getCurrent()
-        self.imageName = getattr(myData,self.imageName_channel['value'])
+        self.imageName = getattr(myData,self.imageName_event['value'])
 
         # Construct the hdr and fits filename
         self.filename_HDR = os.path.join(self.filepath,self.format_HDR.format(self.imageName))
@@ -155,15 +186,38 @@ class HSworker:
                 sys.stdout.write('\r') 
 
             elif self.StartInt.newEvent:
-                # Build the DATE of observation immediatly
-                DATE_OBS = hutils.get_date_utc()
+
+                # Build the DATE of observation immediatly -- we will access it later
+                self.DATE_OBS = hutils.get_date_utc()
+
+                # Clean/purge all metadata
+                self.clean()
+                
                 sys.stdout.flush()
                 LOGGER.info("Received: {} Event".format(self.name_start))
                 self.get_filenames()
                 LOGGER.info("Extracted value for imageName: {}".format(self.imageName))
-                self.collect(self.keywords_start)
                 
+                # Collect metadata at start of integration
+                LOGGER.info("Collecting Metadata START : {} Event".format(self.name_start))
+                self.collect(self.keywords_start)
 
+                # Wait for end Event (i.e. end of telemetry)
+                LOGGER.info("Current State is {} -- waiting for {} event".format(self.State.current_state,self.name_end))
+                self.EndTelem.waitEvent()
+                if self.EndTelem.newEvent:
+                    sys.stdout.flush()
+                    LOGGER.info("Received: {} Signal".format(self.name_end))
+                    # The creation date of the header file -- now!!
+                    self.DATE_HDR = hutils.get_date_utc()
+                    # Collect metadata at end of integration
+                    LOGGER.info("Collecting Metadata END: {} Event".format(self.name_end))
+                    self.collect(self.keywords_end)
+                    # Collect metadata created by the HeaderService
+                    LOGGER.info("Collecting Metadata from HeaderService")
+                    self.collect_from_HeaderService()
+                    # First we update the header using the information from the camera geometry
+                    self.update_header_geometry()
             else:
                 sys.stdout.flush()
                 sys.stdout.write("Current State is {} -- wating for {} Event...[{}]".format(self.State.current_state,self.name_start,spinner.next()))
@@ -173,19 +227,38 @@ class HSworker:
             time.sleep(self.tsleep)
             loop_n +=1    
 
+    def clean(self):
+        self.myData = {}
+        self.metadata = {}
 
-        def collect(self,keys):
-            myData = {}
-            for k in keys:
-                #names = 
-                #myData = Target.getCurrent()
+    def collect(self,keys):
+        """ Collect meta-data from the telemetry-connected channels
+        and store it in the 'metadata' dictionary"""
+        for k in keys:
+            name = get_channel_name(self.telemetry[k])
+            param = self.telemetry[k]['value']
+            # Only access data payload once
+            if name not in self.myData.keys():
+                self.myData[name] = self.SALconn[name].getCurrent()
+            self.metadata[k] = getattr(self.myData[name],param)
+
+    def collect_from_HeaderService(self):
+        """Collect custom meta-data generated by the HeaderService"""
+        self.metadata['FILENAME'] = self.filename_FITS
+        self.metadata['DATE-OBS'] = self.DATE_OBS.fits
+        self.metadata['MJD-OBS'] = self.DATE_OBS.mjd
+        self.metadata['DATE'] = self.DATE_HDR.fits
+        self.metadata['MJD']  = self.DATE_HDR.mjd
+        self.metadata['OBS-NITE'] = hutils.get_obsnite()
 
 
 def get_channel_name(c):
     """ Standard formatting for the name of a channel across modules"""
     return '{}_{}'.format(c['device'],c['topic'])
 
-def extract_telemetry_channels(telem,start_collection_event=None,end_collection_event=None):
+def extract_telemetry_channels(telem,start_collection_event=None,
+                               end_collection_event=None,
+                               imageParam_event=None):
     """
     Get the unique telemetry channels from telemetry dictionary to
     define the topics that we need to subscribe to
@@ -216,6 +289,15 @@ def extract_telemetry_channels(telem,start_collection_event=None,end_collection_
         if name not in channels.keys():
             c['Stype'] = 'Event'
             channels[name] = c
+
+    # The imageParam event
+    if imageParam_event:
+        c = imageParam_event
+        name = get_channel_name(c)
+        if name not in channels.keys():
+            c['Stype'] = 'Event'
+            channels[name] = c
+        
 
     return channels
 

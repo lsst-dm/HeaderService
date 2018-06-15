@@ -3,11 +3,16 @@
 # The camera vendor
 vendor: E2V
 
-# The file naming source and definitions 
+# The event for the image readout paramters
+imageParam_event:
+    device: atcamera
+    topic: imageReadoutParameters
+
+# The file naming event source and definitions 
 filepath: 'DMHS_filerepo'
 format_HDR: " {}.header"
 format_FITS: "{}.fits"
-imageName_channel:
+imageName_event:
     device: atcamera
     topic: startIntegration
     value: imageName
@@ -35,7 +40,7 @@ telemetry:
   device: atcamera
   Stype: Event
   topic: shutterMotionProfile
-  value: measuredExptime 
+  value: measuredExposureTime
   collect_after_event: end_collection_event
 
  RA:
