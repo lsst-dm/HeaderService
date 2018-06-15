@@ -10,7 +10,7 @@ imageParam_event:
 
 # The file naming event source and definitions 
 filepath: 'DMHS_filerepo'
-format_HDR: " {}.header"
+format_HDR: "{}.header"
 format_FITS: "{}.fits"
 imageName_event:
     device: atcamera

@@ -125,9 +125,10 @@ class HSworker:
         self.check_outdir()
 
         # And the object to send DMHS messages
-        dmhs = salpytools.DDSSend("atHeaderService")
+        # TODO -- Make this configurable too
+        self.dmhs = salpytools.DDSSend("atHeaderService")
         if self.send_efd_message:
-            efd  = salpytools.DDSSend('efd')
+            self.efd  = salpytools.DDSSend('efd')
             
         # Load up the header template
         self.HDR = HeaderService.HDRTEMPL_ATSCam(vendor=self.vendor)
@@ -135,7 +136,6 @@ class HSworker:
 
         # Go into the eternal loop
         self.run_loop()
-
 
     def update_header_geometry(self):
         
@@ -158,7 +158,10 @@ class HSworker:
 
     def update_header(self):
 
-        hello=1
+        """Update FITSIO header object using the captured metadata"""
+        for k,v in self.metadata.items():
+            LOGGER.debug("Updating header with {:8s} = {}".format(k,v))
+            self.HDR.update_record(k,v, 'PRIMARY')
 
     def get_filenames(self):
         """
@@ -218,6 +221,13 @@ class HSworker:
                     self.collect_from_HeaderService()
                     # First we update the header using the information from the camera geometry
                     self.update_header_geometry()
+                    self.update_header()
+                    # Write the header 
+                    self.write()
+                    # Announce creation to DDS
+                    self.announce()
+                    self.EndTelem.newEvent = False
+                    LOGGER.info("------------------------------------------")
             else:
                 sys.stdout.flush()
                 sys.stdout.write("Current State is {} -- wating for {} Event...[{}]".format(self.State.current_state,self.name_start,spinner.next()))
@@ -226,6 +236,33 @@ class HSworker:
 
             time.sleep(self.tsleep)
             loop_n +=1    
+
+    def announce(self):
+        # Get the md5 for the header file
+        md5value = hutils.md5Checksum(self.filename_HDR) #,blocksize=1024*512):
+        bytesize = os.path.getsize(self.filename_HDR)
+        LOGGER.info("Got MD5SUM: {}".format(md5value))
+        # Now we publish filename and MD5
+        # Build the kwargs
+        kw = {'Byte_Size':bytesize,
+              'Checksum':md5value,
+              'Generator':'atHeaderService',
+              'Mime':'FITS',
+              'URL': "{}://{}@{}:{}".format(self.PROTOCOL,self.USER,self.ip_address,self.filename_HDR),
+              #'URL': "{}".format(os.path.abspath(filename_HDR)),
+              'ID': self.imageName,
+              'Version': 1,
+              'priority':1,
+              }
+        self.dmhs.send_Event('LargeFileObjectAvailable',**kw)
+        LOGGER.info("Sent LargeFileObjectAvailable: {}".format(kw))
+        if self.send_efd_message:
+            self.efd.send_Event('LargeFileObjectAvailable',**kw)
+            
+    def write(self):
+        """ Function to call to write the header"""
+        self.HDR.write_header(self.filename_HDR, newline=False)
+        LOGGER.info("Wrote header to: {}".format(self.filename_HDR))
 
     def clean(self):
         self.myData = {}
