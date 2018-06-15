@@ -75,14 +75,6 @@ def get_obsnite(date=None, thresh_hour=14, format='{year}{month:02d}{day:02d}'):
     obsnite = format.format(year=date.year,month=date.month, day=date.day)
     return obsnite
 
-def get_date_utc(time=None,format='fits'):
-    from astropy.time import Time
-    from datetime import datetime
-    if time is None:
-        time = (datetime.utcnow()).isoformat()
-    t = Time(time, format=format, scale='utc')
-    return t
-
 def write_header_string(arg):
     """
     Simple method to write a header string to a filename that can be
@@ -130,7 +122,6 @@ def get_date_utc(time=None,format='fits'):
         time = (datetime.utcnow()).isoformat()
     t = Time(time, format=format, scale='utc')
     return t
-
 
 def get_image_size_from_imageReadoutParameters(myData):
 

@@ -3,7 +3,9 @@ import HeaderService
 import HeaderService.hutils as hutils
 import logging
 import os
+import sys
 import socket
+import time
 
 # the controller we want to listen to
 # TODO: This could be a configurable list
@@ -44,6 +46,10 @@ class HSworker:
         self.ip_address = socket.gethostbyname(socket.gethostname())
         LOGGER.info("Will use IP: {} for broadcasting".format(self.ip_address))
 
+        # The user running the process
+        self.USER = os.environ['USER']
+        # The protocol
+        self.PROTOCOL = 'scp' # or http, etc
 
     def init_State(self,start_state=None):
         """
@@ -61,23 +67,23 @@ class HSworker:
             self.tControl[ctrl_name] = salpytools.DDSController(ctrl_name,State=self.State)
             self.tControl[ctrl_name].start()
 
-
     def get_channels(self):
         """Extract the unique channel by topic/device"""
         LOGGER.info("Extracting Telemetry channels from telemetry dictionary")
         self.channels = extract_telemetry_channels(self.telemetry,
                                                    start_collection_event=self.start_collection_event,
                                                    end_collection_event=self.end_collection_event)        
-
+        # Now separate the keys to collect at the 'end' from the ones at 'start'
+        t = self.telemetry # Short-cut
+        self.keywords_start = [k for k in t.keys() if t[k]['collect_after_event'] == 'start_collection_event']
+        self.keywords_end   = [k for k in t.keys() if t[k]['collect_after_event'] == 'end_collection_event']
 
     def make_connections(self,start=True):
-
         """
         Make connection to channels and start the threads as defined
         by the meta-data, and make additional connection for Start/End
         of telemetry Events
         """
-
         # The dict containing all of the threads and connections
         self.SALconn = {}
         for name, c in self.channels.items():
@@ -85,12 +91,11 @@ class HSworker:
             if start: self.SALconn[name].start()
 
         # Select the start_collection channel
-        name_start = get_channel_name(self.start_collection_event)
-        self.StartInt = self.SALconn[name_start]
+        self.name_start = get_channel_name(self.start_collection_event)
+        self.StartInt = self.SALconn[self.name_start]
         # Select the end_collection channel
-        name_end = get_channel_name(self.end_collection_event)
-        self.EndTelem = self.SALconn[name_end]
-
+        self.name_end = get_channel_name(self.end_collection_event)
+        self.EndTelem = self.SALconn[self.name_end]
 
     def check_outdir(self):
         """ Make sure that we have a place to put the files"""
@@ -122,16 +127,68 @@ class HSworker:
         # Load up the header template
         HDR = HeaderService.HDRTEMPL_ATSCam(vendor=self.vendor)
         HDR.load_templates() # TODO: We should do this later ----
+        self.run_loop()
+
+    def get_filenames(self):
+        """
+        Extract from which section of telemetry we will extract
+        'imageName' and define the output names based on that ID
+        """
+        # Extract from telemetry and identify the channel
+        name = get_channel_name(self.imageName_channel)
+        myData = self.SALconn[name].getCurrent()
+        self.imageName = getattr(myData,self.imageName_channel['value'])
+
+        # Construct the hdr and fits filename
+        self.filename_HDR = os.path.join(self.filepath,self.format_HDR.format(self.imageName))
+        self.filename_FITS = os.path.join(self.filepath,self.format_FITS.format(self.imageName))
+
+    def run_loop(self):
+
+        """Run the loop that waits for a newEvent"""
+        loop_n = 0
+        while True:
+
+            if self.State.current_state!='ENABLE':
+                sys.stdout.flush()
+                sys.stdout.write("Current State is {} [{}]".format(State.current_state,spinner.next()))
+                sys.stdout.write('\r') 
+
+            elif self.StartInt.newEvent:
+                # Build the DATE of observation immediatly
+                DATE_OBS = hutils.get_date_utc()
+                sys.stdout.flush()
+                LOGGER.info("Received: {} Event".format(self.name_start))
+                self.get_filenames()
+                LOGGER.info("Extracted value for imageName: {}".format(self.imageName))
+                self.collect(self.keywords_start)
+                
+
+            else:
+                sys.stdout.flush()
+                sys.stdout.write("Current State is {} -- wating for {} Event...[{}]".format(self.State.current_state,self.name_start,spinner.next()))
+                sys.stdout.write('\r')
+                time.sleep(self.tsleep)
+
+            time.sleep(self.tsleep)
+            loop_n +=1    
+
+
+        def collect(self,keys):
+            myData = {}
+            for k in keys:
+                #names = 
+                #myData = Target.getCurrent()
 
 
 def get_channel_name(c):
-    """ Standard format the name of a channel across module"""
+    """ Standard formatting for the name of a channel across modules"""
     return '{}_{}'.format(c['device'],c['topic'])
 
 def extract_telemetry_channels(telem,start_collection_event=None,end_collection_event=None):
     """
-    Get the unique telemetry channels from telemetry dictionary to define channel
-    that we need to subscribe to
+    Get the unique telemetry channels from telemetry dictionary to
+    define the topics that we need to subscribe to
     """
     channels = {}
     for key in telem:

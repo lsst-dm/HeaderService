@@ -3,6 +3,15 @@
 # The camera vendor
 vendor: E2V
 
+# The file naming source and definitions 
+filepath: 'DMHS_filerepo'
+format_HDR: " {}.header"
+format_FITS: "{}.fits"
+imageName_channel:
+    device: atcamera
+    topic: startIntegration
+    value: imageName
+
 # The Events that we use to define where we collect 
 start_collection_event: 
  device: atcamera
@@ -75,19 +84,19 @@ telemetry:
   device: atcamera
   Stype: Event
   topic: imageReadoutParameters
-  value: overh
+  value: overCols
   collect_after_event: end_collection_event
 
  OVERV:
   device: atcamera
   Stype: Event
   topic: imageReadoutParameters
-  value: overv
+  value: overRows
   collect_after_event: end_collection_event
 
  PREH:
   device: atcamera
   Stype: Event
   topic: imageReadoutParameters
-  value: preh
+  value: preCols
   collect_after_event: end_collection_event

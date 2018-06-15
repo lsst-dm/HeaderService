@@ -96,7 +96,7 @@ def run_enable(State,**kwargs):
         LOGGER.info("Created dirname:{}".format(filepath))
 
     # Get the hostname and IP address
-    ip_adress = socket.gethostbyname(socket.gethostname())
+    ip_address = socket.gethostbyname(socket.gethostname())
 
     # TODO: this should be configurable options
     # The user running the process
@@ -204,8 +204,9 @@ def run_enable(State,**kwargs):
                       'Checksum':md5value,
                       'Generator':'AT',
                       'Mime':'FITS',
-                      'URL': "{}://{}@{}:{}".format(PROTOCOL,USER,ip_adress,filename_HDR),
+                      'URL': "{}://{}@{}:{}".format(PROTOCOL,USER,ip_address,filename_HDR),
                       #'URL': "{}".format(os.path.abspath(filename_HDR)),
+                      'ID': imageName,
                       'Version': 1,
                       'priority':1,
                       }
