@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+
+import numpy
+import fitsio
+import sys
+
+naxis1 = 576
+naxis2 = 2048
+shape = (naxis2,naxis1)
+try:
+    fname = sys.argv[1]
+except:
+    sys.exit("Usage: {} <segment-file>".format(sys.argv[0]))
+out_name = "{}.fits".format(fname)
+out_name_fz= "{}.fits.fz".format(fname)
+
+# Read in all of the segments
+fd = open(fname, 'rb')
+img_data = numpy.fromfile(file=fd, dtype=numpy.int32).reshape(shape)
+fitsio.write(out_name, img_data)
+fitsio.write(out_name_fz, img_data, compress='HCOMPRESS')
+
+print ("Wrote: {}".format(out_name))
+print ("Wrote compressed: {}".format(out_name_fz))

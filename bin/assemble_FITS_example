@@ -1,0 +1,82 @@
+#!/usr/bin/env python
+
+import numpy
+import fitsio
+import glob
+import os
+import sys
+import time
+
+def elapsed_time(t1,verb=False):
+    t2    = time.time()
+    stime = "{:d}m {:2.2f}s".format( int( (t2-t1)/60.), (t2-t1) - 60*int((t2-t1)/60.))
+    if verb:
+        print("Elapsed time: {}".format(stime))
+    return stime
+
+def read_pixels(filename,shape,dtype=numpy.int32):
+    """ Read in the pixels from a file"""
+    fd = open(filename, 'rb')
+    img_data = numpy.fromfile(file=fd, dtype=numpy.int32).reshape(shape)
+    return img_data
+
+def assemble_FITS(image_list,header_filename,naxis1,naxis2,
+                  outname=None,
+                  compress=None,
+                  dtype=numpy.int32):
+    
+    """Simple function to assemble header file with pixels written in raw binary format"""
+    
+    shape = (naxis2,naxis1)
+    if not outname:
+        if compress:
+            outname = os.path.splitext(header_filename)[0]+".fits.fz"
+        else:
+            outname = os.path.splitext(header_filename)[0]+".fits"
+    print ("Will write out FITS file to: {}".format(outname))
+
+    # Now read the header and insert img
+    hdr_fits = fitsio.FITS(header_filename) 
+    hdus = range(len(hdr_fits))
+
+    # Loop over all HDUs on the header file
+    for hdu in hdus:
+
+        extname = hdr_fits[hdu].get_extname()
+        if hdu == 0:
+            out_data = None
+            print ("{:2d} - {}".format(hdu, extname))
+        else:
+            out_data = read_pixels(image_list[hdu-1],shape,dtype=dtype)
+            print ("{:2d} - {} - {}".format(hdu, extname, image_list[hdu-1]))
+        
+        # Read in the hdu from header file
+        hdr_data, header = fitsio.read(header_filename,ext=extname,header=True)
+        fitsio.write(outname, out_data, extname=extname, header=header, compress=compress)
+    print ("File: {} is ready".format(outname))
+    return
+
+if __name__ == "__main__":
+
+    # Let's time it
+    t1= time.time() 
+
+    try:
+        header_filename = sys.argv[1]
+        image_list = sys.argv[2:]
+    except:
+        MSG = "Usage: {} <header-file> <segment1> <segment2> ... <segment16>"
+        sys.exit(MSG.format(os.path.basename(sys.argv[0])))
+        
+    # Example call
+    # %> assemble_FITS_example visitJune-28.header visitJune-28--raft01-ccd.00_segment.*
+
+    # Hardcoded for now
+    naxis1 = 576
+    naxis2 = 2048
+    assemble_FITS(image_list, header_filename, naxis1, naxis2,
+                  outname=None,
+                  #compress=None,
+                  compress='HCOMPRESS',
+                  dtype=numpy.int32)
+    print ("Total time:{}".format(elapsed_time(t1)))
