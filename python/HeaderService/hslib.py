@@ -33,7 +33,7 @@ class HSworker:
         # self.keyname = key['keyname']
         for k, v in keys.iteritems():
             setattr(self, k, v)
-            print k,v
+            #print k,v
 
         # Inititalize the State class to keep track of the system's state
         self.init_State()
@@ -48,8 +48,6 @@ class HSworker:
 
         # The user running the process
         self.USER = os.environ['USER']
-        # The protocol
-        self.PROTOCOL = 'scp' # or http, etc
 
     def init_State(self,start_state=None):
         """
@@ -100,8 +98,6 @@ class HSworker:
         self.name_end = get_channel_name(self.end_collection_event)
         self.EndTelem = self.SALconn[self.name_end]
 
-        
-
     def check_outdir(self):
         """ Make sure that we have a place to put the files"""
         if not os.path.exists(self.filepath):
@@ -114,7 +110,7 @@ class HSworker:
         # self.keyname = key['keyname']
         for k, v in keys.iteritems():
             setattr(self, k, v)
-            print k,v
+            #print k,v
 
         # Subscribe to each of the channels we want to susbcribe and store
         # the connection in a dictionary
@@ -175,7 +171,7 @@ class HSworker:
 
         # Construct the hdr and fits filename
         self.filename_HDR = os.path.join(self.filepath,self.format_HDR.format(self.imageName))
-        self.filename_FITS = os.path.join(self.filepath,self.format_FITS.format(self.imageName))
+        self.filename_FITS = self.format_FITS.format(self.imageName)
 
     def run_loop(self):
 
@@ -248,7 +244,9 @@ class HSworker:
               'Checksum':md5value,
               'Generator':'atHeaderService',
               'Mime':'FITS',
-              'URL': "{}://{}@{}:{}".format(self.PROTOCOL,self.USER,self.ip_address,self.filename_HDR),
+              'URL': self.url_format.format(ip_address=self.ip_address,filename_HDR=self.filename_HDR),
+              #"{}://{}@{}:{}".format(self.PROTOCOL,self.USER,self.ip_address,self.filename_HDR),
+              #'URL': "{}://{}@{}:{}".format(self.PROTOCOL,self.USER,self.ip_address,self.filename_HDR),
               #'URL': "{}".format(os.path.abspath(filename_HDR)),
               'ID': self.imageName,
               'Version': 1,
