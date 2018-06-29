@@ -1,5 +1,5 @@
 __author__  = "LSST/Felipe Menanteau"
-__version__ = '1VNIA'
+__version__ = "ACCS_MCM/OCS_Bridge"
 version = __version__
 
 from . import hutils

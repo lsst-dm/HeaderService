@@ -16,7 +16,6 @@ _CONTROLER_list = ['enterControl',
                    'enable',
                    'disable']
 
-
 spinner = hutils.spinner
 
 # Create a logger for all functions
@@ -64,6 +63,9 @@ class HSworker:
         for ctrl_name in _CONTROLER_list:
             self.tControl[ctrl_name] = salpytools.DDSController(ctrl_name,State=self.State)
             self.tControl[ctrl_name].start()
+
+        # Set the message for 'SettingApplied' here, we should want to control these from here in the future
+        self.State.settings = "HeaderService version:{}".format(HeaderService.version)
 
     def get_channels(self):
         """Extract the unique channel by topic/device"""
@@ -148,8 +150,8 @@ class HSworker:
         self.HDR.CCDGEOM.preh  = geom['preh']
         LOGGER.info("Reloadling templates")
         self.HDR.load_templates()
-        LOGGER.info("For reference NAXIS1:{}".format(geom['NAXIS1']))
-        LOGGER.info("For reference NAXIS2:{}".format(geom['NAXIS2']))
+        LOGGER.info("For reference: NAXIS1={}".format(geom['NAXIS1']))
+        LOGGER.info("For reference: NAXIS2={}".format(geom['NAXIS2']))
         LOGGER.info("Received: overv={}, overh={}, preh={}".format(geom['overv'], geom['overh'], geom['preh']))
 
     def update_header(self):
@@ -181,7 +183,7 @@ class HSworker:
 
             if self.State.current_state!='ENABLE':
                 sys.stdout.flush()
-                sys.stdout.write("Current State is {} [{}]".format(State.current_state,spinner.next()))
+                sys.stdout.write("Current State is {} [{}]".format(self.State.current_state,spinner.next()))
                 sys.stdout.write('\r') 
 
             elif self.StartInt.newEvent:
@@ -245,9 +247,6 @@ class HSworker:
               'Generator':'atHeaderService',
               'Mime':'FITS',
               'URL': self.url_format.format(ip_address=self.ip_address,filename_HDR=self.filename_HDR),
-              #"{}://{}@{}:{}".format(self.PROTOCOL,self.USER,self.ip_address,self.filename_HDR),
-              #'URL': "{}://{}@{}:{}".format(self.PROTOCOL,self.USER,self.ip_address,self.filename_HDR),
-              #'URL': "{}".format(os.path.abspath(filename_HDR)),
               'ID': self.imageName,
               'Version': 1,
               'priority':1,
