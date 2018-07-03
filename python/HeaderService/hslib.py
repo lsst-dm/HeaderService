@@ -65,7 +65,7 @@ class HSworker:
             self.tControl[ctrl_name].start()
 
         # Set the message for 'SettingApplied' here, we should want to control these from here in the future
-        self.State.settings = "HeaderService version:{}".format(HeaderService.version)
+        self.State.settings = "HeaderService version:{}\nts_xml version:{}".format(HeaderService.version,self.ts_xml)
 
     def get_channels(self):
         """Extract the unique channel by topic/device"""
