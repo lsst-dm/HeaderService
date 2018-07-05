@@ -123,8 +123,9 @@ class HSworker:
         self.check_outdir()
 
         # Start the web server
-        self.filepath_www = os.path.split(self.filepath)[0]
-        hutils.start_web_server(self.filepath_www,port_number=self.port_number)
+        #self.filepath_www = os.path.split(self.filepath)[0]
+        #self.filepath_www = os.path.split(self.filepath)[0]
+        hutils.start_web_server(self.filepath,port_number=self.port_number)
 
         # And the object to send DMHS messages
         # TODO -- Make this configurable too
@@ -252,7 +253,7 @@ class HSworker:
               'Mime':'FITS',
               'URL': self.url_format.format(ip_address=self.ip_address,
                                             port_number=self.port_number,
-                                            filename_HDR=self.filename_HDR),
+                                            filename_HDR=os.path.basename(self.filename_HDR)),
               'ID': self.imageName,
               'Version': 1,
               'priority':1,
