@@ -96,21 +96,6 @@ def md5Checksum(filePath,blocksize=1024*512):
             m.update(data)
     return m.hexdigest()
 
-def get_obsnite(date=None, thresh_hour=14, format='{year}{month:02d}{day:02d}'):
-
-    import datetime
-    """
-    Get the obs-nite from a 'datetime.datetime.now()' kind of data object, but it will not
-    work 'datetime.date.today()' has it has no hour
-    """
-    if date is None:
-        date = datetime.datetime.now()
-    # If hour < 14 we are still in the previous night date
-    if date.hour < thresh_hour:
-        date = date - datetime.timedelta(days=1)
-    obsnite = format.format(year=date.year,month=date.month, day=date.day)
-    return obsnite
-
 def get_date_utc(time=None,format='fits'):
     from astropy.time import Time
     from datetime import datetime
@@ -148,6 +133,13 @@ def get_image_size_from_imageReadoutParameters(myData):
     geom['naxis1'] = geom['NAXIS1']
     geom['naxis2'] = geom['NAXIS2']
     return geom
+
+def start_web_server(dirname,port_number=8000,exe='start_www.sh'):
+    import subprocess
+    LOGGER.info("Will start web server on dir: {}".format(dirname))
+    www_pid = subprocess.Popen([exe,dirname,str(port_number)])
+    time.sleep(1)
+    LOGGER.info("Done Starting web server")
 
 class HDRTEMPL_TestCamera:
 

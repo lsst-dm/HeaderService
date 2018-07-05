@@ -47,7 +47,7 @@ class HSworker:
 
         # The user running the process
         self.USER = os.environ['USER']
-
+        
     def init_State(self,start_state=None):
         """
         Initialize the State object that keeps track of the HS current state.
@@ -121,6 +121,10 @@ class HSworker:
 
         # Make sure that we have a place to put the files
         self.check_outdir()
+
+        # Start the web server
+        self.filepath_www = os.path.split(self.filepath)[0]
+        hutils.start_web_server(self.filepath_www,port_number=self.port_number)
 
         # And the object to send DMHS messages
         # TODO -- Make this configurable too
@@ -246,7 +250,9 @@ class HSworker:
               'Checksum':md5value,
               'Generator':'atHeaderService',
               'Mime':'FITS',
-              'URL': self.url_format.format(ip_address=self.ip_address,filename_HDR=self.filename_HDR),
+              'URL': self.url_format.format(ip_address=self.ip_address,
+                                            port_number=self.port_number,
+                                            filename_HDR=self.filename_HDR),
               'ID': self.imageName,
               'Version': 1,
               'priority':1,

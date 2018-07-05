@@ -6,16 +6,19 @@ vendor: E2V
 # The ts_xml version we are using -- for now this is just curated and need to be changed manually when we change version
 ts_xml: ManCtrl_MPD_AuxTel
 
+# port_number for webserver
+port_number: 8000
+
 # The event for the image readout paramters
 imageParam_event:
     device: atcamera
     topic: imageReadoutParameters
 
 # The URL format to be used
-url_format: "http://{ip_address}:8000/{filename_HDR}"
+url_format: "http://{ip_address}:{port_number}/{filename_HDR}"
 
 # The file naming event source and definitions 
-filepath: 'DMHS_filerepo'
+filepath: 'www/DMHS_filerepo'
 format_HDR: "{}.header"
 format_FITS: "{}.fits"
 imageName_event:

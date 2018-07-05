@@ -29,14 +29,16 @@ def cmdline():
                                      parents=[conf_parser])
     parser.add_argument("--vendor", action="store",default='E2V', 
                         help="CCD Vendor Name")
-    parser.add_argument("--filepath", action="store",default=os.path.join(os.getcwd(),'DMHS_filerepo'),
+    parser.add_argument("--filepath", action="store",default=os.path.join(os.getcwd(),'www/DMHS_filerepo'),
                         help="Filepath where we write the headers")
-    parser.add_argument("--url_format", action="store",default="http://{ip_address}:8000/{filename_HDR}",
+    parser.add_argument("--url_format", action="store",default="http://{ip_address}:{port_number}/{filename_HDR}",
                         help="The URL format to be used")
     parser.add_argument("--tsleep", action="store",default=0.1, type=float, 
                         help="Sleep Time for loop")
     parser.add_argument("--start_state", action="store",default='OFFLINE', 
                         help="Initial start State of device")
+    parser.add_argument("--port_number", action="store",default='8000', type=str,
+                        help="Port number for webserver")
     parser.add_argument("--send_efd_message", action="store_true",default=False, 
                         help="Send and EDF message as well?")
     #args = parser.parse_args()
