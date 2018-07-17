@@ -1,7 +1,7 @@
 # Configuration file for the AuxTelescope
 
 # The camera vendor
-vendor: E2V
+vendor: ITL
 
 # The ts_xml version we are using -- for now this is just curated and need to be changed manually when we change version
 ts_xml: ManCtrl_MPD_AuxTel
