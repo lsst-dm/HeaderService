@@ -23,6 +23,7 @@ def read_pixels(filename,shape,dtype=numpy.int32):
 def assemble_FITS(image_list,header_filename,naxis1,naxis2,
                   outname=None,
                   compress=None,
+                  byext=False,
                   dtype=numpy.int32):
     
     """Simple function to assemble header file with pixels written in raw binary format"""
@@ -39,6 +40,14 @@ def assemble_FITS(image_list,header_filename,naxis1,naxis2,
     hdr_fits = fitsio.FITS(header_filename) 
     hdus = range(len(hdr_fits))
 
+    # Make a dictionary of the imalist using the last 2 characters to
+    # reconstruct the extname
+    if byext:
+        image_list_byext = {}
+        for img in image_list:
+            extname = 'Segment{}'.format(img[-2:])
+            image_list_byext[extname] = img
+
     # Loop over all HDUs on the header file
     for hdu in hdus:
 
@@ -47,7 +56,10 @@ def assemble_FITS(image_list,header_filename,naxis1,naxis2,
             out_data = None
             print ("{:2d} - {}".format(hdu, extname))
         else:
-            out_data = read_pixels(image_list[hdu-1],shape,dtype=dtype)
+            if byext:
+                out_data = read_pixels(image_list_byext[extname],shape,dtype=dtype)
+            else:
+                out_data = read_pixels(image_list[hdu-1],shape,dtype=dtype)
             print ("{:2d} - {} - {}".format(hdu, extname, image_list[hdu-1]))
         
         # Read in the hdu from header file
@@ -76,6 +88,7 @@ if __name__ == "__main__":
     naxis2 = 2048
     assemble_FITS(image_list, header_filename, naxis1, naxis2,
                   outname=None,
+                  byext=True,
                   #compress=None,
                   compress='HCOMPRESS',
                   dtype=numpy.int32)
