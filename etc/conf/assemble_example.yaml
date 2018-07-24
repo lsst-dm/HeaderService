@@ -1,0 +1,34 @@
+# Configuration file for assemble FITS files
+
+# Compression -- for None, just leave empty
+#compress_type: GZIP_2
+compress_type: 
+
+# Dimensions
+naxis1: 576
+naxis2: 2048
+
+# Order by extension
+byext: True
+
+# The name of the outname
+#outname: blah.fits
+#outname: blah.fits.fz
+
+# In case we want to load a specific list
+#image_list: [visitJune-28--raft01-ccd.00_segment.00,
+#             visitJune-28--raft01-ccd.00_segment.01,
+#             visitJune-28--raft01-ccd.00_segment.02,
+#             visitJune-28--raft01-ccd.00_segment.03,
+#             visitJune-28--raft01-ccd.00_segment.04,
+#             visitJune-28--raft01-ccd.00_segment.05,
+#             visitJune-28--raft01-ccd.00_segment.06,
+#             visitJune-28--raft01-ccd.00_segment.07,
+#             visitJune-28--raft01-ccd.00_segment.10,
+#             visitJune-28--raft01-ccd.00_segment.11,
+#             visitJune-28--raft01-ccd.00_segment.12,
+#             visitJune-28--raft01-ccd.00_segment.13,
+#             visitJune-28--raft01-ccd.00_segment.14,
+#             visitJune-28--raft01-ccd.00_segment.15,
+#             visitJune-28--raft01-ccd.00_segment.16,
+#             visitJune-28--raft01-ccd.00_segment.17]

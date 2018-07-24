@@ -1,0 +1,137 @@
+#!/usr/bin/env python
+
+import numpy
+import fitsio
+import glob
+import os
+import sys
+import time
+import argparse
+import yaml
+
+
+# fitsio options for compression
+
+compress_choices = [None, 0, 11, 'RICE_1', 'PLIO_1', 21, None,
+                    'HCOMPRESS', 31, 41, 'HCOMPRESS_1', 'GZIP_1', 'GZIP_2','GZIP',
+                    'RICE','PLIO']
+def cmdline():
+
+    # 1. We make a proto-parse use to read in the default yaml
+    # configuration file, Turn off help, so we print all options in response to -h
+    conf_parser = argparse.ArgumentParser(add_help=False)
+    conf_parser.add_argument("-c", "--config",help="assemble FITS config file")
+    args, remaining_argv = conf_parser.parse_known_args()
+
+    # If we have -c or --config, then we proceed to read it
+    if args.config:
+        conf_defaults = yaml.load(open(args.config))
+    else:
+        conf_defaults = {}
+
+    # 2. This is the main parser that overrides the conf file
+    parser = argparse.ArgumentParser(description="assemble FITS",
+                                     # Inherit options from config_parser
+                                     parents=[conf_parser])
+    parser.add_argument("--header_file", action="store", required=True,
+                        help="Name of the header skeleton file")
+    parser.add_argument("--image_list", action="store", nargs='+', 
+                        help="List with name of the segmentes to the be used")
+    parser.add_argument("--naxis1", action="store", type=int,
+                        help="Dimension of NAXIS1")
+    parser.add_argument("--naxis2", action="store", type=int,
+                        help="Dimension of NAXIS2")
+    parser.add_argument("--outname", action="store", default=None,
+                        help="The name of the output FITS file to be created")
+    parser.add_argument("--byext", action="store_true",default=False, 
+                        help="Sort by externsion name rather than list order?")
+    parser.add_argument("--dtype", action="store",default=numpy.int32,
+                        help="The 'dtype' for the image arrays (default=int32)")
+    parser.add_argument("--compress_type", action="store",default=None, choices=compress_choices,
+                        help="Compress type for FITS file, default")
+
+    #args = parser.parse_args()
+    # Set the defaults of argparse using the values in the yaml config file
+    parser.set_defaults(**conf_defaults)
+    args = parser.parse_args(args=remaining_argv)
+    return args
+
+def elapsed_time(t1,verb=False):
+    t2    = time.time()
+    stime = "{:d}m {:2.2f}s".format( int( (t2-t1)/60.), (t2-t1) - 60*int((t2-t1)/60.))
+    if verb:
+        print("Elapsed time: {}".format(stime))
+    return stime
+
+def read_pixels(filename,shape,dtype=numpy.int32):
+    """ Read in the pixels from a file"""
+    fd = open(filename, 'rb')
+    img_data = numpy.fromfile(file=fd, dtype=numpy.int32).reshape(shape)
+    return img_data
+
+def assemble_FITS(**kwargs):
+
+    """Simple function to assemble header file with pixels written in raw binary format"""
+
+    # Extract the kwrags from the function
+    header_file = kwargs.get('header_file',None)
+    image_list = kwargs.get('image_list',None)
+    naxis1   = kwargs.get('naxis1', 0)
+    naxis2   = kwargs.get('naxis2', 0)
+    outname  = kwargs.get('outname',None)
+    byext =    kwargs.get('byext',False)
+    dtype =    kwargs.get('dtype',numpy.int32)
+    compress_type = kwargs.get('compress_type',None)
+
+    # Make sure that we have sane values for NAXIS1/NAXIS1
+    if naxis1 == 0 or naxis2 == 0:
+        print("WARNING: Both NAXIS1/NAXIS2 muste be non-zero, current values are:{},{}".format(naxis1,naxis2))
+    
+    # Get the shape of the array
+    shape = (naxis2,naxis1)
+    if not outname:
+        if compress_type:
+            outname = os.path.splitext(header_file)[0]+".fits.fz"
+        else:
+            outname = os.path.splitext(header_file)[0]+".fits"
+    print ("Will write out FITS file to: {}".format(outname))
+
+    # Now read the header and insert img
+    hdr_fits = fitsio.FITS(header_file) 
+    hdus = range(len(hdr_fits))
+
+    # Make a dictionary of the imalist using the last 2 characters to
+    # reconstruct the extname
+    if byext:
+        image_list_byext = {}
+        for img in image_list:
+            extname = 'Segment{}'.format(img[-2:])
+            image_list_byext[extname] = img
+
+    # Loop over all HDUs on the header file
+    for hdu in hdus:
+
+        extname = hdr_fits[hdu].get_extname()
+        if hdu == 0:
+            out_data = None
+            print ("{:2d} - {}".format(hdu, extname))
+        else:
+            if byext:
+                out_data = read_pixels(image_list_byext[extname],shape,dtype=dtype)
+            else:
+                out_data = read_pixels(image_list[hdu-1],shape,dtype=dtype)
+            print ("{:2d} - {} - {}".format(hdu, extname, image_list[hdu-1]))
+        
+        # Read in the hdu from header file
+        hdr_data, header = fitsio.read(header_file,ext=extname,header=True)
+        fitsio.write(outname, out_data, extname=extname, header=header, compress=compress_type)
+    print ("File: {} is ready".format(outname))
+    return
+
+if __name__ == "__main__":
+
+    # Let's time it
+    t1= time.time() 
+    args = cmdline()
+    assemble_FITS(**args.__dict__)
+    print ("Total time:{}".format(elapsed_time(t1)))

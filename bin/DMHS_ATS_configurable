@@ -21,7 +21,11 @@ def cmdline():
     conf_parser = argparse.ArgumentParser(add_help=False)
     conf_parser.add_argument("-c", "--config",help="HeaderService config file")
     args, remaining_argv = conf_parser.parse_known_args()
-    conf_defaults = yaml.load(open(args.config))
+    # If we have -c or --config, then we proceed to read it
+    if args.config:
+        conf_defaults = yaml.load(open(args.config))
+    else:
+        conf_defaults = {}
 
     # 2. This is the main parser
     parser = argparse.ArgumentParser(description="HeaderService",
