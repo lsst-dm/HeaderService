@@ -77,9 +77,31 @@ CHANNEL['ITL'] = {'00': 8,
                   '17':16}
 
 # And now the inverse, the segment for each Output number or HDU
+#SEGNAME['E2V'] =  {v:k for k, v in CHANNEL['E2V'].items()}
+#SEGNAME['ITL'] =  {v:k for k, v in CHANNEL['ITL'].items()}
+#
+
+# It turns out that the HDU (aka SEGNAME) is unrelated to the CHANNEL
+# definition of Figure 1 of LCA-13501 and it is the same for E2V and
+# ITL sensors
 SEGNAME = {}
-SEGNAME['E2V'] =  {v:k for k, v in CHANNEL['E2V'].items()}
-SEGNAME['ITL'] =  {v:k for k, v in CHANNEL['ITL'].items()}
+SEGNAME['E2V'] = {1: '10',
+                  2: '11',
+                  3: '12',
+                  4: '13',
+                  5: '14',
+                  6: '15',
+                  7: '16',
+                  8: '17',
+                  9: '07',
+                  10: '06',
+                  11: '05',
+                  12: '04',
+                  13: '03',
+                  14: '02',
+                  15: '01',
+                  16: '00'}
+SEGNAME['ITL'] = SEGNAME['E2V'] 
 
 class CCDGeom:
 
