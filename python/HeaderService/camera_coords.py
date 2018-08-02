@@ -290,13 +290,13 @@ if __name__ == "__main__":
     
     ext01 = ccd_ITL.extension('01')
     ext02 = ccd_ITL.extension('02')
-    print ext01
-    print ext02
+    print(ext01)
+    print(ext02)
 
     ext01 = ccd_E2V.extension('01')
     ext02 = ccd_E2V.extension('02')
-    print ext01
-    print ext02
+    print(ext01)
+    print(ext02)
 
         
 

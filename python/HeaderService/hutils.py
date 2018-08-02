@@ -10,7 +10,7 @@ import multiprocessing
 import hashlib
 import itertools
 import copy
-from camera_coords import CCDGeom
+from .camera_coords import CCDGeom
 spinner = itertools.cycle(['-', '/', '|', '\\'])
 
 try:
@@ -37,14 +37,14 @@ def get_record(header,keyword):
 
 def get_values(header):
     """ Returns a list with all of the values in a FITSHDR header """
-    return [hearder[key] for key in header.keys()]
+    return [hearder[key] for key in list(header.keys())]
 
 def elapsed_time(t1,verb=False):
     import time
     t2    = time.time()
     stime = "%dm %2.2fs" % ( int( (t2-t1)/60.), (t2-t1) - 60*int((t2-t1)/60.))
     if verb:
-        print >>sys.stderr,"Elapsed time: %s" % stime
+        print("Elapsed time: %s" % stime, file=sys.stderr)
     return stime
 
 def md5Checksum(filePath,blocksize=1024*512):
@@ -357,7 +357,7 @@ class HDRTEMPL_ATSCam:
         """
         Update all records in a new dictionary, it calls self.update_record()
         """
-        for keyword,value in newdict.items():
+        for keyword,value in list(newdict.items()):        
             try:
                 self.update_record(keyword,value,extname)
                 LOGGER.debug("Updating {}".format(keyword))
