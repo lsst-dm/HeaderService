@@ -77,8 +77,8 @@ class HSworker:
 
         # Now separate the keys to collect at the 'end' from the ones at 'start'
         t = self.telemetry # Short-cut
-        self.keywords_start = [k for k in list(t.keys()) if t[k]['collect_after_event'] == 'start_collection_event']
-        self.keywords_end   = [k for k in list(t.keys()) if t[k]['collect_after_event'] == 'end_collection_event']
+        self.keywords_start = [k for k in t.keys() if t[k]['collect_after_event'] == 'start_collection_event']
+        self.keywords_end   = [k for k in t.keys() if t[k]['collect_after_event'] == 'end_collection_event']
 
     def make_connections(self,start=True):
         """
@@ -88,7 +88,7 @@ class HSworker:
         """
         # The dict containing all of the threads and connections
         self.SALconn = {}
-        for name, c in list(self.channels.items()):            
+        for name, c in self.channels.items():
             self.SALconn[name] = salpytools.DDSSubcriber(c['device'],c['topic'],Stype=c['Stype'])
             if start: self.SALconn[name].start()
 
@@ -110,7 +110,7 @@ class HSworker:
 
         # Unpack the dictionary of **keys into variables to do:
         # self.keyname = key['keyname']
-        for k, v in list(keys.items()):
+        for k, v in list(keys.items()):            
             setattr(self, k, v)
             #print k,v
 
@@ -162,7 +162,7 @@ class HSworker:
     def update_header(self):
 
         """Update FITSIO header object using the captured metadata"""
-        for k,v in list(self.metadata.items()):
+        for k,v in self.metadata.items():
             LOGGER.debug("Updating header with {:8s} = {}".format(k,v))
             self.HDR.update_record(k,v, 'PRIMARY')
 
@@ -279,7 +279,8 @@ class HSworker:
             name = get_channel_name(self.telemetry[k])
             param = self.telemetry[k]['value']
             # Only access data payload once
-            if name not in list(self.myData.keys()):                
+            #if name not in self.myData.keys():
+            if name not in self.myData:
                 self.myData[name] = self.SALconn[name].getCurrent()
             self.metadata[k] = getattr(self.myData[name],param)
 
@@ -312,7 +313,7 @@ def extract_telemetry_channels(telem,start_collection_event=None,
              'Stype' :telem[key]['Stype']}
         name = get_channel_name(c)
         # Make sure we don't crate extra channels
-        if name not in list(channels.keys()):
+        if name not in channels.keys():
             channels[name] = c
 
     # We also need to make sure that we subscribe to the start/end
@@ -320,7 +321,7 @@ def extract_telemetry_channels(telem,start_collection_event=None,
     if start_collection_event:
         c = start_collection_event
         name = get_channel_name(c)
-        if name not in list(channels.keys()):            
+        if name not in channels.keys():
             c['Stype'] = 'Event'
             channels[name] = c
             
@@ -335,7 +336,7 @@ def extract_telemetry_channels(telem,start_collection_event=None,
     if imageParam_event:
         c = imageParam_event
         name = get_channel_name(c)
-        if name not in list(channels.keys()):            
+        if name not in channels.keys():
             c['Stype'] = 'Event'
             channels[name] = c
         
@@ -345,7 +346,7 @@ def extract_telemetry_channels(telem,start_collection_event=None,
 def subscribe_to_channels(channels,start=True):
     """ make connection to channels and start the threads"""
     SAL_connection = {}
-    for name, c in list(channels.items()):        
+    for name, c in channels.items():
         SAL_connection[name] = salpytools.DDSSubcriber(c['device'],c['topic'],Stype=c['Stype'])
         if start: SAL_connection[name].start()
 
