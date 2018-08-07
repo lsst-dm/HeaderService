@@ -57,7 +57,7 @@ class HSworker:
             self.start_state=start_state
 
         self.State = salpytools.DeviceState(default_state=self.start_state)
-        self.State.send_logEvent('SummaryState')
+        self.State.send_logEvent('summaryState')
         # Create threads for the controller we want to listen to
         self.tControl = {}
         for ctrl_name in _CONTROLER_list:
@@ -258,10 +258,10 @@ class HSworker:
               'Version': 1,
               'priority':1,
               }
-        self.dmhs.send_Event('LargeFileObjectAvailable',**kw)
-        LOGGER.info("Sent LargeFileObjectAvailable: {}".format(kw))
+        self.dmhs.send_Event('largeFileObjectAvailable',**kw)
+        LOGGER.info("Sent largeFileObjectAvailable: {}".format(kw))
         if self.send_efd_message:
-            self.efd.send_Event('LargeFileObjectAvailable',**kw)
+            self.efd.send_Event('largeFileObjectAvailable',**kw)
             
     def write(self):
         """ Function to call to write the header"""

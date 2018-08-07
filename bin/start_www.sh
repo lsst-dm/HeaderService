@@ -11,7 +11,8 @@ if [[ $pid > 0 ]]; then
 else
     echo "Starting SimpleHTTPServer"
     cd $DIRNAME
-    python -m SimpleHTTPServer $PORT_NUMBER
+    #python -m SimpleHTTPServer $PORT_NUMBER
+    python -m http.server $PORT_NUMBER
 fi
 
 exit

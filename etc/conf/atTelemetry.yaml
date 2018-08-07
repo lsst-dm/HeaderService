@@ -4,7 +4,7 @@
 vendor: ITL
 
 # The ts_xml version we are using -- for now this is just curated and need to be changed manually when we change version
-ts_xml: ManCtrl_MPD_AuxTel
+ts_xml: OCS_IntSpecICC
 
 # port_number for webserver
 port_number: 8000
