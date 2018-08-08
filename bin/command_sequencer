@@ -11,7 +11,7 @@ def cmdline():
     parser = argparse.ArgumentParser(description="Run a set of Commands for a CSC Device")
 
     # The optional arguments
-    parser.add_argument("-d","--Device", action="store", default='dmHeaderService',
+    parser.add_argument("-d","--Device", action="store", default='atHeaderService',
                         help="Name of Device")
     parser.add_argument('-c', "--commands",nargs='+',
                         help='List of command to issue')

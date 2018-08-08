@@ -186,7 +186,7 @@ class HSworker:
         loop_n = 0
         while True:
 
-            if self.State.current_state!='ENABLE':
+            if self.State.current_state!='ENABLED':
                 sys.stdout.flush()
                 sys.stdout.write("Current State is {} [{}]".format(self.State.current_state,next(spinner)))
                 sys.stdout.write('\r') 
@@ -247,15 +247,15 @@ class HSworker:
         LOGGER.info("Got MD5SUM: {}".format(md5value))
         # Now we publish filename and MD5
         # Build the kwargs
-        kw = {'Byte_Size':bytesize,
-              'Checksum':md5value,
-              'Generator':'atHeaderService',
-              'Mime':'FITS',
-              'URL': self.url_format.format(ip_address=self.ip_address,
+        kw = {'byteSize':bytesize,
+              'checkSum':md5value,
+              'generator':'atHeaderService',
+              'mimeType':'FITS',
+              'url': self.url_format.format(ip_address=self.ip_address,
                                             port_number=self.port_number,
                                             filename_HDR=os.path.basename(self.filename_HDR)),
-              'ID': self.imageName,
-              'Version': 1,
+              'id': self.imageName,
+              'version': 1,
               'priority':1,
               }
         self.dmhs.send_Event('largeFileObjectAvailable',**kw)
