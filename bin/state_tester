@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3.6
 
 import time
 import sys
@@ -15,15 +15,15 @@ if __name__ == "__main__":
     # This needs to be done before we star the SAL controller thread,
     # as they use the DeviveState object for the current state
     State = salpytools.DeviceState()
-    State.send_logEvent('SummaryState')
+    State.send_logEvent('summaryState')
     
     # Create threads for the controller we want to listen to
-    controller_list = ['EnterControl',
-                       'ExitControl',
-                       'Start',
-                       'Standby',
-                       'Enable',
-                       'Disable']
+    controller_list = ['enterControl',
+                       'exitControl',
+                       'start',
+                       'standby',
+                       'enable',
+                       'disable']
     tControl = {}
     for ctrl_name in controller_list:
         tControl[ctrl_name] = salpytools.DDSController(ctrl_name,State=State)
@@ -32,9 +32,12 @@ if __name__ == "__main__":
     keep_loop = True
     while keep_loop:
         sys.stdout.flush()
-        sys.stdout.write("Current State is {} [{}]".format(State.current_state,spinner.next()))
+        sys.stdout.write("Current State is {} [{}]".format(State.current_state,next(spinner)))
         sys.stdout.write('\r') 
         time.sleep(1)
         # In case we want to break the loop
-        #if State.current_state == 'DISABLE':
-        #    keep_loop = False
+        if State.current_state == 'DISABLED':
+            keep_loop = False
+            sys.stdout.write("Transitioned to State: {}\n".format(State.current_state))
+            sys.stdout.write("Bye...\n")
+        

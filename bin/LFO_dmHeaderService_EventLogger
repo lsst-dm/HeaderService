@@ -1,29 +1,30 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3.6
 
 import time
 import sys
 import logging
-import SALPY_dmHeaderService
+import SALPY_atHeaderService
 import HeaderService.hutils as hutils
 
 LOGGER = hutils.create_logger(level=logging.NOTSET,name='HEADERSERVICE')
 
 if __name__ == "__main__":
-    mgr = SALPY_dmHeaderService.SAL_dmHeaderService()
-    mgr.salEvent("dmHeaderService_logevent_LargeFileObjectAvailable")
-    LOGGER.info("dmHeaderService_LargeFileObjectAvailable logger ready")
-    event = SALPY_dmHeaderService.dmHeaderService_logevent_LargeFileObjectAvailableC()
+    mgr = SALPY_atHeaderService.SAL_atHeaderService()
+    mgr.salEvent("atHeaderService_logevent_largeFileObjectAvailable")
+    LOGGER.info("atHeaderService_largeFileObjectAvailable logger ready")
+    event = SALPY_atHeaderService.atHeaderService_logevent_largeFileObjectAvailableC()
     while True:
-        retval = mgr.getEvent_LargeFileObjectAvailable(event)
+        retval = mgr.getEvent_largeFileObjectAvailable(event)
         if retval==0:
             LOGGER.info("-------------------------------------------------------")
-            LOGGER.info("Event dmHeaderService LargeFileObjectAvailable received")
-            LOGGER.info("Byte_Size: %s" % event.Byte_Size)
-            LOGGER.info("Checksum: %s" % event.Checksum)
-            LOGGER.info("Generator: %s" % event.Generator)
-            LOGGER.info("Mime: %s" % event.Mime)
-            LOGGER.info("URL: %s" % event.URL)
-            LOGGER.info("Version: %s" % event.Version)
+            LOGGER.info("Event atHeaderService LargeFileObjectAvailable received")
+            LOGGER.info("Byte_Size: %s" % event.byteSize)
+            LOGGER.info("Checksum: %s" % event.checkSum)
+            LOGGER.info("Generator: %s" % event.generator)
+            LOGGER.info("Mime: %s" % event.mimeType)
+            LOGGER.info("URL: %s" % event.url)
+            LOGGER.info("ID: %s" % event.id)
+            LOGGER.info("Version: %s" % event.version)
             LOGGER.info("priority: %s" % event.priority)
             retval==-1
         time.sleep(1)
