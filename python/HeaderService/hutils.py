@@ -44,7 +44,7 @@ def elapsed_time(t1,verb=False):
     t2    = time.time()
     stime = "%dm %2.2fs" % ( int( (t2-t1)/60.), (t2-t1) - 60*int((t2-t1)/60.))
     if verb:
-        print("Elapsed time: %s" % stime, file=sys.stderr)
+        print("Elapsed time: %s" % stime)
     return stime
 
 def md5Checksum(filePath,blocksize=1024*512):
