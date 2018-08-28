@@ -37,7 +37,7 @@ def get_record(header,keyword):
 
 def get_values(header):
     """ Returns a list with all of the values in a FITSHDR header """
-    return [header[key] for key in header.keys()]
+    return [header[key] for key in header]
 
 def elapsed_time(t1,verb=False):
     import time
@@ -357,7 +357,7 @@ class HDRTEMPL_ATSCam:
         """
         Update all records in a new dictionary, it calls self.update_record()
         """
-        for keyword,value in newdict.items():
+        for keyword, value in newdict.items():
             try:
                 self.update_record(keyword,value,extname)
                 LOGGER.debug("Updating {}".format(keyword))
