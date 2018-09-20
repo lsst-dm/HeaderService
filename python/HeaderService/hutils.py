@@ -96,7 +96,7 @@ def md5Checksum(filePath,blocksize=1024*512):
             m.update(data)
     return m.hexdigest()
 
-def get_date_utc(time=None,format='fits'):
+def get_date_utc(time=None,format='isot'):
     from astropy.time import Time
     from datetime import datetime
     if time is None:
