@@ -49,11 +49,6 @@ def cmdline():
     # Set the defaults of argparse using the values in the yaml config file
     parser.set_defaults(**conf_defaults)
     args = parser.parse_args(args=remaining_argv)
-
-    # print ("Will use:")
-    # for k, v in vars(args).items():
-    #     print ("   {}: {}".format(k, v))
-    #     print ("-----------------------")
     return args
 
 

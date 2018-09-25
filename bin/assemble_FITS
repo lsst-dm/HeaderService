@@ -88,8 +88,8 @@ def assemble_FITS(**kwargs):
 
     # Make sure that we have sane values for NAXIS1/NAXIS1
     if naxis1 == 0 or naxis2 == 0:
-        print("WARNING: Both NAXIS1/NAXIS2 muste be non-zero, \
-               current values are:{},{}".format(naxis1, naxis2))
+        print("WARNING: Both NAXIS1/NAXIS2 muste be non-zero, current values are:{},{}".
+              format(naxis1, naxis2))
     # Get the shape of the array
     shape = (naxis2, naxis1)
     if not outname:

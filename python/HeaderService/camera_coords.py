@@ -1,7 +1,7 @@
 import HeaderService
 import math
 
-"""This modules describe the CCD/Camera coordinate systems as described in
+"""This module describe the CCD/Camera coordinate systems as described in
 LCA-13501
 """
 
