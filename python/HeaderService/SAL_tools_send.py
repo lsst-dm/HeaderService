@@ -4,46 +4,50 @@
 import time
 import sys
 import SALPY_dmHeaderService
-import SALPY_camera 
+import SALPY_camera
 import SALPY_tcs
 import logging
 import HeaderService.hutils as hutils
 
 """ Functions to send simply telemetry """
 
-LOGGER = hutils.create_logger(level=logging.NOTSET,name=__name__)
+LOGGER = hutils.create_logger(level=logging.NOTSET, name=__name__)
 
-# TODO:
-# Make these function classes to avoid init overhead
+# WARNING
+# These function have been deprecated and are here only for legacy purpose. New
+# code should the salpytools module instead. https://github.com/lsst-dm/salpytools
+
 
 def send_camera_logevent_startIntegration(**kw):
     """imageSequenceName imageName imageIndex timeStamp priority"""
     mgr = SALPY_camera.SAL_camera()
     mgr.salEvent("camera_logevent_startIntegration")
     myData = SALPY_camera.camera_logevent_startIntegrationC()
-    myData.imageSequenceName=kw.get("imageSequenceName")
-    myData.imageName=kw.get("imageName")
-    myData.imageIndex=kw.get("imageIndex")
-    myData.timeStamp=kw.get("timeStamp",time.time())
-    myData.priority=kw.get("priority")
-    priority=int(myData.priority)
+    myData.imageSequenceName = kw.get("imageSequenceName")
+    myData.imageName = kw.get("imageName")
+    myData.imageIndex = kw.get("imageIndex")
+    myData.timeStamp = kw.get("timeStamp", time.time())
+    myData.priority = kw.get("priority")
+    priority = int(myData.priority)
     mgr.logEvent_startIntegration(myData, priority)
     time.sleep(1)
     mgr.salShutdown()
 
-def send_camera_logevent_endSetFilter(filterName,priority=1):
+
+def send_camera_logevent_endSetFilter(filterName, priority=1):
     mgr = SALPY_camera.SAL_camera()
     mgr.salEvent("camera_logevent_endSetFilter")
     myData = SALPY_camera.camera_logevent_endSetFilterC()
-    myData.filterName=filterName
-    myData.priority=priority
+    myData.filterName = filterName
+    myData.priority = priority
     mgr.logEvent_endSetFilter(myData, priority)
     time.sleep(1)
     mgr.salShutdown()
 
+
 def send_Filter(fname):
-    
-    filter_names = ['u','g','r','i','z','Y']
+
+    filter_names = ['u', 'g', 'r', 'i', 'z', 'Y']
     if fname not in filter_names:
         sys.exit("ERROR: filter %s not in filter names" % fname)
 
@@ -60,7 +64,8 @@ def send_Filter(fname):
     LOGGER.info("Sent FILTER=%s" % fname)
     return retval
 
-def send_FK5Target(ra,dec,visitID=1):
+
+def send_FK5Target(ra, dec, visitID=1):
 
     mgr = SALPY_tcs.SAL_tcs()
     mgr.salTelemetryPub("tcs_kernel_FK5Target")
@@ -72,26 +77,27 @@ def send_FK5Target(ra,dec,visitID=1):
     myData.parallax = 1.0
     myData.pmRA = ra
     myData.pmDec = dec
-    #myData.rv = 1.0
+    # myData.rv = 1.0
     myData.rv = visitID
     retval = mgr.putSample_kernel_FK5Target(myData)
     mgr.salShutdown()
-    LOGGER.info("Sent RA:%s, DEC:%s" % (ra,dec))
-    #LOGGER.info("Sent visitID:%s" % visitID)
-    return
+    LOGGER.info("Sent RA:%s, DEC:%s" % (ra, dec))
+    return retval
+
 
 def camera_logevent_endReadout(priority=1):
 
     mgr = SALPY_camera.SAL_camera()
     mgr.salEvent("camera_logevent_endReadout")
     myData = SALPY_camera.camera_logevent_endReadoutC()
-    myData.priority=int(priority)
-    priority=int(myData.priority)
+    myData.priority = int(priority)
+    priority = int(myData.priority)
     mgr.logEvent_endReadout(myData, priority)
     LOGGER.info("Sent event Camera endReadout")
     time.sleep(1)
     mgr.salShutdown()
     return
+
 
 def dmHeaderService_logevent_LargeFileObjectAvailable(**kwargs):
 
@@ -102,13 +108,12 @@ def dmHeaderService_logevent_LargeFileObjectAvailable(**kwargs):
     myData.Byte_Size = kwargs.get('Byte_Size')
     myData.Checksum = kwargs.get('Checksum')
     myData.Generator = kwargs.get('Generator')
-    myData.Mime = kwargs.get('Mime','text/plain')
+    myData.Mime = kwargs.get('Mime', 'text/plain')
     myData.URL = kwargs.get('URL')
-    myData.Version = kwargs.get('Version',1)
-    myData.priority = kwargs.get('priority',1)
-    priority=int(myData.priority)
+    myData.Version = kwargs.get('Version', 1)
+    myData.priority = kwargs.get('priority', 1)
+    priority = int(myData.priority)
     mgr.logEvent_LargeFileObjectAvailable(myData, priority)
     time.sleep(1)
     mgr.salShutdown()
     return
-

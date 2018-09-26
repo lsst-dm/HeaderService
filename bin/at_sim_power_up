@@ -5,6 +5,6 @@ import salpytools
 if __name__ == "__main__":
     commands = sys.argv[1:]
     if len(commands) < 1:
-        commands = ['enterControl','start','enable']
+        commands = ['enterControl', 'start', 'enable']
         print("Will execute Power-up Sequence:")
-    salpytools.salpylib.command_sequencer(commands,Device='atHeaderService')
+    salpytools.salpylib.command_sequencer(commands, Device='atHeaderService')

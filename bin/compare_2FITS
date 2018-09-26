@@ -3,8 +3,8 @@
 import fitsio
 import numpy
 import os
-import sys
 import argparse
+
 
 def cmdline():
 
@@ -14,11 +14,11 @@ def cmdline():
                         help="Name of the file 1")
     parser.add_argument("file2", action="store",
                         help="Name of the file 2")
-    parser.add_argument("--write_diff", action="store_true",default=False, 
+    parser.add_argument("--write_diff", action="store_true", default=False,
                         help="Write out the difference image")
-    parser.add_argument("--byhdu", action="store_true",default=False, 
+    parser.add_argument("--byhdu", action="store_true", default=False,
                         help="Compare by HDU number")
-    parser.add_argument("--byextname", action="store_true",default=True, 
+    parser.add_argument("--byextname", action="store_true", default=True,
                         help="Compare by EXTNAME string")
     args = parser.parse_args()
 
@@ -27,7 +27,7 @@ def cmdline():
     return args
 
 
-def compare2fits(file1,file2,byhdu=False, byextname=True, write=False):
+def compare2fits(file1, file2, byhdu=False, byextname=True, write=False):
 
     # Make sure the exists
     exists1 = os.path.exists(file1)
@@ -35,18 +35,20 @@ def compare2fits(file1,file2,byhdu=False, byextname=True, write=False):
 
     if not exists1 or not exists2:
         print ("# WARNING: Files do not exists:")
-        if not exists1: print ("# {0:s}: {1:s}".format(file1,exists1))
-        if not exists2: print ("# {0:s}: {1:s}".format(file2,exists2))
+        if not exists1:
+            print ("# {0:s}: {1:s}".format(file1, exists1))
+        if not exists2:
+            print ("# {0:s}: {1:s}".format(file2, exists2))
         return
 
     # Make sure that have the same number of hdus
-    fits1 = fitsio.FITS(file1) 
+    fits1 = fitsio.FITS(file1)
     hdus1 = range(len(fits1))
-    fits2 = fitsio.FITS(file2) 
+    fits2 = fitsio.FITS(file2)
     hdus2 = range(len(fits2))
     if hdus1 != hdus2:
         print ("# number of HDU's are different, proceeding until failure")
-    
+
     for hdu in hdus1:
 
         # We skip the first HDU=0
@@ -59,36 +61,32 @@ def compare2fits(file1,file2,byhdu=False, byextname=True, write=False):
         elif byhdu:
             extname = hdu
 
-        data1,header1 = fitsio.read(file1,ext=extname,header=True)
-        data2,header2 = fitsio.read(file2,ext=extname,header=True)
+        data1, header1 = fitsio.read(file1, ext=extname, header=True)
+        data2, header2 = fitsio.read(file2, ext=extname, header=True)
         diff = data1-data2
         Npix = diff.shape[0]*diff.shape[1]
         ix = numpy.where(diff != 0)
         Ndiff = len(ix[0])
         if Ndiff > 0:
             fraction = float(Ndiff)/float(Npix)
-            v1    = diff[ix].min()
-            v2    = diff[ix].max()
+            v1 = diff[ix].min()
+            v2 = diff[ix].max()
             vmean = diff[ix].mean()
             vmedian = numpy.median(diff[ix])
-            print ("# FILES ARE DIFERENT for HDU {} at {} pixels or {} perc".format(extname,Ndiff,100*fraction))
-            print ("# {},{},{},{} (min,max,mean,median)".format(v1,v2,vmean,vmedian))
+            print ("# FILES ARE DIFERENT for HDU {} at {} pixels or {} perc\
+                   ".format(extname, Ndiff, 100*fraction))
+            print ("# {},{},{},{} (min,max,mean,median)".format(v1, v2, vmean, vmedian))
         else:
-            print ("# Images are the same: {} HDU {} -- {}".format(file1, extname,Ndiff))
+            print ("# Images are the same: {} HDU {} -- {}".format(file1, extname, Ndiff))
 
         if write:
-            base,ext = os.path.splitext(os.path.basename(file1))
-            outname = "%s_diff%s" % (base,ext)
+            base, ext = os.path.splitext(os.path.basename(file1))
+            outname = "%s_diff%s" % (base, ext)
             print ("# Will write file: {0:s}".format(outname))
-            fitsio.write(outname,diff,header=header1,clobber=True)
+            fitsio.write(outname, diff, header=header1, clobber=True)
 
 
 if __name__ == "__main__":
-    
     args = cmdline()
-    
     # For now we do not want to write, change write to True if file is needed.
-    compare2fits(args.file1,args.file2,write=args.write_diff,byextname=args.byextname,byhdu=args.byhdu)
-
-
-            
+    compare2fits(args.file1, args.file2, write=args.write_diff, byextname=args.byextname, byhdu=args.byhdu)
