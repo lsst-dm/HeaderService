@@ -2,10 +2,8 @@
 
 import time
 import sys
-import os
-import HeaderService
 import HeaderService.hutils as hutils
-import salpytools 
+import salpytools
 
 spinner = hutils.spinner
 
@@ -16,7 +14,7 @@ if __name__ == "__main__":
     # as they use the DeviveState object for the current state
     State = salpytools.DeviceState()
     State.send_logEvent('summaryState')
-    
+
     # Create threads for the controller we want to listen to
     controller_list = ['enterControl',
                        'exitControl',
@@ -26,18 +24,17 @@ if __name__ == "__main__":
                        'disable']
     tControl = {}
     for ctrl_name in controller_list:
-        tControl[ctrl_name] = salpytools.DDSController(ctrl_name,State=State)
+        tControl[ctrl_name] = salpytools.DDSController(ctrl_name, State=State)
         tControl[ctrl_name].start()
 
     keep_loop = True
     while keep_loop:
         sys.stdout.flush()
-        sys.stdout.write("Current State is {} [{}]".format(State.current_state,next(spinner)))
-        sys.stdout.write('\r') 
+        sys.stdout.write("Current State is {} [{}]".format(State.current_state, next(spinner)))
+        sys.stdout.write('\r')
         time.sleep(1)
         # In case we want to break the loop
         if State.current_state == 'DISABLED':
             keep_loop = False
             sys.stdout.write("Transitioned to State: {}\n".format(State.current_state))
             sys.stdout.write("Bye...\n")
-        

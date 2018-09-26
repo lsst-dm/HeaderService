@@ -2,8 +2,8 @@
 
 ''' Generic OCS/TCS command sequencer for any CSC Device '''
 
-import sys
 import salpytools
+
 
 def cmdline():
 
@@ -11,17 +11,17 @@ def cmdline():
     parser = argparse.ArgumentParser(description="Run a set of Commands for a CSC Device")
 
     # The optional arguments
-    parser.add_argument("-d","--Device", action="store", default='atHeaderService',
+    parser.add_argument("-d", "--Device", action="store", default='atHeaderService',
                         help="Name of Device")
-    parser.add_argument('-c', "--commands",nargs='+',
+    parser.add_argument('-c', "--commands", nargs='+',
                         help='List of command to issue')
-    parser.add_argument('-w', "--wait_time",type=int,default=1,
+    parser.add_argument('-w', "--wait_time", type=int, default=1,
                         help='Wait time beteen for complete command')
-    parser.add_argument('-s', "--sleep_time",type=int,default=3,
+    parser.add_argument('-s', "--sleep_time", type=int, default=3,
                         help='Sleep time between command')
-    parser.add_argument("--power_up",action='store_true',
+    parser.add_argument("--power_up", action='store_true',
                         help='Execute the power-up sequence')
-    parser.add_argument("--power_down",action='store_true',
+    parser.add_argument("--power_down", action='store_true',
                         help='Execute the power-down sequence')
     args = parser.parse_args()
 
@@ -30,15 +30,17 @@ def cmdline():
         raise ValueError("Need to set either power up/down, but not both")
     # The power-up sequence
     elif args.power_up:
-        args.commands = ['enterControl','start','enable']
+        args.commands = ['enterControl', 'start', 'enable']
     # The power-down sequence
     elif args.power_down:
-        args.commands = ['disable','standby','exitControl']
+        args.commands = ['disable', 'standby', 'exitControl']
     if len(args.commands) < 1:
         raise ValueError("Commands need to be > 0")
     return args
 
+
 if __name__ == "__main__":
     args = cmdline()
     print("Will execute the following commands: {}".format(args.commands))
-    salpytools.command_sequencer(args.commands,Device=args.Device,sleep_time=args.sleep_time,wait_time=args.wait_time)
+    salpytools.command_sequencer(args.commands, Device=args.Device,
+                                 sleep_time=args.sleep_time, wait_time=args.wait_time)

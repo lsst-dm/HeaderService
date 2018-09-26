@@ -6,13 +6,13 @@ import sys
 
 naxis1 = 576
 naxis2 = 2048
-shape = (naxis2,naxis1)
+shape = (naxis2, naxis1)
 try:
     fname = sys.argv[1]
-except:
+except Exception:
     sys.exit("Usage: {} <segment-file>".format(sys.argv[0]))
 out_name = "{}.fits".format(fname)
-out_name_fz= "{}.fits.fz".format(fname)
+out_name_fz = "{}.fits.fz".format(fname)
 
 # Read in all of the segments
 fd = open(fname, 'rb')

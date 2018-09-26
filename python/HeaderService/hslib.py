@@ -19,20 +19,21 @@ _CONTROLER_list = ['enterControl',
 spinner = hutils.spinner
 
 # Create a logger for all functions
-LOGGER = hutils.create_logger(level=logging.NOTSET,name='HEADERSERVICE')
+LOGGER = hutils.create_logger(level=logging.NOTSET, name='HEADERSERVICE')
+
 
 class HSworker:
 
     """ A Class to run and manage the Header Service"""
 
-    def __init__(self,**keys):
+    def __init__(self, **keys):
 
         self.keys = keys
         # Unpack the dictionary of **keys into variables to do:
         # self.keyname = key['keyname']
         for k, v in list(keys.items()):
             setattr(self, k, v)
-            #print k,v
+            # print k,v
 
         # Inititalize the State class to keep track of the system's state
         self.init_State()
@@ -47,25 +48,27 @@ class HSworker:
 
         # The user running the process
         self.USER = os.environ['USER']
-        
-    def init_State(self,start_state=None):
+
+    def init_State(self, start_state=None):
         """
         Initialize the State object that keeps track of the HS current state.
         We use a start_state to set the initial state
         """
         if start_state:
-            self.start_state=start_state
+            self.start_state = start_state
 
         self.State = salpytools.DeviceState(default_state=self.start_state)
         self.State.send_logEvent('summaryState')
         # Create threads for the controller we want to listen to
         self.tControl = {}
         for ctrl_name in _CONTROLER_list:
-            self.tControl[ctrl_name] = salpytools.DDSController(ctrl_name,State=self.State)
+            self.tControl[ctrl_name] = salpytools.DDSController(ctrl_name, State=self.State)
             self.tControl[ctrl_name].start()
 
-        # Set the message for 'SettingApplied' here, we should want to control these from here in the future
-        self.State.settings = "HeaderService version:{}\nts_xml version:{}".format(HeaderService.version,self.ts_xml)
+        # Set the message for 'SettingApplied' here, we should want to control
+        # these from here in the future
+        self.State.settings = "HeaderService version:{}\nts_xml version:{}".format(HeaderService.version,
+                                                                                   self.ts_xml)
 
     def get_channels(self):
         """Extract the unique channel by topic/device"""
@@ -76,11 +79,11 @@ class HSworker:
                                                    imageParam_event=self.imageParam_event)
 
         # Now separate the keys to collect at the 'end' from the ones at 'start'
-        t = self.telemetry # Short-cut
+        t = self.telemetry  # Short-cut
         self.keywords_start = [k for k in t.keys() if t[k]['collect_after_event'] == 'start_collection_event']
-        self.keywords_end   = [k for k in t.keys() if t[k]['collect_after_event'] == 'end_collection_event']
+        self.keywords_end = [k for k in t.keys() if t[k]['collect_after_event'] == 'end_collection_event']
 
-    def make_connections(self,start=True):
+    def make_connections(self, start=True):
         """
         Make connection to channels and start the threads as defined
         by the meta-data, and make additional connection for Start/End
@@ -89,8 +92,9 @@ class HSworker:
         # The dict containing all of the threads and connections
         self.SALconn = {}
         for name, c in self.channels.items():
-            self.SALconn[name] = salpytools.DDSSubcriber(c['device'],c['topic'],Stype=c['Stype'])
-            if start: self.SALconn[name].start()
+            self.SALconn[name] = salpytools.DDSSubcriber(c['device'], c['topic'], Stype=c['Stype'])
+            if start:
+                self.SALconn[name].start()
 
         # Select the start_collection channel
         self.name_start = get_channel_name(self.start_collection_event)
@@ -106,13 +110,13 @@ class HSworker:
             os.makedirs(self.filepath)
             LOGGER.info("Created dirname:{}".format(self.filepath))
 
-    def run(self,**keys):
+    def run(self, **keys):
 
         # Unpack the dictionary of **keys into variables to do:
         # self.keyname = key['keyname']
-        for k, v in list(keys.items()):            
+        for k, v in list(keys.items()):
             setattr(self, k, v)
-            #print k,v
+            # print k,v
 
         # Subscribe to each of the channels we want to susbcribe and store
         # the connection in a dictionary
@@ -123,16 +127,14 @@ class HSworker:
         self.check_outdir()
 
         # Start the web server
-        #self.filepath_www = os.path.split(self.filepath)[0]
-        #self.filepath_www = os.path.split(self.filepath)[0]
-        hutils.start_web_server(self.filepath,port_number=self.port_number)
+        hutils.start_web_server(self.filepath, port_number=self.port_number)
 
         # And the object to send DMHS messages
         # TODO -- Make this configurable too
         self.dmhs = salpytools.DDSSend("atHeaderService")
         if self.send_efd_message:
-            self.efd  = salpytools.DDSSend('efd')
-            
+            self.efd = salpytools.DDSSend('efd')
+
         # Load up the header template
         self.HDR = HeaderService.HDRTEMPL_ATSCam(vendor=self.vendor)
         self.HDR.load_templates()
@@ -141,7 +143,7 @@ class HSworker:
         self.run_loop()
 
     def update_header_geometry(self):
-        
+
         # Image paramters
         LOGGER.info("Extracting Image Parameters")
         # Extract from telemetry and identify the channel
@@ -152,19 +154,21 @@ class HSworker:
         # We update the headers and reload them
         self.HDR.CCDGEOM.overh = geom['overh']
         self.HDR.CCDGEOM.overv = geom['overv']
-        self.HDR.CCDGEOM.preh  = geom['preh']
+        self.HDR.CCDGEOM.preh = geom['preh']
         LOGGER.info("Reloadling templates")
         self.HDR.load_templates()
         LOGGER.info("For reference: NAXIS1={}".format(geom['NAXIS1']))
         LOGGER.info("For reference: NAXIS2={}".format(geom['NAXIS2']))
-        LOGGER.info("Received: overv={}, overh={}, preh={}".format(geom['overv'], geom['overh'], geom['preh']))
+        LOGGER.info("Received: overv={}, overh={}, preh={}".format(geom['overv'],
+                                                                   geom['overh'],
+                                                                   geom['preh']))
 
     def update_header(self):
 
         """Update FITSIO header object using the captured metadata"""
-        for k,v in self.metadata.items():
-            LOGGER.debug("Updating header with {:8s} = {}".format(k,v))
-            self.HDR.update_record(k,v, 'PRIMARY')
+        for k, v in self.metadata.items():
+            LOGGER.debug("Updating header with {:8s} = {}".format(k, v))
+            self.HDR.update_record(k, v, 'PRIMARY')
 
     def get_filenames(self):
         """
@@ -174,10 +178,10 @@ class HSworker:
         # Extract from telemetry and identify the channel
         name = get_channel_name(self.imageName_event)
         myData = self.SALconn[name].getCurrent()
-        self.imageName = getattr(myData,self.imageName_event['value'])
+        self.imageName = getattr(myData, self.imageName_event['value'])
 
         # Construct the hdr and fits filename
-        self.filename_HDR = os.path.join(self.filepath,self.format_HDR.format(self.imageName))
+        self.filename_HDR = os.path.join(self.filepath, self.format_HDR.format(self.imageName))
         self.filename_FITS = self.format_FITS.format(self.imageName)
 
     def run_loop(self):
@@ -186,10 +190,10 @@ class HSworker:
         loop_n = 0
         while True:
 
-            if self.State.current_state!='ENABLED':
+            if self.State.current_state != 'ENABLED':
                 sys.stdout.flush()
-                sys.stdout.write("Current State is {} [{}]".format(self.State.current_state,next(spinner)))
-                sys.stdout.write('\r') 
+                sys.stdout.write("Current State is {} [{}]".format(self.State.current_state, next(spinner)))
+                sys.stdout.write('\r')
 
             elif self.StartInt.newEvent:
 
@@ -198,18 +202,18 @@ class HSworker:
 
                 # Clean/purge all metadata
                 self.clean()
-                
                 sys.stdout.flush()
                 LOGGER.info("Received: {} Event".format(self.name_start))
                 self.get_filenames()
                 LOGGER.info("Extracted value for imageName: {}".format(self.imageName))
-                
+
                 # Collect metadata at start of integration
                 LOGGER.info("Collecting Metadata START : {} Event".format(self.name_start))
                 self.collect(self.keywords_start)
 
                 # Wait for end Event (i.e. end of telemetry)
-                LOGGER.info("Current State is {} -- waiting for {} event".format(self.State.current_state,self.name_end))
+                LOGGER.info("Current State is {} -- waiting for {} event".format(self.State.current_state,
+                                                                                 self.name_end))
                 self.EndTelem.waitEvent()
                 if self.EndTelem.newEvent:
                     sys.stdout.flush()
@@ -225,7 +229,7 @@ class HSworker:
                     # First we update the header using the information from the camera geometry
                     self.update_header_geometry()
                     self.update_header()
-                    # Write the header 
+                    # Write the header
                     self.write()
                     # Announce creation to DDS
                     self.announce()
@@ -233,36 +237,37 @@ class HSworker:
                     LOGGER.info("------------------------------------------")
             else:
                 sys.stdout.flush()
-                sys.stdout.write("Current State is {} -- waiting for {} Event...[{}]".format(self.State.current_state,self.name_start,next(spinner)))
+                sys.stdout.write("Current State is {} -- waiting for {} Event...[{}]".format(
+                    self.State.current_state, self.name_start, next(spinner)))
                 sys.stdout.write('\r')
                 time.sleep(self.tsleep)
 
             time.sleep(self.tsleep)
-            loop_n +=1    
+            loop_n += 1
 
     def announce(self):
         # Get the md5 for the header file
-        md5value = hutils.md5Checksum(self.filename_HDR) #,blocksize=1024*512):
+        md5value = hutils.md5Checksum(self.filename_HDR)
         bytesize = os.path.getsize(self.filename_HDR)
         LOGGER.info("Got MD5SUM: {}".format(md5value))
         # Now we publish filename and MD5
         # Build the kwargs
-        kw = {'byteSize':bytesize,
-              'checkSum':md5value,
-              'generator':'atHeaderService',
-              'mimeType':'FITS',
+        kw = {'byteSize': bytesize,
+              'checkSum': md5value,
+              'generator': 'atHeaderService',
+              'mimeType': 'FITS',
               'url': self.url_format.format(ip_address=self.ip_address,
                                             port_number=self.port_number,
                                             filename_HDR=os.path.basename(self.filename_HDR)),
               'id': self.imageName,
               'version': 1,
-              'priority':1,
+              'priority': 1,
               }
-        self.dmhs.send_Event('largeFileObjectAvailable',**kw)
+        self.dmhs.send_Event('largeFileObjectAvailable', **kw)
         LOGGER.info("Sent largeFileObjectAvailable: {}".format(kw))
         if self.send_efd_message:
-            self.efd.send_Event('largeFileObjectAvailable',**kw)
-            
+            self.efd.send_Event('largeFileObjectAvailable', **kw)
+
     def write(self):
         """ Function to call to write the header"""
         self.HDR.write_header(self.filename_HDR, newline=False)
@@ -272,17 +277,16 @@ class HSworker:
         self.myData = {}
         self.metadata = {}
 
-    def collect(self,keys):
+    def collect(self, keys):
         """ Collect meta-data from the telemetry-connected channels
         and store it in the 'metadata' dictionary"""
         for k in keys:
             name = get_channel_name(self.telemetry[k])
             param = self.telemetry[k]['value']
             # Only access data payload once
-            #if name not in self.myData.keys():
             if name not in self.myData:
                 self.myData[name] = self.SALconn[name].getCurrent()
-            self.metadata[k] = getattr(self.myData[name],param)
+            self.metadata[k] = getattr(self.myData[name], param)
 
     def collect_from_HeaderService(self):
         """Collect custom meta-data generated by the HeaderService"""
@@ -296,9 +300,10 @@ class HSworker:
 
 def get_channel_name(c):
     """ Standard formatting for the name of a channel across modules"""
-    return '{}_{}'.format(c['device'],c['topic'])
+    return '{}_{}'.format(c['device'], c['topic'])
 
-def extract_telemetry_channels(telem,start_collection_event=None,
+
+def extract_telemetry_channels(telem, start_collection_event=None,
                                end_collection_event=None,
                                imageParam_event=None):
     """
@@ -308,9 +313,9 @@ def extract_telemetry_channels(telem,start_collection_event=None,
     channels = {}
     for key in telem:
         # Make the name of the channel unique by appending device
-        c = {'device':telem[key]['device'],    
+        c = {'device': telem[key]['device'],
              'topic': telem[key]['topic'],
-             'Stype' :telem[key]['Stype']}
+             'Stype': telem[key]['Stype']}
         name = get_channel_name(c)
         # Make sure we don't crate extra channels
         if name not in channels.keys():
@@ -324,7 +329,7 @@ def extract_telemetry_channels(telem,start_collection_event=None,
         if name not in channels.keys():
             c['Stype'] = 'Event'
             channels[name] = c
-            
+
     if end_collection_event:
         c = end_collection_event
         name = get_channel_name(c)
@@ -339,17 +344,16 @@ def extract_telemetry_channels(telem,start_collection_event=None,
         if name not in channels.keys():
             c['Stype'] = 'Event'
             channels[name] = c
-        
 
     return channels
 
-def subscribe_to_channels(channels,start=True):
+
+def subscribe_to_channels(channels, start=True):
     """ make connection to channels and start the threads"""
     SAL_connection = {}
     for name, c in channels.items():
-        SAL_connection[name] = salpytools.DDSSubcriber(c['device'],c['topic'],Stype=c['Stype'])
-        if start: SAL_connection[name].start()
+        SAL_connection[name] = salpytools.DDSSubcriber(c['device'], c['topic'], Stype=c['Stype'])
+        if start:
+            SAL_connection[name].start()
 
     return SAL_connection
-
-    
