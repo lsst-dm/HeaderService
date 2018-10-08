@@ -94,7 +94,7 @@ def write_header_string(arg):
     return
 
 
-def get_date_utc(time=None,format='isot'):
+def get_date_utc(time=None, format='isot'):
     from astropy.time import Time
     from datetime import datetime
     if time is None:
