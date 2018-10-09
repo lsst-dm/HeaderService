@@ -2,15 +2,9 @@
 
 import os
 import logging
-import HeaderService.hutils as hutils
 import HeaderService.hslib as hslib
 import argparse
 import yaml
-
-spinner = hutils.spinner
-
-# Create a logger for all functions
-LOGGER = hutils.create_logger(level=logging.NOTSET, name='HEADERSERVICE')
 
 
 def cmdline():
@@ -45,10 +39,15 @@ def cmdline():
                         help="Port number for webserver")
     parser.add_argument("--send_efd_message", action="store_true", default=False,
                         help="Send and EDF message as well?")
+    parser.add_argument("--loglevel", action="store", default='INFO', type=str.upper,
+                        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+                        help="Logging Level [DEBUG/INFO/WARNING/ERROR/CRITICAL]")
+
     # args = parser.parse_args()
     # Set the defaults of argparse using the values in the yaml config file
     parser.set_defaults(**conf_defaults)
     args = parser.parse_args(args=remaining_argv)
+    args.loglevel = getattr(logging, args.loglevel)
     return args
 
 

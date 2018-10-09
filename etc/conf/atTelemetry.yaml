@@ -1,5 +1,8 @@
 # Configuration file for the AuxTelescope
 
+# Default logging level
+log: INFO
+
 # The camera vendor
 vendor: ITL
 
@@ -17,7 +20,7 @@ imageParam_event:
 # The URL format to be used
 url_format: "http://{ip_address}:{port_number}/{filename_HDR}"
 
-# The file naming event source and definitions 
+# The file naming event source and definitions
 filepath: 'www/DMHS_filerepo'
 format_HDR: "{}.header"
 format_FITS: "{}.fits"
@@ -26,8 +29,8 @@ imageName_event:
     topic: startIntegration
     value: imageName
 
-# The Events that we use to define where we collect 
-start_collection_event: 
+# The Events that we use to define where we collect
+start_collection_event:
  device: atcamera
  topic: startIntegration
 

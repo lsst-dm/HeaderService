@@ -21,7 +21,6 @@ spinner = hutils.spinner
 # Create a logger for all functions
 LOGGER = hutils.create_logger(level=logging.NOTSET, name='HEADERSERVICE')
 
-
 class HSworker:
 
     """ A Class to run and manage the Header Service"""
@@ -45,6 +44,7 @@ class HSworker:
         # Get the hostname and IP address
         self.ip_address = socket.gethostbyname(socket.gethostname())
         LOGGER.info("Will use IP: {} for broadcasting".format(self.ip_address))
+        LOGGER.level=self.loglevel
 
         # The user running the process
         self.USER = os.environ['USER']
@@ -167,7 +167,7 @@ class HSworker:
 
         """Update FITSIO header object using the captured metadata"""
         for k, v in self.metadata.items():
-            LOGGER.debug("Updating header with {:8s} = {}".format(k, v))
+            LOGGER.info("Updating header with {:8s} = {}".format(k, v))
             self.HDR.update_record(k, v, 'PRIMARY')
 
     def get_filenames(self):
