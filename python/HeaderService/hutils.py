@@ -323,7 +323,7 @@ class HDRTEMPL_ATSCam:
         self.header['PRIMARY'] = self.header_primary
 
         # Update PRIMARY with new value in self.CCDGEOM
-        LOGGER.info("Updating GEOM in template for: {}".format('PRIMARY'))
+        LOGGER.debug("Updating GEOM in template for: {}".format('PRIMARY'))
         PRIMARY_DATA = self.CCDGEOM.get_extension('PRIMARY')
         self.update_records(PRIMARY_DATA, 'PRIMARY')
 
@@ -333,7 +333,7 @@ class HDRTEMPL_ATSCam:
             LOGGER.info("Loading template for: {}".format(EXTNAME))
             self.header[EXTNAME] = copy.deepcopy(self.header_segment)
             # Now get the new value for the SEGMENT
-            LOGGER.info("Updating GEOM in template for: {}".format(SEG))
+            LOGGER.debug("Updating GEOM in template for: {}".format(SEG))
             EXTENSION_DATA = self.CCDGEOM.get_extension(SEG)
             self.update_records(EXTENSION_DATA, EXTNAME)
 
@@ -387,19 +387,10 @@ class HDRTEMPL_ATSCam:
     def write_header_emptyHDU(self, filename):
 
         data = None
-        with fitsio.FITS(filename, 'rw', clobber=True) as fits:
+        with fitsio.FITS(filename, 'rw', clobber=True, ignore_empty=True) as fits:
             for extname in self.HDRLIST:
                 hdr = copy.deepcopy(self.header[extname])
-                fits.write(data, extname=extname, ignore_empty=True)
-                hdr.clean()
-                # # We do not need this -- as NAXIS1/2 should be done by the
-                # # entity in charge of building the FITS file
-                # # Keep NAXIS1/NAXIS2 intact if present in the template header
-                # #if self.header[extname].get('NAXIS1') and self.header[extname].get('NAXIS2'):
-                # #    hdr.add_record(get_record(self.header[extname],'NAXIS1'))
-                # #    hdr.add_record(get_record(self.header[extname],'NAXIS2'))
-                # #    #print get_record(self.header[extname],'NAXIS')
-                fits[-1].write_keys(hdr, clean=False)
+                fits.write(data, header=hdr, extname=extname)
 
     def write_fits(self, filename, dtype='random', naxis1=None, naxis2=None, btype='int32'):
 
