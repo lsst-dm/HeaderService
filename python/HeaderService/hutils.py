@@ -323,7 +323,7 @@ class HDRTEMPL_ATSCam:
         self.header['PRIMARY'] = self.header_primary
 
         # Update PRIMARY with new value in self.CCDGEOM
-        LOGGER.info("Updating GEOM in template for: {}".format('PRIMARY'))
+        LOGGER.debug("Updating GEOM in template for: {}".format('PRIMARY'))
         PRIMARY_DATA = self.CCDGEOM.get_extension('PRIMARY')
         self.update_records(PRIMARY_DATA, 'PRIMARY')
 
@@ -333,7 +333,7 @@ class HDRTEMPL_ATSCam:
             LOGGER.info("Loading template for: {}".format(EXTNAME))
             self.header[EXTNAME] = copy.deepcopy(self.header_segment)
             # Now get the new value for the SEGMENT
-            LOGGER.info("Updating GEOM in template for: {}".format(SEG))
+            LOGGER.debug("Updating GEOM in template for: {}".format(SEG))
             EXTENSION_DATA = self.CCDGEOM.get_extension(SEG)
             self.update_records(EXTENSION_DATA, EXTNAME)
 
