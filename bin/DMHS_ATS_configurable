@@ -42,6 +42,11 @@ def cmdline():
     parser.add_argument("--loglevel", action="store", default='INFO', type=str.upper,
                         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
                         help="Logging Level [DEBUG/INFO/WARNING/ERROR/CRITICAL]")
+    parser.add_argument("--write_mode", action="store", default='fits', type=str.lower,
+                        choices=["fits", "string"],
+                        help="Mode for writing header files [fits/string]")
+    parser.add_argument("--hdu_delimiter", action="store", default='END',
+                        help="Delimiter for string-based headers")
 
     # args = parser.parse_args()
     # Set the defaults of argparse using the values in the yaml config file

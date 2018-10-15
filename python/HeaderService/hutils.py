@@ -149,7 +149,7 @@ class HDRTEMPL_ATSCam:
                  vendor='E2V',
                  segname='Segment',
                  write_mode='fits',
-                 string_delimiter='END',
+                 hdu_delimiter='END',
                  templ_path=None,
                  templ_primary_name='primary_hdu.header',
                  templ_segment_name='segment_hdu.header'):
@@ -161,7 +161,7 @@ class HDRTEMPL_ATSCam:
         self.templ_primary_name = templ_primary_name
         self.templ_segment_name = templ_segment_name
         self.write_mode = write_mode
-        self.string_delimiter = string_delimiter
+        self.hdu_delimiter = hdu_delimiter
 
         # Create logger
         self.logger = create_logger(level=logging.NOTSET, name='HEADERSERVICE_ATSCam')
@@ -255,7 +255,7 @@ class HDRTEMPL_ATSCam:
         """ Format a header as a string """
         self.hstring = ''
         for extname in self.HDRLIST:
-            self.hstring = self.hstring + str(self.header[extname]) + '\n' + self.string_delimiter
+            self.hstring = self.hstring + str(self.header[extname]) + '\n' + self.hdu_delimiter
         return self.hstring
 
     def write_headers(self, filenames, MP=False, NP=2, md5=False):

@@ -20,6 +20,12 @@ imageParam_event:
 # The URL format to be used
 url_format: "http://{ip_address}:{port_number}/{filename_HDR}"
 
+# Default write_mode (fits or string)
+write_mode: fits
+
+# Default string delimeter (string mode only)
+hdu_delimiter: END
+
 # The file naming event source and definitions
 filepath: 'www/DMHS_filerepo'
 format_HDR: "{}.header"
