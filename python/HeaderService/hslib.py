@@ -136,7 +136,7 @@ class HSworker:
             self.efd = salpytools.DDSSend('efd')
 
         # Load up the header template
-        self.HDR = HeaderService.HDRTEMPL_ATSCam(vendor=self.vendor, write_mode='string')
+        self.HDR = HeaderService.HDRTEMPL_ATSCam(vendor=self.vendor, write_mode='fits')
         self.HDR.load_templates()
 
         # Go into the eternal loop
