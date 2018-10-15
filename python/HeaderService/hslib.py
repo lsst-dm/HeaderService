@@ -136,7 +136,7 @@ class HSworker:
             self.efd = salpytools.DDSSend('efd')
 
         # Load up the header template
-        self.HDR = HeaderService.HDRTEMPL_ATSCam(vendor=self.vendor)
+        self.HDR = HeaderService.HDRTEMPL_ATSCam(vendor=self.vendor, write_mode='string')
         self.HDR.load_templates()
 
         # Go into the eternal loop
@@ -270,7 +270,7 @@ class HSworker:
 
     def write(self):
         """ Function to call to write the header"""
-        self.HDR.write_header(self.filename_HDR, newline=False)
+        self.HDR.write_header(self.filename_HDR)
         LOGGER.info("Wrote header to: {}".format(self.filename_HDR))
 
     def clean(self):
