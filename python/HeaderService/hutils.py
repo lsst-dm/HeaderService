@@ -251,27 +251,27 @@ class HDRTEMPL_ATSCam:
             except Exception:
                 LOGGER.debug("WARNING: Could not update {}".format(keyword))
 
-    def string_header(self):
+    def calculate_string_header(self):
         """ Format a header as a string """
-        self.hstring = ''
+        hstring = ''
         for extname in self.HDRLIST:
-            self.hstring = self.hstring + str(self.header[extname]) + '\n' + self.hdu_delimiter
-        return self.hstring
+            hstring = hstring + str(self.header[extname]) + '\n' + self.hdu_delimiter
+        return hstring
 
-    def write_headers(self, filenames, MP=False, NP=2, md5=False):
+    def write_headers(self, filenames, hstring, MP=False, NP=2, md5=False):
 
         """
         Write one header per CCD (all the same) for now in order to test I/O performance
         """
         if MP:
             pool = multiprocessing.Pool(processes=NP)
-            args = [(filename, self.hstring, md5) for filename in filenames]
+            args = [(filename, hstring, md5) for filename in filenames]
             pool.map(write_header_string, args)
             pool.close()
             pool.join()
         else:
             for filename in filenames:
-                arg = filename, self.hstring, md5
+                arg = filename, hstring, md5
                 write_header_string(arg)
         return
 
@@ -285,13 +285,13 @@ class HDRTEMPL_ATSCam:
 
     def write_header_string(self, filename):
         """ Write header as string"""
-        self.string_header()
+        hstring = self.calculate_string_header()
         with open(filename, 'w') as fobj:
-            fobj.write(self.hstring)
+            fobj.write(hstring)
 
-    def write_fits(self, filename, dtype='random', naxis1=None, naxis2=None, btype='int32'):
+    def write_dummy_fits(self, filename, dtype='random', naxis1=None, naxis2=None, btype='int32'):
 
-        """ Write a dummy fits file filles with random or zeros -- use for testing only"""
+        """ Write a dummy fits file filled with random or zeros -- use for testing only"""
 
         # Figure out the dimensions following the camera geometry
         if not naxis1:
@@ -334,7 +334,9 @@ class HDRTEMPL_ATSCam:
         elif self.write_mode == 'string':
             self.write_header_string(filename)
         else:
-            LOGGER.info("ERROR: header write_mode:{} not recognized".format(self.write_mode))
+            msg = "ERROR: header write_mode: {} not recognized".format(self.write_mode)
+            LOGGER.error(msg)
+            raise ValueError(msg)
             return
 
         LOGGER.info("Header write time:{}".format(elapsed_time(t0)))
