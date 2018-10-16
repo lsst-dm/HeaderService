@@ -142,125 +142,14 @@ def start_web_server(dirname, port_number=8000, exe='start_www.sh'):
     LOGGER.info("Done Starting web server")
 
 
-class HDRTEMPL_TestCamera:
-
-    def __init__(self, section='TestCamera', hdrlist=None, vendor='ITL', visitID_start=1):
-
-        self.section = section
-        self.vendor = vendor
-        self.visitID_start = visitID_start
-        self.visitID = "%08d" % self.visitID_start
-        self.headerpath = os.path.join(HEADERSERVICE_DIR, 'etc', self.section, self.vendor)
-        self.header_manifest = os.path.join(self.headerpath, 'manifest.txt')
-
-        # Create logger
-        self.logger = create_logger(level=logging.NOTSET, name='HEADERSERVICE')
-
-        if hdrlist:
-            self.hdrlist = hdrlist
-        else:
-            self.build_header_list()
-        self.load_templates()
-
-    def build_header_list(self):
-        """ Build the hdrlist"""
-
-        # Read in the full set of tiles
-        if os.path.exists(self.header_manifest):
-            LOGGER.info("Loading templates from: %s" % self.header_manifest)
-            with open(self.header_manifest) as f:
-                self.hdrlist = f.read().splitlines()
-        else:
-            exit("ERROR:No manifest file defined")
-
-        # Keep an upper case copy
-        self.HDRLIST = [x.upper() for x in self.hdrlist]
-        return
-
-    def load_templates(self):
-        """ Load in all of the header templates """
-
-        LOGGER.info("Loading templates from vendor: %s" % self.vendor)
-        self.header = {}
-        for hdrname in self.hdrlist:
-            # Let's keep HDU-like section as upper cases
-            HDRNAME = hdrname.upper()
-            hdrfile = os.path.join(HEADERSERVICE_DIR, 'etc', self.section, self.vendor, "%s.header" % hdrname)
-            LOGGER.info("Loading template for: %s" % HDRNAME)
-            self.header[HDRNAME] = fitsio.read_scamp_head(hdrfile)
-
-    def get_record(self, keyword, extname):
-        return get_record(self.header[extname], keyword)
-
-    def get_header_values(self):
-        return get_values(self.header)
-
-    def update_record(self, keyword, value, extname):
-        """ Update record for key with value """
-        rec = self.get_record(keyword, extname)
-        rec['value'] = value
-        rec['card_string'] = self.header[extname]._record2card(rec)
-
-    def string_header(self, delimiter='END'):
-        """ Format a header as a string """
-        self.hstring = ''
-        for extname in self.HDRLIST:
-            self.hstring = self.hstring + str(self.header[extname]) + '\n' + delimiter
-        return self.hstring
-
-    def write_headers(self, filenames, MP=False, NP=2, md5=False):
-
-        """
-        Write one header per CCD (all the same) for now in order to test I/O performance
-        """
-        if MP:
-            pool = multiprocessing.Pool(processes=NP)
-            args = [(filename, self.hstring, md5) for filename in filenames]
-            pool.map(write_header_string, args)
-            pool.close()
-            pool.join()
-        else:
-            for filename in filenames:
-                arg = filename, self.hstring, md5
-                write_header_string(arg)
-        return
-
-    def write_header_emptyHDU(self, filename):
-
-        data = None
-        with fitsio.FITS(filename, 'rw', clobber=True) as fits:
-            for extname in self.HDRLIST:
-                hdr = copy.deepcopy(self.header[extname])
-                fits.write(data, ignore_empty=True)
-                hdr.clean()
-                # Keep NAXIS1/NAXIS2 intact if present in the template header
-                if self.header[extname].get('NAXIS1') and self.header[extname].get('NAXIS2'):
-                    hdr.add_record(get_record(self.header[extname], 'NAXIS1'))
-                    hdr.add_record(get_record(self.header[extname], 'NAXIS2'))
-                fits[-1].write_keys(hdr, clean=False)
-
-    def write_header(self, filename, delimiter='END', newline=False):
-
-        """
-        Writes the single header file using the strict FITS notation (newline=False)
-        or the more human readable (newline=True) with a delimiter for multiple HDU's
-        """
-        if newline:
-            # Update header to a single string
-            self.string_header(delimiter=delimiter)
-            with open(filename, 'w') as fobj:
-                fobj.write(self.hstring)
-        else:
-            self.write_header_emptyHDU(filename)
-        return
-
-
 class HDRTEMPL_ATSCam:
 
     def __init__(self,
                  section='ATSCam',
                  vendor='E2V',
                  segname='Segment',
+                 write_mode='fits',
+                 hdu_delimiter='END',
                  templ_path=None,
                  templ_primary_name='primary_hdu.header',
                  templ_segment_name='segment_hdu.header'):
@@ -271,6 +160,8 @@ class HDRTEMPL_ATSCam:
         self.templ_path = templ_path
         self.templ_primary_name = templ_primary_name
         self.templ_segment_name = templ_segment_name
+        self.write_mode = write_mode
+        self.hdu_delimiter = hdu_delimiter
 
         # Create logger
         self.logger = create_logger(level=logging.NOTSET, name='HEADERSERVICE_ATSCam')
@@ -360,41 +251,47 @@ class HDRTEMPL_ATSCam:
             except Exception:
                 LOGGER.debug("WARNING: Could not update {}".format(keyword))
 
-    def string_header(self, delimiter='END'):
+    def calculate_string_header(self):
         """ Format a header as a string """
-        self.hstring = ''
+        hstring = ''
         for extname in self.HDRLIST:
-            self.hstring = self.hstring + str(self.header[extname]) + '\n' + delimiter
-        return self.hstring
+            hstring = hstring + str(self.header[extname]) + '\n' + self.hdu_delimiter
+        return hstring
 
-    def write_headers(self, filenames, MP=False, NP=2, md5=False):
+    def write_headers(self, filenames, hstring, MP=False, NP=2, md5=False):
 
         """
         Write one header per CCD (all the same) for now in order to test I/O performance
         """
         if MP:
             pool = multiprocessing.Pool(processes=NP)
-            args = [(filename, self.hstring, md5) for filename in filenames]
+            args = [(filename, hstring, md5) for filename in filenames]
             pool.map(write_header_string, args)
             pool.close()
             pool.join()
         else:
             for filename in filenames:
-                arg = filename, self.hstring, md5
+                arg = filename, hstring, md5
                 write_header_string(arg)
         return
 
-    def write_header_emptyHDU(self, filename):
-
+    def write_header_fits(self, filename):
+        """Write a header file using the FITS format with empty HDUs"""
         data = None
         with fitsio.FITS(filename, 'rw', clobber=True, ignore_empty=True) as fits:
             for extname in self.HDRLIST:
                 hdr = copy.deepcopy(self.header[extname])
                 fits.write(data, header=hdr, extname=extname)
 
-    def write_fits(self, filename, dtype='random', naxis1=None, naxis2=None, btype='int32'):
+    def write_header_string(self, filename):
+        """ Write header as string"""
+        hstring = self.calculate_string_header()
+        with open(filename, 'w') as fobj:
+            fobj.write(hstring)
 
-        """ Write a dummy fits file -- use for testing only"""
+    def write_dummy_fits(self, filename, dtype='random', naxis1=None, naxis2=None, btype='int32'):
+
+        """ Write a dummy fits file filled with random or zeros -- use for testing only"""
 
         # Figure out the dimensions following the camera geometry
         if not naxis1:
@@ -403,14 +300,12 @@ class HDRTEMPL_ATSCam:
             naxis2 = self.CCDGEOM.dimv + self.CCDGEOM.overv
 
         t0 = time.time()
-        with fitsio.FITS(filename, 'rw', clobber=True) as fits:
+        with fitsio.FITS(filename, 'rw', clobber=True, ignore_empty=True) as fits:
 
             # Write the PRIMARY First, with no data
             data = None
             hdr = copy.deepcopy(self.header['PRIMARY'])
-            fits.write(data, extname='PRIMARY', ignore_empty=True)
-            hdr.clean()
-            fits[-1].write_keys(hdr, clean=False)
+            fits.write(data, header=hdr, extname='PRIMARY')
 
             # Loop over the extensions
             for extname in self.HDRLIST[1:]:
@@ -427,19 +322,22 @@ class HDRTEMPL_ATSCam:
                 fits.write(data, extname=extname, header=hdr)
         LOGGER.info("FITS write time:{}".format(elapsed_time(t0)))
 
-    def write_header(self, filename, delimiter='END', newline=False):
-
+    def write_header(self, filename):
         """
-        Writes the single header file using the strict FITS notation (newline=False)
-        or the more human readable (newline=True) with a delimiter for multiple HDU's
+        Writes single header file using the strict FITS format (i.e. empty HDUs,
+        write_mode='fits') or more human readable (write_mode='string') with a
+        delimiter for multiple HDU's
         """
-        if newline:
-            # Update header to a single string
-            self.string_header(delimiter=delimiter)
-            with open(filename, 'w') as fobj:
-                fobj.write(self.hstring)
+        t0 = time.time()
+        if self.write_mode == 'fits':
+            self.write_header_fits(filename)
+        elif self.write_mode == 'string':
+            self.write_header_string(filename)
         else:
-            t0 = time.time()
-            self.write_header_emptyHDU(filename)
-            LOGGER.info("Header write time:{}".format(elapsed_time(t0)))
+            msg = "ERROR: header write_mode: {} not recognized".format(self.write_mode)
+            LOGGER.error(msg)
+            raise ValueError(msg)
+            return
+
+        LOGGER.info("Header write time:{}".format(elapsed_time(t0)))
         return

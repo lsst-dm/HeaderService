@@ -21,6 +21,7 @@ spinner = hutils.spinner
 # Create a logger for all functions
 LOGGER = hutils.create_logger(level=logging.NOTSET, name='HEADERSERVICE')
 
+
 class HSworker:
 
     """ A Class to run and manage the Header Service"""
@@ -44,7 +45,7 @@ class HSworker:
         # Get the hostname and IP address
         self.ip_address = socket.gethostbyname(socket.gethostname())
         LOGGER.info("Will use IP: {} for broadcasting".format(self.ip_address))
-        LOGGER.level=self.loglevel
+        LOGGER.level = self.loglevel
 
         # The user running the process
         self.USER = os.environ['USER']
@@ -136,7 +137,9 @@ class HSworker:
             self.efd = salpytools.DDSSend('efd')
 
         # Load up the header template
-        self.HDR = HeaderService.HDRTEMPL_ATSCam(vendor=self.vendor)
+        self.HDR = HeaderService.HDRTEMPL_ATSCam(vendor=self.vendor,
+                                                 write_mode=self.write_mode,
+                                                 hdu_delimiter=self.hdu_delimiter)
         self.HDR.load_templates()
 
         # Go into the eternal loop
@@ -270,7 +273,7 @@ class HSworker:
 
     def write(self):
         """ Function to call to write the header"""
-        self.HDR.write_header(self.filename_HDR, newline=False)
+        self.HDR.write_header(self.filename_HDR)
         LOGGER.info("Wrote header to: {}".format(self.filename_HDR))
 
     def clean(self):
@@ -294,7 +297,7 @@ class HSworker:
         self.metadata['DATE-OBS'] = self.DATE_OBS.isot
         self.metadata['MJD-OBS'] = self.DATE_OBS.mjd
         self.metadata['DATE'] = self.DATE_HDR.isot
-        self.metadata['MJD']  = self.DATE_HDR.mjd
+        self.metadata['MJD'] = self.DATE_HDR.mjd
         self.metadata['OBS-NITE'] = hutils.get_obsnite()
 
 
