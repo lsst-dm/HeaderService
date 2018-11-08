@@ -47,7 +47,7 @@ end_collection_event:
 # Telemetry values for images meta-data
 telemetry:
 
- IMGNAME:
+ OBS-ID:
   device: atcamera
   Stype: Event
   topic: startIntegration
@@ -82,7 +82,7 @@ telemetry:
   value: angle
   collect_after_event: start_collection_event
 
- AIRMASS:
+ AMSTART:
   device: atScheduler
   Stype: Event
   topic: target
