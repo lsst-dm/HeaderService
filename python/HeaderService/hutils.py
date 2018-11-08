@@ -53,6 +53,41 @@ def create_logger(level=logging.NOTSET, name='default'):
 LOGGER = create_logger(level=logging.NOTSET, name='HEADERSERVICE')
 
 
+def read_head_template(fname, header=None):
+    """
+    Function to read in the templates used for the HeaderService.
+    This function is based on fitsio.read_scamp_head() and has been
+    modified to treat comments (when the KEYWORD field is blank) according
+    to the definition of Pence et al. 2010 (section 4.4.2.4)
+
+    read a template header file as a fits header FITSHDR object
+    parameters
+    ----------
+    fname: string
+        The path to the header file
+    header: FITSHDR, optional
+        Optionally combine the header with the input one. The input can
+        be any object convertable to a FITSHDR object
+    returns
+    -------
+    header: FITSHDR
+        A fits header object of type FITSHDR
+    """
+    with open(fname) as fobj:
+        lines = fobj.readlines()
+
+    # Ignore empty keyword
+    lines = [l.rstrip() for l in lines if l[0:3] != 'END' and l[0:8] != ' '*8]
+
+    # if header is None an empty FITSHDR is created
+    hdr = fitsio.FITSHDR(header)
+
+    for l in lines:
+        hdr.add_record(l)
+
+    return hdr
+
+
 def get_record(header, keyword):
     """ Utility option to gets the record form a FITSHDR header"""
     index = header._index_map[keyword]
@@ -227,8 +262,8 @@ class HDRTEMPL_ATSCam:
 
         self.header = {}
         # Read in the primary and segment templates with fitsio
-        self.header_segment = fitsio.read_scamp_head(self.templ_segment_file)
-        self.header_primary = fitsio.read_scamp_head(self.templ_primary_file)
+        self.header_segment = read_head_template(self.templ_segment_file)
+        self.header_primary = read_head_template(self.templ_primary_file)
 
         # Load up the template for the PRIMARY header
         LOGGER.info("Loading template for: {}".format('PRIMARY'))
