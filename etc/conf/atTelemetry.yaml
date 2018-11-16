@@ -14,7 +14,7 @@ port_number: 8000
 
 # The event for the image readout paramters
 imageParam_event:
-    device: atcamera
+    device: ATCamera
     topic: imageReadoutParameters
 
 # The URL format to be used
@@ -31,94 +31,104 @@ filepath: 'www/DMHS_filerepo'
 format_HDR: "{}.header"
 format_FITS: "{}.fits"
 imageName_event:
-    device: atcamera
+    device: ATCamera
     topic: startIntegration
     value: imageName
 
 # The Events that we use to define where we collect
 start_collection_event:
- device: atcamera
+ device: ATCamera
  topic: startIntegration
 
 end_collection_event:
- device: atcamera
+ device: ATCamera
  topic: endOfImageTelemetry
 
 # Telemetry values for images meta-data
 telemetry:
 
+<<<<<<< HEAD
  OBS-ID:
   device: atcamera
+=======
+ IMGNAME:
+  device: ATCamera
+>>>>>>> 08ea4e3... Updates due to new ts_sal and ts_xml versions
   Stype: Event
   topic: startIntegration
   value: imageName
   collect_after_event: start_collection_event
 
  EXPTIME:
-  device: atcamera
+  device: ATCamera
   Stype: Event
   topic: shutterMotionProfile
   value: measuredExposureTime
   collect_after_event: end_collection_event
 
  RA:
-  device: atScheduler
+  device: Scheduler
   Stype: Event
   topic: target
   value: ra
   collect_after_event: start_collection_event
 
  DEC:
-  device: atScheduler
+  device: Scheduler
   Stype: Event
   topic: target
   value: decl
   collect_after_event: start_collection_event
 
  ROTANGLE:
-  device: atScheduler
+  device: Scheduler
   Stype: Event
   topic: target
-  value: angle
+  value: skyAngle
   collect_after_event: start_collection_event
 
+<<<<<<< HEAD
  AMSTART:
   device: atScheduler
+=======
+ AIRMASS:
+  device: Scheduler
+>>>>>>> 08ea4e3... Updates due to new ts_sal and ts_xml versions
   Stype: Event
   topic: target
   value: airmass
   collect_after_event: start_collection_event
 
- GRATING:
-  device: atScheduler
-  Stype: Event
-  topic: target
-  value: grating
-  collect_after_event: start_collection_event
+# GRATING:
+#  device: Scheduler
+#  Stype: Event
+#  topic: target
+#  value: grating
+#  collect_after_event: start_collection_event
 
  FILTER:
-  device: atScheduler
+  device: Scheduler
   Stype: Event
   topic: target
-  value: filters
+  value: filter
   collect_after_event: start_collection_event
 
  OVERH:
-  device: atcamera
+  device: ATCamera
   Stype: Event
   topic: imageReadoutParameters
   value: overCols
   collect_after_event: end_collection_event
 
  OVERV:
-  device: atcamera
+  device: ATCamera
   Stype: Event
   topic: imageReadoutParameters
   value: overRows
   collect_after_event: end_collection_event
 
  PREH:
-  device: atcamera
+  device: ATCamera
   Stype: Event
   topic: imageReadoutParameters
   value: preCols

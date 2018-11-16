@@ -55,8 +55,8 @@ if __name__ == "__main__":
 
     # Initialize the classes for each device
     # Note that we need a separate object for Commands if we want to wait
-    sch = salpytools.DDSSend("atScheduler")
-    cam = salpytools.DDSSend("atcamera")
+    sch = salpytools.DDSSend("Scheduler")
+    cam = salpytools.DDSSend("ATCamera")
     # camCommand = salpytools.DDSSend("camera")
     camCommand = cam
 

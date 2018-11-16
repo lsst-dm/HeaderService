@@ -7,4 +7,4 @@ if __name__ == "__main__":
     if len(commands) < 1:
         commands = ['disable', 'standby', 'exitControl']
         print("Will execute Power-down Sequence:")
-    salpytools.command_sequencer(commands, Device='atHeaderService')
+    salpytools.command_sequencer(commands, Device='ATHeaderService')

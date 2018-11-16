@@ -79,12 +79,13 @@ class HSworker:
         if start_state:
             self.start_state = start_state
 
-        self.State = salpytools.DeviceState(default_state=self.start_state)
+        self.State = salpytools.DeviceState(Device='ATHeaderService', default_state=self.start_state)
         self.State.send_logEvent('summaryState')
         # Create threads for the controller we want to listen to
         self.tControl = {}
         for ctrl_name in _CONTROLER_list:
-            self.tControl[ctrl_name] = salpytools.DDSController(ctrl_name, State=self.State)
+            self.tControl[ctrl_name] = salpytools.DDSController(ctrl_name, Device='ATHeaderService',
+                                                                State=self.State)
             self.tControl[ctrl_name].start()
 
         # Set the message for 'SettingApplied' here, we should want to control
@@ -153,7 +154,7 @@ class HSworker:
 
         # And the object to send DMHS messages
         # TODO -- Make this configurable too
-        self.dmhs = salpytools.DDSSend("atHeaderService")
+        self.dmhs = salpytools.DDSSend("ATHeaderService")
         if self.send_efd_message:
             self.efd = salpytools.DDSSend('efd')
 
@@ -283,7 +284,7 @@ class HSworker:
         # Build the kwargs
         kw = {'byteSize': bytesize,
               'checkSum': md5value,
-              'generator': 'atHeaderService',
+              'generator': 'ATHeaderService',
               'mimeType': 'FITS',
               'url': self.url_format.format(ip_address=self.ip_address,
                                             port_number=self.port_number,
