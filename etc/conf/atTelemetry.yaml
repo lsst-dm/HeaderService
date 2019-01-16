@@ -47,13 +47,8 @@ end_collection_event:
 # Telemetry values for images meta-data
 telemetry:
 
-<<<<<<< HEAD
  OBS-ID:
-  device: atcamera
-=======
- IMGNAME:
   device: ATCamera
->>>>>>> 08ea4e3... Updates due to new ts_sal and ts_xml versions
   Stype: Event
   topic: startIntegration
   value: imageName
@@ -87,13 +82,8 @@ telemetry:
   value: skyAngle
   collect_after_event: start_collection_event
 
-<<<<<<< HEAD
  AMSTART:
-  device: atScheduler
-=======
- AIRMASS:
   device: Scheduler
->>>>>>> 08ea4e3... Updates due to new ts_sal and ts_xml versions
   Stype: Event
   topic: target
   value: airmass
