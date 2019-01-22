@@ -225,8 +225,8 @@ class HSworker:
                 sys.stdout.write("Current State is {} [{}]".format(self.State.current_state, next(spinner)))
                 sys.stdout.write('\r')
 
+            # newEvent (i.e. startIntegration) loop
             elif self.StartInt.newEvent:
-
                 # Build the DATE of observation immediatly -- we will access it later
                 self.DATE_OBS = hutils.get_date_utc()
 
@@ -244,7 +244,9 @@ class HSworker:
                 # Wait for end Event (i.e. end of telemetry)
                 LOGGER.info("Current State is {} -- waiting for {} event".format(self.State.current_state,
                                                                                  self.name_end))
-                self.EndTelem.waitEvent()
+                self.EndTelem.waitEvent(timeout=self.timeout_endTelem,
+                                        after_timeStamp=self.StartInt.timeStamp)
+                # Make sure that EndTelem.newEvent happens AFTER StartInt.newEvent
                 if self.EndTelem.newEvent:
                     sys.stdout.flush()
                     LOGGER.info("Received: {} Signal".format(self.name_end))
@@ -265,6 +267,11 @@ class HSworker:
                     self.announce()
                     self.EndTelem.newEvent = False
                     LOGGER.info("------------------------------------------")
+                elif self.EndTelem.timeoutEvent:
+                    sys.stdout.flush()
+                    LOGGER.warning("Received timeout: {} Signal".format(self.name_end))
+                    LOGGER.info("Sending Error Event for timeout")
+                    self.timeoutError()
             else:
                 sys.stdout.flush()
                 sys.stdout.write("Current State is {} -- waiting for {} Event...[{}]".format(
@@ -274,6 +281,16 @@ class HSworker:
 
             time.sleep(self.tsleep)
             loop_n += 1
+
+    def timeoutError(self):
+        # Send error code for timeout case
+        kw = {'errorCode': 3010,
+              'errorReport': "Timeout while waiting for {} Event".format(self.name_end),
+              'traceback': '',
+              'priority': 1,
+              }
+        self.dmhs.send_Event('errorCode', **kw)
+        LOGGER.info("Sent erroCode: {}".format(kw))
 
     def announce(self):
         # Get the md5 for the header file

@@ -125,20 +125,24 @@ if __name__ == "__main__":
         time.sleep(args.exptime)
 
         # Send startReadout Event after integration is finished
+        kw['timeStamp'] = time.time()
         LOGGER.info("Sending startReadout")
         cam.send_Event('startReadout')
         time.sleep(args.sleeptime)
 
         # Send endReadout event
+        kw['timeStamp'] = time.time()
         LOGGER.info("Sending endReadout")
         cam.send_Event('endReadout', **kw)
         time.sleep(0.1)
 
         # Send Measured exptime event
+        kw['timeStamp'] = time.time()
         LOGGER.info("Sending Measured Exptime")
         cam.send_Event('shutterMotionProfile', measuredExposureTime=args.exptime+0.35)
         time.sleep(0.1)
 
+        kw['timeStamp'] = time.time()
         LOGGER.info("Sending endOfImageTelemetry")
         cam.send_Event('endOfImageTelemetry', **kw)
         time.sleep(args.sleeptime)
