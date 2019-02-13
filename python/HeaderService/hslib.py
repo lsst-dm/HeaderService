@@ -272,6 +272,8 @@ class HSworker:
                     LOGGER.warning("Received timeout: {} Signal".format(self.name_end))
                     LOGGER.info("Sending Error Event for timeout")
                     self.timeoutError()
+                else:
+                    LOGGER.warning("Exited newEvent wait without newEvent or timeout")
             else:
                 sys.stdout.flush()
                 sys.stdout.write("Current State is {} -- waiting for {} Event...[{}]".format(
@@ -290,7 +292,7 @@ class HSworker:
               'priority': 1,
               }
         self.dmhs.send_Event('errorCode', **kw)
-        LOGGER.info("Sent erroCode: {}".format(kw))
+        LOGGER.info("Sent errorCode: {}".format(kw))
 
     def announce(self):
         # Get the md5 for the header file
