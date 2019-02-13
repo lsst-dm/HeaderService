@@ -35,6 +35,8 @@ def cmdline():
                         help="Sleep Time for loop")
     parser.add_argument("--start_state", action="store", default='OFFLINE',
                         help="Initial start State of device")
+    parser.add_argument("--timeout_endTelem", action="store", type=float, default=120,
+                        help="Timeout for end Telemetry event in seconds")
     parser.add_argument("--port_number", action="store", default='8000', type=str,
                         help="Port number for webserver")
     parser.add_argument("--send_efd_message", action="store_true", default=False,

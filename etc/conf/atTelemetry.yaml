@@ -12,16 +12,14 @@ ts_xml: OCS_IntSpecICC
 # port_number for webserver
 port_number: 8000
 
-# The event for the image readout paramters
-imageParam_event:
-    device: ATCamera
-    topic: imageReadoutParameters
-
 # The URL format to be used
 url_format: "http://{ip_address}:{port_number}/{filename_HDR}"
 
 # Default write_mode (fits or string)
 write_mode: fits
+
+# Timeout for waiting for end of Telemetry event (in seconds)
+timeout_endTelem: 120
 
 # Default string delimeter (string mode only)
 hdu_delimiter: END
@@ -37,12 +35,17 @@ imageName_event:
 
 # The Events that we use to define where we collect
 start_collection_event:
- device: ATCamera
- topic: startIntegration
+    device: ATCamera
+    topic: startIntegration
 
 end_collection_event:
- device: ATCamera
- topic: endOfImageTelemetry
+    device: ATCamera
+    topic: endOfImageTelemetry
+
+# The event for the image readout paramters
+imageParam_event:
+    device: ATCamera
+    topic: imageReadoutParameters
 
 # Telemetry values for images meta-data
 telemetry:
