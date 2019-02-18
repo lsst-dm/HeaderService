@@ -2,18 +2,14 @@ import distutils
 from distutils.core import setup
 import glob
 
-# Trick to exclude the folder bin/test-scripts
-bin_files = set(glob.glob("bin/*")) - set(glob.glob("bin/test-scripts/*"))
-print (bin_files)
-#exit()
+# Get the scripts/bin files
+bin_files = glob.glob("bin/*")
 
 # Build the structure for etc folder
-etc_files = {}
-etc_dirs = ['ATSCam','TestCamera','conf']
-#for edir in etc_dirs:
-#ATSCam_files = glob.glob("etc/ATSCam/*")
-#TestCamera_files = glob.glob("etc/TestCamera/*")
-#conf_files = glob.glob("etc/conf/*")
+etc_dirs = ['etc/ATSCam','etc/TestCamera/E2V','etc/TestCamera/ITL','etc/conf']
+data_files = [("",["setpath.sh"])]
+for edir in etc_dirs:
+    data_files.append((edir,glob.glob("{}/*".format(edir))))
 
 # The main call
 setup(name='HeaderService',
@@ -25,11 +21,6 @@ setup(name='HeaderService',
       packages = ['HeaderService'],
       package_dir = {'': 'python'},
       scripts = bin_files,
-      #packages=find_packages(exclude=['ups',]),
       package_data={'': ['LICENSE']},
-      #include_package_data=True,
-      #install_requires=[],
-      #data_files=[('etc/SED',   sed_files),
-      #            ('etc/FILTER',flt_files),
-      #            ('etc',   sql_files)]
+      data_files=data_files,
       )

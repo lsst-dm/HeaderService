@@ -5,7 +5,8 @@ VERSION="tickets/DM-17937" # This is the git tag or branch
 PRODUCT=HeaderService
 GIT_LSST="https://github.com/lsst-dm"
 #INSTALL_PATH=/usr/local
-INSTALL_PATH=$HOME/test-install
+#INSTALL_PATH=$HOME/test-install
+INSTALL_PATH=/opt
 
 # Change accordingly
 PRODUCT_DIR=$INSTALL_PATH/$PRODUCT/$VERSION
@@ -28,3 +29,9 @@ python setup.py install --prefix=$PRODUCT_DIR --install-lib=$PRODUCT_DIR/python
 # Clean up
 echo "# Cleaning up:" $INSTALL_DIR
 rm -rf $INSTALL_DIR
+
+# Remember to set the paths
+echo "# Remember to add the following line to your init config:"
+echo ""
+echo " source $PRODUCT_DIR/setpath.sh $PRODUCT_DIR"
+echo ""
