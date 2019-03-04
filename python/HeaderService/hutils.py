@@ -150,12 +150,14 @@ def write_header_string(arg):
     return
 
 
-def get_date_utc(time=None, format='isot'):
+def get_date_utc(timeStamp=None, format='isot'):
     from astropy.time import Time
     from datetime import datetime
-    if time is None:
-        time = (datetime.utcnow()).isoformat()
-    t = Time(time, format=format, scale='utc')
+    if timeStamp is None:
+        utc_time = (datetime.utcnow()).isoformat()
+    else:
+        utc_time = datetime.utcfromtimestamp(timeStamp).isoformat()
+    t = Time(utc_time, format=format, scale='utc')
     return t
 
 
