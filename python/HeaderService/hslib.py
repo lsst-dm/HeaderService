@@ -156,7 +156,7 @@ class HSworker:
         # TODO -- Make this configurable too
         self.dmhs = salpytools.DDSSend("ATHeaderService")
         if self.send_efd_message:
-            self.efd = salpytools.DDSSend('efd')
+            self.efd = salpytools.DDSSend('EFD')
 
         # Load up the header template
         self.HDR = HeaderService.HDRTEMPL_ATSCam(vendor=self.vendor,
