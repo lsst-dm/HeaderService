@@ -351,7 +351,9 @@ class HSworker:
         self.metadata['DATE'] = self.DATE_HDR.isot
         self.metadata['MJD'] = self.DATE_HDR.mjd
         self.metadata['FILENAME'] = self.filename_FITS
-
+        # THIS IS AN UGLY HACK TO MAKE IT WORK SEQNUM
+        # FIX THIS -- FELIPE, TIAGO and MICHAEL were present
+        self.metadata['SEQNUM'] = int(self.metadata['OBSID'].split('_')[-1])
 
 def get_channel_name(c):
     """ Standard formatting for the name of a channel across modules"""
