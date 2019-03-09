@@ -79,6 +79,13 @@ telemetry:
   value: imageIndex
   collect_after_event: start_collection_event
 
+ GROUPID:
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageSequenceName
+  collect_after_event: start_collection_event
+
 # ----------------------------------------
 # -- still not available from SAL --------
 # OBSTYPE:

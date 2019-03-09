@@ -10,7 +10,8 @@ DATE-OBS=                      / Date of the observation (image acquisition)
 DATE-END=                      / end date of the observation
 MJD     =                      / Modified Julian Date that the file was written
 MJD-OBS =                      / Modified Julian Date of observation
-OBSID   =                       / ImageName from Camera StartIntergration
+OBSID   =                      / ImageName from Camera StartIntergration
+GROUPID =                      / imageSequenceName from Camera StartIntergration
 OBSTYPE =                      / BIAS, DARK, FLAT, OBJECT
 BUNIT   = 'adu     '           / Brightness units for pixel array
 
