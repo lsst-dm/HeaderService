@@ -151,6 +151,27 @@ def write_header_string(arg):
 
 
 def get_date_utc(timeStamp=None, format='isot'):
+    """
+    A simple function to the get an UTC astropy.datetime.Time object
+
+    Parameters
+    ----------
+
+    timeStamp : float
+        Optional timestamp (in seconds) passed as an argument. If None
+        is received, then the function will get the time now()
+
+    format: string
+        Optional format to provide the Time object
+
+    Returns
+    -------
+
+    t: type of astropy.datetime.Time object
+       The astropy.datetime.Time object with the timeStamp requested in UTC.
+
+    """
+
     from astropy.time import Time
     from datetime import datetime
     if timeStamp is None:
