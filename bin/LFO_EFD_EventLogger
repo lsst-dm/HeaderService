@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+
+import time
+import logging
+import SALPY_EFD
+import HeaderService.hutils as hutils
+
+LOGGER = hutils.create_logger(level=logging.NOTSET, name='EFD')
+
+formatter = logging.Formatter("[%(asctime)s] [%(levelname)s] %(message)s")
+fh = logging.FileHandler(r'test.log')
+fh.setFormatter(formatter)
+LOGGER.addHandler(fh)
+
+if __name__ == "__main__":
+    mgr = SALPY_EFD.SAL_EFD()
+    mgr.salEvent("EFD_logevent_largeFileObjectAvailable")
+    LOGGER.info("EFD_largeFileObjectAvailable logger ready")
+    event = SALPY_EFD.EFD_logevent_largeFileObjectAvailableC()
+    while True:
+        retval = mgr.getEvent_largeFileObjectAvailable(event)
+        if retval == 0:
+            LOGGER.info("-------------------------------------------------------")
+            LOGGER.info("Event EFD LargeFileObjectAvailable received")
+            LOGGER.info("Byte_Size: %s" % event.byteSize)
+            LOGGER.info("Checksum: %s" % event.checksum)
+            LOGGER.info("Generator: %s" % event.generator)
+            LOGGER.info("Mime: %s" % event.mimeType)
+            LOGGER.info("URL: %s" % event.url)
+            LOGGER.info("ID: %s" % event.id)
+            LOGGER.info("Version: %s" % event.version)
+            LOGGER.info("priority: %s" % event.priority)
+            retval = -1
+        time.sleep(1)
+    mgr.salShutdown()
+    exit()

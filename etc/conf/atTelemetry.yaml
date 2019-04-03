@@ -48,14 +48,53 @@ imageParam_event:
     topic: imageReadoutParameters
 
 # Telemetry values for images meta-data
+# https://confluence.lsstcorp.org/pages/viewpage.action?spaceKey=SYSENG&title=Auxiliary+Telescope+Header+Information+Topic+Mapping
 telemetry:
 
- OBS-ID:
+ DATE-OBS:
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: timeStamp
+  collect_after_event: start_collection_event
+
+ DATE-END:
+  device: ATCamera
+  Stype: Event
+  topic: endReadout
+  value: timeStamp
+  collect_after_event: end_collection_event
+
+ OBSID:
   device: ATCamera
   Stype: Event
   topic: startIntegration
   value: imageName
   collect_after_event: start_collection_event
+
+ SEQNUM:
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageIndex
+  collect_after_event: start_collection_event
+
+ GROUPID:
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageSequenceName
+  collect_after_event: start_collection_event
+
+# ----------------------------------------
+# -- still not available from SAL --------
+# OBSTYPE:
+#   device: ATCamera
+#   Stype: Event
+#   topic: startIntegration
+#   value: imageType
+#   collect_after_event: start_collection_event
+# ---------------------------------------------
 
  EXPTIME:
   device: ATCamera
@@ -64,40 +103,85 @@ telemetry:
   value: measuredExposureTime
   collect_after_event: end_collection_event
 
- RA:
-  device: Scheduler
-  Stype: Event
-  topic: target
-  value: ra
-  collect_after_event: start_collection_event
-
- DEC:
-  device: Scheduler
-  Stype: Event
-  topic: target
-  value: decl
-  collect_after_event: start_collection_event
-
- ROTANGLE:
-  device: Scheduler
-  Stype: Event
-  topic: target
-  value: skyAngle
-  collect_after_event: start_collection_event
-
- AMSTART:
-  device: Scheduler
-  Stype: Event
-  topic: target
-  value: airmass
-  collect_after_event: start_collection_event
-
-# GRATING:
-#  device: Scheduler
+# --- Pointing Information ---------------
+# -- still not available from SAL --------
+# RA:
+#  device: ATPointingComponent
 #  Stype: Event
-#  topic: target
-#  value: grating
+#  topic: TBD
+#  value: TBD
 #  collect_after_event: start_collection_event
+#
+# DEC:
+#  device: ATPointingComponent
+#  Stype: Event
+#  topic: TBD
+#  value: TBD
+#  collect_after_event: start_collection_event
+#
+# ROTPA:
+#  device: ATPointingComponent
+#  Stype: Event
+#  topic: TBD
+#  value: TBD
+#  collect_after_event: start_collection_event
+#
+# HASTART:
+#  device: ATPtg
+#  Stype: Event
+#  topic: prospectiveTargetStatus
+#  value: HA
+#  collect_after_event: start_collection_event
+#
+# AMSTART:
+#  device: ATPtg
+#  Stype: Event
+#  topic: prospectiveTargetStatus
+#  value: airmass
+#  collect_after_event: start_collection_event
+#
+# ELSTART:
+#  device: ATMCS
+#  Stype: Event
+#  topic: mountEncoders
+#  value: elevationCalculatedAngle
+#  collect_after_event: start_collection_event
+#
+# AZSTART:
+#  device: ATMCS
+#  Stype: Event
+#  topic: mountEncoders
+#  value: azimuthCalculatedAngle
+#  collect_after_event: start_collection_event
+#
+# HAEND:
+#  device: ATPtg
+#  Stype: Event
+#  topic: prospectiveTargetStatus
+#  value: HA
+#  collect_after_event: end_collection_event
+
+# AMEND:
+#  device: ATPtg
+#  Stype: Event
+#  topic: prospectiveTargetStatus
+#  value: airmass
+#  collect_after_event: end_collection_event
+#
+# ELEND:
+#  device: ATMCS
+#  Stype: Event
+#  topic: mountEncoders
+#  value: elevationCalculatedAngle
+#  collect_after_event: end_collection_event
+#
+# AZEND:
+#  device: ATMCS
+#  Stype: Event
+#  topic: mountEncoders
+#  value: azimuthCalculatedAngle
+#  collect_after_event: end_collection_event
+## --------------------------------------------------------------
 
  FILTER:
   device: Scheduler
