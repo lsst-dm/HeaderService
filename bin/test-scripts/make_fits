@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+
+import HeaderService
+import HeaderService.hutils as hutils
+import math
+import os
+
+vendor = 'ITL'
+filename = 'example_{}'.format(vendor)
+
+# Load up the header template
+HDR = HeaderService.HDRTEMPL_ATSCam(vendor='ITL')
+HDR.load_templates()
+
+airmass = 1.2
+ra = 12.34
+dec = -12.34
+angle = 0
+imageName = 'LSSTTEST_1234'
+measuredExptime = 12.23
+overh = 22
+overv = 3
+preh = 3
+filepath = "./"
+filename_HDR = os.path.join(filepath, "{}.header".format(imageName))
+filename_FITS = "{}.fits".format(imageName)
+
+# Build the DATE of observation
+DATE_OBS = hutils.get_date_utc()
+
+# Manually Update a header param -- we need to move it a function soon
+# These ones were captured from DDS
+HDR.update_record('FILTER', 'r', 'PRIMARY')
+HDR.update_record('GRATING', 'R400', 'PRIMARY')
+HDR.update_record('RA', ra, 'PRIMARY')
+HDR.update_record('DEC', dec, 'PRIMARY')
+HDR.update_record('ROTANGLE', angle, 'PRIMARY')
+HDR.update_record('AIRMASS', airmass, 'PRIMARY')
+HDR.update_record('ZD', (math.acos(1.0/airmass))*180/math.pi, 'PRIMARY')
+HDR.update_record('RATEL', ra, 'PRIMARY')
+HDR.update_record('DECTEL', dec, 'PRIMARY')
+HDR.update_record('IMGNAME', imageName, 'PRIMARY')
+HDR.update_record('EXPTIME', measuredExptime, 'PRIMARY')
+HDR.update_record('OVERH', overh, 'PRIMARY')
+HDR.update_record('OVERV', overv, 'PRIMARY')
+HDR.update_record('PREH', preh, 'PRIMARY')
+# These values are computed by the DMHS
+HDR.update_record('FILENAME', filename_FITS, 'PRIMARY')
+HDR.update_record('DATE-OBS', DATE_OBS.fits, 'PRIMARY')
+HDR.update_record('MJD-OBS', DATE_OBS.mjd, 'PRIMARY')
+# The creation date -- now!!
+DATE = hutils.get_date_utc()
+HDR.update_record('DATE', DATE.fits, 'PRIMARY')
+HDR.update_record('MJD', DATE.mjd, 'PRIMARY')
+# The obs-nite
+HDR.update_record('OBS-NITE', hutils.get_obsnite(), 'PRIMARY')
+# Write the header
+HDR.write_header(filename_HDR, newline=False)
+HDR.write_fits(filename_FITS, dtype='random')
