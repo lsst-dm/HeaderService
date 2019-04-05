@@ -215,11 +215,28 @@ def get_image_size_from_imageReadoutParameters(myData):
 
 def start_web_server(dirname, port_number=8000, exe='start_www.sh'):
     import subprocess
-    LOGGER.info("Will start web server on dir: {}".format(dirname))
-    subprocess.Popen([exe, dirname, str(port_number)])
-    time.sleep(1)
-    LOGGER.info("Done Starting web server")
-
+    import sys
+    # Get the system's python
+    python_exe = sys.executable
+    # Make sure there isn't another process running
+    cmd = "ps -ax | grep {0} | grep -v grep | awk '{{print $1}}'".format(httpserver)
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    pid = p.stdout.read().decode()
+    if pid == '':
+        # Store the current location so we can go back here
+        cur_dirname = os.getcwd()
+        os.chdir(dirname)
+        LOGGER.info("Will start web server on dir: {}".format(dirname))
+        subprocess.Popen([python_exe, '-m', httpserver, str(port_number)])
+        LOGGER.info("serving at port: {}".format(str(port_number)))
+        time.sleep(1)
+        LOGGER.info("Done Starting web server")
+        # Get back to where we were
+        os.chdir(cur_dirname)
+    elif int(pid) > 0:
+        LOGGER.info("{} already running with pid:{}... Bye".format(httpserver, int(pid)))
+    else:
+        LOGGER.waring("# Wrong process id - will not start www service")
 
 class HDRTEMPL_ATSCam:
 
