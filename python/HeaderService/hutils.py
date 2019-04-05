@@ -213,23 +213,13 @@ def get_image_size_from_imageReadoutParameters(myData):
     return geom
 
 
-def start_web_server(dirname, port_number=8000, httpserver="http.server"):
+def start_web_server(dirname, port_number=8000, exe='start_www.sh'):
     import subprocess
-    import sys
-    # Get the system's python
-    python_exe = sys.executable
-    # Make sure there isn't another process running
-    cmd = "ps -ax | grep {0} | grep -v grep | awk '{{print $1}}'".format(httpserver)
-    pid=os.system(cmd)
-    if pid > 0:
-        LOGGER.info("{} already running on {}... Bye".format(httpserver,pid))
-    else:
-        os.chdir(dirname)
-        LOGGER.info("Will start web server on dir: {}".format(dirname))
-        subprocess.Popen([python_exe, '-m', httpserver, str(port_number)])
-        LOGGER.info("serving at port: {}".format(str(port_number)))
-        time.sleep(1)
-        LOGGER.info("Done Starting web server")
+    LOGGER.info("Will start web server on dir: {}".format(dirname))
+    subprocess.Popen([exe, dirname, str(port_number)])
+    time.sleep(1)
+    LOGGER.info("Done Starting web server")
+
 
 class HDRTEMPL_ATSCam:
 
