@@ -213,7 +213,7 @@ def get_image_size_from_imageReadoutParameters(myData):
     return geom
 
 
-def start_web_server(dirname, port_number=8000, exe='start_www.sh'):
+def start_web_server(dirname, port_number=8000, httpserver="http.server"):
     import subprocess
     import sys
     # Get the system's python
@@ -237,6 +237,7 @@ def start_web_server(dirname, port_number=8000, exe='start_www.sh'):
         LOGGER.info("{} already running with pid:{}... Bye".format(httpserver, int(pid)))
     else:
         LOGGER.waring("# Wrong process id - will not start www service")
+
 
 class HDRTEMPL_ATSCam:
 
