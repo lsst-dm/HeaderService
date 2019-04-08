@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 ''' Generic OCS/TCS command sequencer for any CSC Device '''
 
