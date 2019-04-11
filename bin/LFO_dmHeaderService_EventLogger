@@ -4,28 +4,21 @@ import time
 import logging
 import SALPY_atHeaderService
 import HeaderService.hutils as hutils
-import datetime
 
-LOGGER = hutils.create_logger(level=logging.NOTSET, name='ATHEADERSERVICE')
-logname = "ATHS_LFO{}.log".format(datetime.datetime.now().strftime("%Y-%m-%d-%H:%M"))
-
-formatter = logging.Formatter("[%(asctime)s] [%(levelname)s] %(message)s")
-fh = logging.FileHandler(rlogname)
-fh.setFormatter(formatter)
-LOGGER.addHandler(fh)
+LOGGER = hutils.create_logger(level=logging.NOTSET, name='HEADERSERVICE')
 
 if __name__ == "__main__":
     mgr = SALPY_atHeaderService.SAL_atHeaderService()
-    mgr.salEvent("ATHeaderService_logevent_largeFileObjectAvailable")
-    LOGGER.info("ATHeaderService_largeFileObjectAvailable logger ready")
-    event = SALPY_ATHeaderService.atHeaderService_logevent_largeFileObjectAvailableC()
+    mgr.salEvent("atHeaderService_logevent_largeFileObjectAvailable")
+    LOGGER.info("atHeaderService_largeFileObjectAvailable logger ready")
+    event = SALPY_atHeaderService.atHeaderService_logevent_largeFileObjectAvailableC()
     while True:
         retval = mgr.getEvent_largeFileObjectAvailable(event)
         if retval == 0:
             LOGGER.info("-------------------------------------------------------")
-            LOGGER.info("Event ATHeaderService LargeFileObjectAvailable received")
+            LOGGER.info("Event atHeaderService LargeFileObjectAvailable received")
             LOGGER.info("Byte_Size: %s" % event.byteSize)
-            LOGGER.info("Checksum: %s" % event.checksum)
+            LOGGER.info("Checksum: %s" % event.checkSum)
             LOGGER.info("Generator: %s" % event.generator)
             LOGGER.info("Mime: %s" % event.mimeType)
             LOGGER.info("URL: %s" % event.url)

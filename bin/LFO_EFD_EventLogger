@@ -4,13 +4,11 @@ import time
 import logging
 import SALPY_EFD
 import HeaderService.hutils as hutils
-import datetime
 
 LOGGER = hutils.create_logger(level=logging.NOTSET, name='EFD')
-logname = "EFD_LFO{}.log".format(datetime.datetime.now().strftime("%Y-%m-%d-%H:%M"))
 
 formatter = logging.Formatter("[%(asctime)s] [%(levelname)s] %(message)s")
-fh = logging.FileHandler(rlogname)
+fh = logging.FileHandler(r'test.log')
 fh.setFormatter(formatter)
 LOGGER.addHandler(fh)
 
