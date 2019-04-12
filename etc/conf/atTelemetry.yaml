@@ -58,6 +58,13 @@ telemetry:
   value: timeStamp
   collect_after_event: start_collection_event
 
+ DATE-BEG:
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: timeStamp
+  collect_after_event: start_collection_event
+
  DATE-END:
   device: ATCamera
   Stype: Event
@@ -97,6 +104,13 @@ telemetry:
 # ---------------------------------------------
 
  EXPTIME:
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: exposureTime
+  collect_after_event: start_collection_event
+
+ SHUTTIME:
   device: ATCamera
   Stype: Event
   topic: shutterMotionProfile
