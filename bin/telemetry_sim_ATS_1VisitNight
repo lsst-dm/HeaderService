@@ -30,7 +30,17 @@ def cmdline():
                         help="Name of the grating")
     parser.add_argument("--imageSequenceName", action="store", default='LSSTTEST',
                         help="ImageSequenceName")
-    parser.add_argument("--NSequence", action="store", default=2, type=int,
+    # Control imageName
+    parser.add_argument("--telcode", action="store", default='AT',
+                        help="The code for the telecope")
+    parser.add_argument("--controller", action="store", default='O',
+                        help="The controller (O for OCS, C for CCS)")
+    parser.add_argument("--dayobs", action="store", default=None,
+                        help="The observation day as defined by image name")
+    parser.add_argument("--seqnum", action="store", default=1, type=int,
+                        help="The sequence number from the image name")
+
+    parser.add_argument("--NSequence", action="store", default=3, type=int,
                         help="Number of exposure in sequence")
     parser.add_argument("--exptime", action="store", default=15, type=float,
                         help="Exposure time in seconds")
@@ -106,18 +116,29 @@ if __name__ == "__main__":
     # camCommand.start()
 
     LOGGER.info("---Starting Image loop---")
+
     # Loop over nsequence
     for k in range(args.NSequence):
 
-        seqN = k+1
+        timeStamp = time.time()
+        seqN = args.seqnum + k
         LOGGER.info("----Starting Integration {}".format(seqN))
+
+        # We need to emulate this format from camera:
+        # AT_O_20190409_000008.header
+        if args.dayobs:
+            DAYOBS = args.dayobs
+        else:
+            DATE_OBS = hutils.get_date_utc(timeStamp)
+            DAYOBS = DATE_OBS.datetime.strftime('%Y%m%d')
+        imageName = "{}_{}_{}_{:06d}".format(args.telcode, args.controller,DAYOBS,seqN)
 
         # Send startIntegration k
         LOGGER.info("Sending starIntegration")
         kw = {'imageSequenceName': args.imageSequenceName,
-              'imageName': '{}_{:02d}'.format(args.imageSequenceName, seqN),
-              'imageIndex': seqN,
-              'timeStamp': time.time(),
+              'imageName': imageName,
+              'imageIndex': k+1,
+              'timeStamp': timeStamp,
               'exposureTime': args.exptime,
               'priority': 1}
         cam.send_Event("startIntegration", **kw)

@@ -343,17 +343,21 @@ class HSworker:
     def collect_from_HeaderService(self):
         """Collect and update custom meta-data generated or transformed by the HeaderService"""
         self.DATE_OBS = hutils.get_date_utc(self.metadata['DATE-OBS'])
+        self.DATE_BEG = hutils.get_date_utc(self.metadata['DATE-BEG'])
         self.DATE_END = hutils.get_date_utc(self.metadata['DATE-END'])
         self.metadata['DATE-OBS'] = self.DATE_OBS.isot
+        self.metadata['DATE-BEG'] = self.DATE_BEG.isot
         self.metadata['DATE-END'] = self.DATE_END.isot
-        self.metadata['DAYOBS'] = self.DATE_OBS.datetime.strftime('%Y%m%d')
         self.metadata['MJD-OBS'] = self.DATE_OBS.mjd
+        self.metadata['MJD-BEG'] = self.DATE_BEG.mjd
+        self.metadata['MJD-END'] = self.DATE_END.mjd
         self.metadata['DATE'] = self.DATE_HDR.isot
         self.metadata['MJD'] = self.DATE_HDR.mjd
         self.metadata['FILENAME'] = self.filename_FITS
         # THIS IS AN UGLY HACK TO MAKE IT WORK SEQNUM
-        # FIX THIS -- FELIPE, TIAGO and MICHAEL were present
+        # FIX THIS -- FELIPE, TIAGO, MICHAEL and TIM J. are accomplices
         self.metadata['SEQNUM'] = int(self.metadata['OBSID'].split('_')[-1])
+        self.metadata['DAYOBS'] = self.metadata['OBSID'].split('_')[2]
 
 def get_channel_name(c):
     """ Standard formatting for the name of a channel across modules"""
