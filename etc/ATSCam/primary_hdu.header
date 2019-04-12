@@ -11,8 +11,8 @@ DATE-BEG=                      / Time at the start of integration
 DATE-END=                      / end date of the observation
 MJD     =                      / Modified Julian Date that the file was written
 MJD-OBS =                      / Modified Julian Date of observation
-MJD-BEG =                      / Modified Julian Day derived from DATE-BEG
-MJD-END =                      / Modified Julian Day derived from DATE-END
+MJD-BEG =                      / Modified Julian Date derived from DATE-BEG
+MJD-END =                      / Modified Julian Date derived from DATE-END
 OBSID   =                      / ImageName from Camera StartIntergration
 GROUPID =                      / imageSequenceName from Camera StartIntergration
 OBSTYPE =                      / BIAS, DARK, FLAT, OBJECT
@@ -80,9 +80,9 @@ GRATPOS =                      / disperser position
 LINSTAGE=                      / Linear Stage
 
         ---- Exposure-related information ----
-EXPTIME =                      / Exposure Time in Seconds
-SHUTTIME=                      / Shutter exposure Time in Seconds
-DARKTIME=                      / Dark Time in Seconds
+EXPTIME =                      / Exposure time in seconds
+SHUTTIME=                      / Shutter exposure time in seconds
+DARKTIME=                      / Dark time in seconds
 
         ---- Header information ----
 FILENAME=                      / Original file name
