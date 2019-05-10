@@ -22,10 +22,12 @@
 """ Collection of simple functions to handle header mock library """
 
 import os
+import sys
 import time
 import fitsio
 import numpy
 import logging
+from logging.handlers import RotatingFileHandler
 import multiprocessing
 import hashlib
 import itertools
@@ -41,16 +43,35 @@ except KeyError:
 HDRLIST = ['camera', 'observatory', 'primary_hdu', 'telescope']
 
 
-def create_logger(level=logging.NOTSET, name='default'):
-    logging.basicConfig(level=level,
-                        format='[%(asctime)s] [%(levelname)s] %(message)s',
-                        datefmt='%Y-%m-%d %H:%M:%S')
-    logger = logging.getLogger(name)
-    return logger
-
-
 # Create a logger for all functions
-LOGGER = create_logger(level=logging.NOTSET, name='HEADERSERVICE')
+LOGGER = logging.getLogger(__name__)
+
+
+def create_logger(logfile=None, level=logging.NOTSET):
+
+    """
+    Simple logger creation used across modules using
+    the same definitions
+    """
+
+    LOGGER = logging.getLogger(__name__)
+    # Define formats
+    FORMAT = '[%(asctime)s][%(levelname)s][%(name)s][%(funcName)s] %(message)s'
+    FORMAT_DATE = '%Y-%m-%d %H:%M:%S'
+    formatter = logging.Formatter(FORMAT, FORMAT_DATE)
+    handlers = []
+    # Set the logfile handle if required
+    if logfile:
+        fh = RotatingFileHandler(logfile, maxBytes=2000000, backupCount=10)
+        fh.setFormatter(formatter)
+        handlers.append(fh)
+
+    # Set the screen handle
+    sh = logging.StreamHandler(sys.stdout)
+    sh.setFormatter(formatter)
+    handlers.append(sh)
+    logging.basicConfig(handlers=handlers, level=level, format=FORMAT, datefmt=FORMAT_DATE)
+    return LOGGER
 
 
 def read_head_template(fname, header=None):
@@ -259,9 +280,6 @@ class HDRTEMPL_ATSCam:
         self.templ_segment_name = templ_segment_name
         self.write_mode = write_mode
         self.hdu_delimiter = hdu_delimiter
-
-        # Create logger
-        self.logger = create_logger(level=logging.NOTSET, name='HEADERSERVICE_ATSCam')
 
         # Init the class with geometry for a vendor
         self.CCDGEOM = CCDGeom(self.vendor, segname=self.segname)

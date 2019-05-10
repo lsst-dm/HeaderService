@@ -5,6 +5,7 @@ import logging
 import HeaderService.hslib as hslib
 import argparse
 import yaml
+import datetime
 
 
 def cmdline():
@@ -44,6 +45,9 @@ def cmdline():
     parser.add_argument("--loglevel", action="store", default='INFO', type=str.upper,
                         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
                         help="Logging Level [DEBUG/INFO/WARNING/ERROR/CRITICAL]")
+    parser.add_argument("--logfile", action="store", type=str,
+                         default="HeaderService_{}.log".format(datetime.datetime.now().strftime("%Y-%m-%d-%H%M")),
+                         help="Logfile where to also send logging information")
     parser.add_argument("--write_mode", action="store", default='fits', type=str.lower,
                         choices=["fits", "string"],
                         help="Mode for writing header files [fits/string]")

@@ -6,7 +6,7 @@ import SALPY_ATHeaderService
 import HeaderService.hutils as hutils
 import datetime
 
-LOGGER = hutils.create_logger(level=logging.NOTSET, name='ATHEADERSERVICE')
+LOGGER = hutils.create_logger()
 logname = "ATHS_LFO_{}.log".format(datetime.datetime.now().strftime("%Y-%m-%d-%H%M"))
 
 formatter = logging.Formatter("[%(asctime)s] [%(levelname)s] %(message)s")

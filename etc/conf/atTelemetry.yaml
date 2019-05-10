@@ -1,13 +1,16 @@
 # Configuration file for the AuxTelescope
 
 # Default logging level
-log: INFO
+loglevel: 'INFO'
+
+# Path to the log location
+logfile: 'www/HeaderService.log'
 
 # The camera vendor
 vendor: ITL
 
 # The ts_xml version we are using -- for now this is just curated and need to be changed manually when we change version
-ts_xml: "3.8.41"
+ts_xml: "3.9"
 
 # port_number for webserver
 port_number: 8000

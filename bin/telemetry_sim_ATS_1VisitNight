@@ -6,7 +6,8 @@ import salpytools
 import HeaderService.hutils as hutils
 import HeaderService.camera_coords as camera_coords
 
-LOGGER = hutils.create_logger(name=__name__)
+LOGGER = hutils.create_logger()
+
 
 # Get the info from the camera_coords library for and E2V sensor
 _GEO = camera_coords.CCDGeom('E2V')
