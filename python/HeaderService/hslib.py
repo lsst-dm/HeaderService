@@ -39,8 +39,7 @@ _CONTROLER_list = ['enterControl',
 
 spinner = hutils.spinner
 
-# Create a logger for all functions
-LOGGER = hutils.create_logger(level=logging.NOTSET, name='HEADERSERVICE')
+LOGGER = logging.getLogger(__name__)
 
 
 class HSworker:
@@ -54,7 +53,8 @@ class HSworker:
         # self.keyname = key['keyname']
         for k, v in list(keys.items()):
             setattr(self, k, v)
-            # print k,v
+
+        self.setup_logging()
 
         # Inititalize the State class to keep track of the system's state
         self.init_State()
@@ -64,12 +64,26 @@ class HSworker:
         self.get_channels()
 
         # Get the hostname and IP address
-        self.ip_address = socket.gethostbyname(socket.gethostname())
-        LOGGER.info("Will use IP: {} for broadcasting".format(self.ip_address))
-        LOGGER.level = self.loglevel
+        self.get_ip()
 
         # The user running the process
         self.USER = os.environ['USER']
+
+    def get_ip(self):
+        self.ip_address = socket.gethostbyname(socket.gethostname())
+        LOGGER.info("Will use IP: {} for broadcasting".format(self.ip_address))
+
+    def setup_logging(self):
+        """
+        Simple Logger definitions across this module, we call the generic function
+        defined in hutils.py
+        """
+        # Make sure the directory exists
+        dirname = os.path.dirname(self.logfile)
+        if dirname != '':
+            self.check_outdir(dirname)
+        hutils.create_logger(logfile=self.logfile, level=self.loglevel)
+        LOGGER.info("Will send logging to: {}".format(self.logfile))
 
     def init_State(self, start_state=None):
         """
@@ -127,11 +141,11 @@ class HSworker:
         self.name_end = get_channel_name(self.end_collection_event)
         self.EndTelem = self.SALconn[self.name_end]
 
-    def check_outdir(self):
+    def check_outdir(self, filepath):
         """ Make sure that we have a place to put the files"""
-        if not os.path.exists(self.filepath):
-            os.makedirs(self.filepath)
-            LOGGER.info("Created dirname:{}".format(self.filepath))
+        if not os.path.exists(filepath):
+            os.makedirs(filepath)
+            LOGGER.info("Created dirname:{}".format(filepath))
 
     def run(self, **keys):
 
@@ -147,7 +161,7 @@ class HSworker:
         self.make_connections()
 
         # Make sure that we have a place to put the files
-        self.check_outdir()
+        self.check_outdir(self.filepath)
 
         # Start the web server
         hutils.start_web_server(self.filepath, port_number=self.port_number)
@@ -358,6 +372,7 @@ class HSworker:
         # FIX THIS -- FELIPE, TIAGO, MICHAEL and TIM J. are accomplices
         self.metadata['SEQNUM'] = int(self.metadata['OBSID'].split('_')[-1])
         self.metadata['DAYOBS'] = self.metadata['OBSID'].split('_')[2]
+
 
 def get_channel_name(c):
     """ Standard formatting for the name of a channel across modules"""
