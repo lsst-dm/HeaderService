@@ -23,8 +23,8 @@ def cmdline():
                         help="The RA of the visit")
     parser.add_argument("--dec", action="store", default=None, type=float,
                         help="The DEC of the visit")
-    parser.add_argument("--angle", action="store", default=0.0, type=float,
-                        help="The ANGLE")
+    parser.add_argument("--rotpa", action="store", default=0.0, type=float,
+                        help="The ROTPA for the visit")
     parser.add_argument("--filter", action="store", default='r',
                         help="Name of the filter")
     parser.add_argument("--grating", action="store", default='R400',
@@ -40,13 +40,20 @@ def cmdline():
                         help="The observation day as defined by image name")
     parser.add_argument("--seqnum", action="store", default=1, type=int,
                         help="The sequence number from the image name")
-
     parser.add_argument("--NSequence", action="store", default=3, type=int,
                         help="Number of exposure in sequence")
+
     parser.add_argument("--exptime", action="store", default=15, type=float,
                         help="Exposure time in seconds")
     parser.add_argument("--airmass", action="store", default=1.237, type=float,
                         help="Airmass")
+    parser.add_argument("--ha", action="store", default='30.0', type=str,
+                        help="The HA")
+    parser.add_argument("--el", action="store", default=75.0, type=float,
+                        help="The elevation angle")
+    parser.add_argument("--az", action="store", default=45.0, type=float,
+                        help="The azimuth angle")
+
     parser.add_argument("--sleeptime", action="store", default=1, type=float,
                         help="Sleep Time between step, in seconds")
     parser.add_argument("--preh", action="store", default=_GEO.preh, type=int,
@@ -66,11 +73,13 @@ if __name__ == "__main__":
 
     # Initialize the classes for each device
     # Note that we need a separate object for Commands if we want to wait
-    sch = salpytools.DDSSend("Scheduler")
+    ptg = salpytools.DDSSend("ATPtg")
     cam = salpytools.DDSSend("ATCamera")
+    mcs = salpytools.DDSSend("ATMCS")
     # camCommand = salpytools.DDSSend("camera")
     camCommand = cam
 
+    # Camera Geometry
     # Send sub-set of imageReadoutParameters -- here we populate only a few fields
     kw = {'overRows': args.overv,
           'overCols': args.overh,
@@ -81,39 +90,25 @@ if __name__ == "__main__":
           }
     cam.send_Event('imageReadoutParameters', **kw)
 
-    # Send the target event -- here we populate only a few fields
-    kw = {
-          # 'targetId': 1,
-          # 'fieldId': 1,
-          'filters': args.filter,
-          'grating': args.grating,
-          # 'request_time': time.time(),
-          # 'request_mjd': time.time(),
-          'ra': args.ra,
-          'decl': args.dec,
-          'angle': args.angle,
-          'num_exposures': args.NSequence,
-          # 'exposure_times': args.exptime,
-          'airmass': args.airmass,
-          # 'sky_brightness':1.0,
-          # 'cloud':0.0,
-          # 'seeing':1.0,
-          # 'slew_time':1.0,
-          # 'stage':1.0,
-          # 'offsetX':0.0,
-          # 'offsetY':0.0,
-          'priority': 1}
-    sch.send_Event('target', **kw)
-    LOGGER.info("Sending target {}".format(sch.get_myData()))
-    # time.sleep(args.sleeptime)
+    # Poiting information
+    # Send the pointing event -- here we populate only a few fields from: "ATPtg_logevent_currentTarget"
+    kw = {'timestamp' : time.time(),
+          'ra' : args.ra,
+          'declination' : args.dec,
+          'rotPA' : args.rotpa,
+          'priority' : 1}
+    ptg.send_Event('currentTarget', **kw)
+    LOGGER.info("Sending currentTarget {}\n".format(ptg.get_myData()))
+
 
     # Send the takeImages command
     kw = {'numImages': args.NSequence,
           'expTime': args.exptime,
           'imageSequenceName': args.imageSequenceName,
           'timeout': 10}
+
     camCommand.send_Command('takeImages', **kw)
-    LOGGER.info("Sending takeImages {}".format(camCommand.get_myData()))
+    LOGGER.info("Sending takeImages {}:\n".format(camCommand.get_myData()))
     # camCommand.start()
 
     LOGGER.info("---Starting Image loop---")
@@ -133,6 +128,21 @@ if __name__ == "__main__":
             DATE_OBS = hutils.get_date_utc(timeStamp)
             DAYOBS = DATE_OBS.datetime.strftime('%Y%m%d')
         imageName = "{}_{}_{}_{:06d}".format(args.telcode, args.controller,DAYOBS,seqN)
+
+
+        # start telemetry for Airmass using ATPtg.prospectiveTargetStatus
+        kw = {'timestamp' : time.time(),
+            'ha': args.ha,
+            'airmass': args.airmass}
+        ptg.send_Telemetry('prospectiveTargetStatus', **kw)
+        LOGGER.info("Sending prospectiveTargetStatus {}:\n".format(ptg.get_myData()))
+
+        # start telemetry for EL and AZ from the ATMCS.mountEncoders
+        kw = {'timestamp' : time.time(),
+            'elevationCalculatedAngle': args.el,
+            'azimuthCalculatedAngle': args.az}
+        mcs.send_Telemetry('mountEncoders', **kw)
+        LOGGER.info("Sending mountEncoders {}:\n".format(mcs.get_myData()))
 
         # Send startIntegration k
         LOGGER.info("Sending starIntegration")
@@ -163,6 +173,23 @@ if __name__ == "__main__":
         LOGGER.info("Sending Measured Exptime")
         cam.send_Event('shutterMotionProfile', measuredExposureTime=args.exptime+0.35)
         time.sleep(0.1)
+
+
+
+        # end telemetry for Airmass using ATPtg.prospectiveTargetStatus
+        kw = {'timestamp' : time.time(),
+            'ha': str(float(args.ha)*1.2),
+            'airmass': args.airmass*1.2}
+        ptg.send_Telemetry('prospectiveTargetStatus', **kw)
+        LOGGER.info("Sending prospectiveTargetStatus {}:\n".format(ptg.get_myData()))
+
+        # end telemetry for EL and AZ from the ATMCS.mountEncoders
+        kw = {'timestamp' : time.time(),
+            'elevationCalculatedAngle': args.el*1.2,
+            'azimuthCalculatedAngle': args.az*1.2}
+        mcs.send_Telemetry('mountEncoders', **kw)
+        LOGGER.info("Sending mountEncoders {}:\n".format(mcs.get_myData()))
+
 
         kw['timeStamp'] = time.time()
         LOGGER.info("Sending endOfImageTelemetry")
