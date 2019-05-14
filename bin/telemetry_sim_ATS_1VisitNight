@@ -76,6 +76,7 @@ if __name__ == "__main__":
     ptg = salpytools.DDSSend("ATPtg")
     cam = salpytools.DDSSend("ATCamera")
     mcs = salpytools.DDSSend("ATMCS")
+    spec = salpytools.DDSSend("ATSpectrograph")
     # camCommand = salpytools.DDSSend("camera")
     camCommand = cam
 
@@ -92,14 +93,37 @@ if __name__ == "__main__":
 
     # Poiting information
     # Send the pointing event -- here we populate only a few fields from: "ATPtg_logevent_currentTarget"
-    kw = {'timestamp' : time.time(),
-          'ra' : args.ra,
-          'declination' : args.dec,
-          'rotPA' : args.rotpa,
-          'priority' : 1}
+    kw = {'timestamp': time.time(),
+          'ra': args.ra,
+          'declination': args.dec,
+          'rotPA': args.rotpa,
+          'priority': 1}
     ptg.send_Event('currentTarget', **kw)
-    LOGGER.info("Sending currentTarget {}\n".format(ptg.get_myData()))
+    LOGGER.info("Sending currentTarget\n {}".format(ptg.get_myData()))
 
+    # Filter information for ATSpectrograph
+    kw = {'timestamp': time.time(),
+          'name': args.filter,
+          'position': 1,  # Made up
+          'priority': 1}
+    spec.send_Event('reportedFilterPosition', **kw)
+    LOGGER.info("Sending reportedFilterPosition\n {}".format(spec.get_myData()))
+
+    # Disperser information for ATSpectrograph
+    kw = {'timestamp': time.time(),
+          'name': args.grating,
+          'position': 2,  # Made up
+          'priority': 1}
+    spec.send_Event('reportedDisperserPosition', **kw)
+    LOGGER.info("Sending reportedDisperserPosition\n {}".format(spec.get_myData()))
+
+    # Linear Stage position
+    kw = {'timestamp': time.time(),
+          'name': args.grating,
+          'position': 2,  # Made up
+          'priority': 1}
+    spec.send_Event('reportedLinearStagePosition', **kw)
+    LOGGER.info("Sending reportedLinearStagePosition\n {}".format(spec.get_myData()))
 
     # Send the takeImages command
     kw = {'numImages': args.NSequence,
@@ -127,20 +151,19 @@ if __name__ == "__main__":
         else:
             DATE_OBS = hutils.get_date_utc(timeStamp)
             DAYOBS = DATE_OBS.datetime.strftime('%Y%m%d')
-        imageName = "{}_{}_{}_{:06d}".format(args.telcode, args.controller,DAYOBS,seqN)
-
+        imageName = "{}_{}_{}_{:06d}".format(args.telcode, args.controller, DAYOBS, seqN)
 
         # start telemetry for Airmass using ATPtg.prospectiveTargetStatus
-        kw = {'timestamp' : time.time(),
-            'ha': args.ha,
-            'airmass': args.airmass}
+        kw = {'timestamp': time.time(),
+              'ha': args.ha,
+              'airmass': args.airmass}
         ptg.send_Telemetry('prospectiveTargetStatus', **kw)
         LOGGER.info("Sending prospectiveTargetStatus {}:\n".format(ptg.get_myData()))
 
         # start telemetry for EL and AZ from the ATMCS.mountEncoders
-        kw = {'timestamp' : time.time(),
-            'elevationCalculatedAngle': args.el,
-            'azimuthCalculatedAngle': args.az}
+        kw = {'timestamp': time.time(),
+              'elevationCalculatedAngle': args.el,
+              'azimuthCalculatedAngle': args.az}
         mcs.send_Telemetry('mountEncoders', **kw)
         LOGGER.info("Sending mountEncoders {}:\n".format(mcs.get_myData()))
 
@@ -174,22 +197,19 @@ if __name__ == "__main__":
         cam.send_Event('shutterMotionProfile', measuredExposureTime=args.exptime+0.35)
         time.sleep(0.1)
 
-
-
         # end telemetry for Airmass using ATPtg.prospectiveTargetStatus
-        kw = {'timestamp' : time.time(),
-            'ha': str(float(args.ha)*1.2),
-            'airmass': args.airmass*1.2}
+        kw = {'timestamp': time.time(),
+              'ha': str(float(args.ha)*1.2),
+              'airmass': args.airmass*1.2}
         ptg.send_Telemetry('prospectiveTargetStatus', **kw)
         LOGGER.info("Sending prospectiveTargetStatus {}:\n".format(ptg.get_myData()))
 
         # end telemetry for EL and AZ from the ATMCS.mountEncoders
-        kw = {'timestamp' : time.time(),
-            'elevationCalculatedAngle': args.el*1.2,
-            'azimuthCalculatedAngle': args.az*1.2}
+        kw = {'timestamp': time.time(),
+              'elevationCalculatedAngle': args.el*1.2,
+              'azimuthCalculatedAngle': args.az*1.2}
         mcs.send_Telemetry('mountEncoders', **kw)
         LOGGER.info("Sending mountEncoders {}:\n".format(mcs.get_myData()))
-
 
         kw['timeStamp'] = time.time()
         LOGGER.info("Sending endOfImageTelemetry")

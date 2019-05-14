@@ -220,46 +220,44 @@ telemetry:
   collect_after_event: end_collection_event
 
 # --------------------------------------------------------------
+# ----- Filter/Grating information from ATSpectrograph ---------
 
-# -- still not available from SAL --------
-# # ----- Filter/Grating information from ATSpectrograph ---------
-#
-#  FILTER:
-#   device: ATSpectrograph
-#   Stype: Event
-#   topic: reportedFilterPosition
-#   value: name
-#   collect_after_event: start_collection_event
-#
-#  FILTERPOS:
-#   device: ATSpectrograph
-#   Stype: Event
-#   topic: reportedFilterPosition
-#   value: position
-#   collect_after_event: start_collection_event
-#
-#  GRATING:
-#   device: ATSpectrograph
-#   Stype: Event
-#   topic: reportedDisperserPosition
-#   value: name
-#   collect_after_event: start_collection_event
-#
-#  GRATPOS:
-#   device: ATSpectrograph
-#   Stype: Event
-#   topic: reportedDisperserPosition
-#   value: position
-#   collect_after_event: start_collection_event
-#
-#  LINSPOS:
-#   device: ATSpectrograph
-#   Stype: Event
-#   topic: reportedLinearStagePosition
-#   value: position
-#   collect_after_event: start_collection_event
-#
-# # --------------------------------------------------------------
+ FILTER:
+  device: ATSpectrograph
+  Stype: Event
+  topic: reportedFilterPosition
+  value: name
+  collect_after_event: start_collection_event
+
+ FILTPOS:
+  device: ATSpectrograph
+  Stype: Event
+  topic: reportedFilterPosition
+  value: position
+  collect_after_event: start_collection_event
+
+ GRATING:
+  device: ATSpectrograph
+  Stype: Event
+  topic: reportedDisperserPosition
+  value: name
+  collect_after_event: start_collection_event
+
+ GRATPOS:
+  device: ATSpectrograph
+  Stype: Event
+  topic: reportedDisperserPosition
+  value: position
+  collect_after_event: start_collection_event
+
+ LINSPOS:
+  device: ATSpectrograph
+  Stype: Event
+  topic: reportedLinearStagePosition
+  value: position
+  collect_after_event: start_collection_event
+
+# --------------------------------------------------------------
 
  OVERH:
   device: ATCamera
