@@ -5,6 +5,7 @@ import argparse
 import salpytools
 import HeaderService.hutils as hutils
 import HeaderService.camera_coords as camera_coords
+import random
 
 LOGGER = hutils.create_logger()
 
@@ -152,6 +153,12 @@ if __name__ == "__main__":
             DATE_OBS = hutils.get_date_utc(timeStamp)
             DAYOBS = DATE_OBS.datetime.strftime('%Y%m%d')
         imageName = "{}_{}_{}_{:06d}".format(args.telcode, args.controller, DAYOBS, seqN)
+
+        # send CCD temperature telemetry
+        kw = {'timestamp': time.time(),
+              'ccdTemp0': random.uniform(-30,0)}
+        cam.send_Telemetry('wreb', **kw)
+        LOGGER.info("Sending wreb {}:\n".format(cam.get_myData()))
 
         # start telemetry for Airmass using ATPtg.prospectiveTargetStatus
         kw = {'timestamp': time.time(),

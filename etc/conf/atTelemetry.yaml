@@ -120,6 +120,13 @@ telemetry:
   value: measuredExposureTime
   collect_after_event: end_collection_event
 
+ CCDTEMP:
+  device: ATCamera
+  Stype: Telemetry
+  topic: wreb
+  value: ccdTemp0
+  collect_after_event: start_collection_event
+
 # --- Pointing Information ---------------
  RA:
   device: ATPtg
