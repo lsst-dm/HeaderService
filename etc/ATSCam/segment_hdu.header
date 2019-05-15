@@ -3,7 +3,6 @@ BITPIX  =                   32 / bits per data value
 INHERIT =                    T / Inherits global header
 PCOUNT  =                    0 / Required value
 GCOUNT  =                    1 / Required value
-CHANNEL =
 EXTNAME =
 DATASEC =
 DETSEC  =
