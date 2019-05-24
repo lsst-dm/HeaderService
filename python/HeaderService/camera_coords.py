@@ -209,7 +209,6 @@ class CCDGeom:
         else:
             raise ValueError('Vendor: {} not in list '.format(self.vendor))
 
-        EXTENSION_DATA['CHANNEL'] = CHANNEL[self.vendor][Segment]
         EXTENSION_DATA['DETSIZE'] = self.DETSIZE
         EXTENSION_DATA['DATASEC'] = self.DATASEC
         EXTENSION_DATA['EXTNAME'] = '{}{}'.format(self.segname, Segment)

@@ -33,7 +33,7 @@ OBSGEO-Z=          -3195172.08 / [m] Z-axis Geocentric coordinate
 RATEL   =                      / Telescope RA of observation
 DECTEL  =                      / Telescope DEC of observation
 ROTPATEL=                      / Telescope Rotation
-ROTCOORD=                      /
+ROTCOORD= 'sky'                / Telescope Rotation Coordinates
 RA      =                      / RA of Target
 DEC     =                      / DEC of Target
 ROTPA   =                      / Rotation angle relative to the sky (deg)
@@ -77,7 +77,7 @@ FILTER  =                      / Name of the filter
 FILTPOS =                      / Filter position
 GRATING =                      / Name of the second disperser
 GRATPOS =                      / disperser position
-LINSTAGE=                      / Linear Stage
+LINSPOS =                      / Linear Stage
 
         ---- Exposure-related information ----
 EXPTIME =                      / Exposure time in seconds

@@ -120,92 +120,151 @@ telemetry:
   value: measuredExposureTime
   collect_after_event: end_collection_event
 
-# --- Pointing Information ---------------
-# -- still not available from SAL --------
-# RA:
-#  device: ATPointingComponent
-#  Stype: Event
-#  topic: TBD
-#  value: TBD
-#  collect_after_event: start_collection_event
-#
-# DEC:
-#  device: ATPointingComponent
-#  Stype: Event
-#  topic: TBD
-#  value: TBD
-#  collect_after_event: start_collection_event
-#
-# ROTPA:
-#  device: ATPointingComponent
-#  Stype: Event
-#  topic: TBD
-#  value: TBD
-#  collect_after_event: start_collection_event
-#
-# HASTART:
-#  device: ATPtg
-#  Stype: Event
-#  topic: prospectiveTargetStatus
-#  value: HA
-#  collect_after_event: start_collection_event
-#
-# AMSTART:
-#  device: ATPtg
-#  Stype: Event
-#  topic: prospectiveTargetStatus
-#  value: airmass
-#  collect_after_event: start_collection_event
-#
-# ELSTART:
-#  device: ATMCS
-#  Stype: Event
-#  topic: mountEncoders
-#  value: elevationCalculatedAngle
-#  collect_after_event: start_collection_event
-#
-# AZSTART:
-#  device: ATMCS
-#  Stype: Event
-#  topic: mountEncoders
-#  value: azimuthCalculatedAngle
-#  collect_after_event: start_collection_event
-#
-# HAEND:
-#  device: ATPtg
-#  Stype: Event
-#  topic: prospectiveTargetStatus
-#  value: HA
-#  collect_after_event: end_collection_event
+ CCDTEMP:
+  device: ATCamera
+  Stype: Telemetry
+  topic: wreb
+  value: ccdTemp0
+  collect_after_event: start_collection_event
 
-# AMEND:
-#  device: ATPtg
-#  Stype: Event
-#  topic: prospectiveTargetStatus
-#  value: airmass
-#  collect_after_event: end_collection_event
-#
-# ELEND:
-#  device: ATMCS
-#  Stype: Event
-#  topic: mountEncoders
-#  value: elevationCalculatedAngle
-#  collect_after_event: end_collection_event
-#
-# AZEND:
-#  device: ATMCS
-#  Stype: Event
-#  topic: mountEncoders
-#  value: azimuthCalculatedAngle
-#  collect_after_event: end_collection_event
-## --------------------------------------------------------------
+# --- Pointing Information ---------------
+ RA:
+  device: ATPtg
+  Stype: Event
+  topic: currentTarget
+  value: ra
+  collect_after_event: start_collection_event
+
+ DEC:
+  device: ATPtg
+  Stype: Event
+  topic: currentTarget
+  value: declination
+  collect_after_event: start_collection_event
+
+ ROTPA:
+  device: ATPtg
+  Stype: Event
+  topic: currentTarget
+  value: rotPA
+  collect_after_event: start_collection_event
+
+ RATEL:
+  device: ATPtg
+  Stype: Event
+  topic: currentTarget
+  value: ra
+  collect_after_event: start_collection_event
+
+ DECTEL:
+  device: ATPtg
+  Stype: Event
+  topic: currentTarget
+  value: declination
+  collect_after_event: start_collection_event
+
+ ROTPATEL:
+  device: ATPtg
+  Stype: Event
+  topic: currentTarget
+  value: rotPA
+  collect_after_event: start_collection_event
+
+ HASTART:
+  device: ATPtg
+  Stype: Telemetry
+  topic: prospectiveTargetStatus
+  value: ha
+  collect_after_event: start_collection_event
+
+ AMSTART:
+  device: ATPtg
+  Stype: Telemetry
+  topic: prospectiveTargetStatus
+  value: airmass
+  collect_after_event: start_collection_event
+
+ ELSTART:
+  device: ATMCS
+  Stype: Telemetry
+  topic: mountEncoders
+  value: elevationCalculatedAngle
+  collect_after_event: start_collection_event
+
+ AZSTART:
+  device: ATMCS
+  Stype: Telemetry
+  topic: mountEncoders
+  value: azimuthCalculatedAngle
+  collect_after_event: start_collection_event
+
+ HAEND:
+  device: ATPtg
+  Stype: Telemetry
+  topic: prospectiveTargetStatus
+  value: ha
+  collect_after_event: end_collection_event
+
+ AMEND:
+  device: ATPtg
+  Stype: Telemetry
+  topic: prospectiveTargetStatus
+  value: airmass
+  collect_after_event: end_collection_event
+
+ ELEND:
+  device: ATMCS
+  Stype: Telemetry
+  topic: mountEncoders
+  value: elevationCalculatedAngle
+  collect_after_event: end_collection_event
+
+ AZEND:
+  device: ATMCS
+  Stype: Telemetry
+  topic: mountEncoders
+  value: azimuthCalculatedAngle
+  collect_after_event: end_collection_event
+
+# --------------------------------------------------------------
+# ----- Filter/Grating information from ATSpectrograph ---------
 
  FILTER:
-  device: Scheduler
+  device: ATSpectrograph
   Stype: Event
-  topic: target
-  value: filter
+  topic: reportedFilterPosition
+  value: name
   collect_after_event: start_collection_event
+
+ FILTPOS:
+  device: ATSpectrograph
+  Stype: Event
+  topic: reportedFilterPosition
+  value: position
+  collect_after_event: start_collection_event
+
+ GRATING:
+  device: ATSpectrograph
+  Stype: Event
+  topic: reportedDisperserPosition
+  value: name
+  collect_after_event: start_collection_event
+
+ GRATPOS:
+  device: ATSpectrograph
+  Stype: Event
+  topic: reportedDisperserPosition
+  value: position
+  collect_after_event: start_collection_event
+
+ LINSPOS:
+  device: ATSpectrograph
+  Stype: Event
+  topic: reportedLinearStagePosition
+  value: position
+  collect_after_event: start_collection_event
+
+# --------------------------------------------------------------
 
  OVERH:
   device: ATCamera
