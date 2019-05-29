@@ -14,7 +14,7 @@ MJD-OBS =                      / Modified Julian Date of observation
 MJD-BEG =                      / Modified Julian Date derived from DATE-BEG
 MJD-END =                      / Modified Julian Date derived from DATE-END
 OBSID   =                      / ImageName from Camera StartIntergration
-GROUPID =                      / imageSequenceName from Camera StartIntergration
+GROUPID =                      / imageSequenceName from StartIntergration
 OBSTYPE =                      / BIAS, DARK, FLAT, OBJECT
 BUNIT   = 'adu     '           / Brightness units for pixel array
 
