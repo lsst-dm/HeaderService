@@ -10,7 +10,7 @@ logfile: 'www/HeaderService.log'
 vendor: ITL
 
 # The ts_xml version we are using -- for now this is just curated and need to be changed manually when we change version
-ts_xml: "3.9.2"
+ts_xml: "3.10.0"
 
 # port_number for webserver
 port_number: 8000
