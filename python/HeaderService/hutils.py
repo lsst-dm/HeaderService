@@ -97,8 +97,7 @@ def read_head_template(fname, header=None):
     with open(fname) as fobj:
         lines = fobj.readlines()
 
-    # Ignore empty keyword
-    lines = [l.rstrip() for l in lines if l[0:3] != 'END' and l[0:8] != ' '*8]
+    lines = [l.rstrip() for l in lines if l[0:3] != 'END']
 
     # if header is None an empty FITSHDR is created
     hdr = fitsio.FITSHDR(header)
