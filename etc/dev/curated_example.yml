@@ -1,1279 +1,1007 @@
 # --- Common Meta-data for all PRIMARY HDUs
 PRIMARY_COMMON:
+ SIMPLE:
+  value: True
+  comment: "file does conform to FITS standard"
  BITPIX:
   value: 16
-  type: I
-  comment: number of bits per data pixel
+  comment: "number of bits per data pixel"
  NAXIS:
   value: 0
-  type: I
-  comment: number of data axes
+  comment: "number of data axes"
  EXTEND:
   value: True
-  type: L
-  comment: FITS dataset may contain extensions
+  comment: "FITS dataset may contain extensions"
+ COMMENT:
+  value: ""
+  comment: "  and Astrophysics', volume 376, page 359; bibcode: 2001A&A...376..359H"
+ COMMENT:
+  value: ""
+  comment: "  FITS (Flexible Image Transport System) format is defined in 'Astronomy"
  EXTNAME:
-  value: 'PRIMARY '
-  type: C
-  comment:
+  value: "PRIMARY"
+  comment: ""
  ORIGIN:
-  value: 'LSST DM Header Service'
-  type: C
-  comment: FITS file originator
+  value: "LSST DM Header Service"
+  comment: "FITS file originator"
+ None:
+  value: ""
+  comment: " ---- Date, night and basic image information ----"
  DATE:
-  value: '2019-05-15T21:20:50.098'
-  type: C
-  comment: Creation Date and Time of File
+  value: "2019-05-31T21:45:26.094"
+  comment: "Creation Date and Time of File"
  DATE-OBS:
-  value: '2019-05-15T21:20:38.218'
-  type: C
-  comment: Date of the observation (image acquisition
+  value: "2019-05-31T21:45:12.045"
+  comment: "Date of the observation (image acquisition"
  DATE-BEG:
-  value: '2019-05-15T21:20:38.218'
-  type: C
-  comment: Time at the start of integration
+  value: "2019-05-31T21:45:12.045"
+  comment: "Time at the start of integration"
  DATE-END:
-  value: '2019-05-15T21:20:45.027'
-  type: C
-  comment: end date of the observation
+  value: "2019-05-31T21:45:21.449"
+  comment: "end date of the observation"
  MJD:
-  value: 58618.889468727
-  type: F
-  comment: Modified Julian Date that the file was written
+  value: 58634.9065520132
+  comment: "Modified Julian Date that the file was written"
  MJD-OBS:
-  value: 58618.8893312267
-  type: F
-  comment: Modified Julian Date of observation
+  value: 58634.9063894134
+  comment: "Modified Julian Date of observation"
  MJD-BEG:
-  value: 58618.8893312267
-  type: F
-  comment: Modified Julian Date derived from DATE-BEG
+  value: 58634.9063894134
+  comment: "Modified Julian Date derived from DATE-BEG"
  MJD-END:
-  value: 58618.8894100374
-  type: F
-  comment: Modified Julian Date derived from DATE-END
+  value: 58634.9064982528
+  comment: "Modified Julian Date derived from DATE-END"
  OBSID:
-  value: 'AT_O_20190515_000001'
-  type: C
-  comment: ImageName from Camera StartIntergration
+  value: "AT_O_20190531_000001"
+  comment: "ImageName from Camera StartIntergration"
  GROUPID:
-  value: 'TEST  '
-  type: C
-  comment:
+  value: "Test_sal"
+  comment: ""
  OBSTYPE:
-  value: 'BIAS  '
-  type: C
-  comment: BIAS, DARK, FLAT, OBJECT
+  value: None
+  comment: "BIAS, DARK, FLAT, OBJECT"
  BUNIT:
-  value: 'adu     '
-  type: C
-  comment: Brightness units for pixel array
+  value: "adu"
+  comment: "Brightness units for pixel array"
+ None:
+  value: ""
+  comment: " ---- Telescope info, location, observer ----"
  TELESCOP:
-  value: 'LSST AuxTelescope'
-  type: C
-  comment: Telescope name
+  value: "LSST AuxTelescope"
+  comment: "Telescope name"
  INSTRUME:
-  value: 'LATISS  '
-  type: C
-  comment: Instrument used to obtain these data
+  value: "LATISS"
+  comment: "Instrument used to obtain these data"
  OBSERVER:
-  value: 'LSST    '
-  type: C
-  comment: Observer name(s)
+  value: "LSST"
+  comment: "Observer name(s)"
  OBS-LONG:
   value: -70.749417
-  type: F
-  comment: [deg] Observatory east longitude
+  comment: "[deg] Observatory east longitude"
  OBS-LAT:
   value: -30.244639
-  type: F
-  comment: [deg] Observatory latitude
+  comment: "[deg] Observatory latitude"
  OBS-ELEV:
   value: 2663.0
-  type: F
-  comment: [m] Observatory elevation
+  comment: "[m] Observatory elevation"
  OBSGEO-X:
   value: 1818938.94
-  type: F
-  comment: [m] X-axis Geocentric coordinate
+  comment: "[m] X-axis Geocentric coordinate"
  OBSGEO-Y:
   value: -5208470.95
-  type: F
-  comment: [m] Y-axis Geocentric coordinate
+  comment: "[m] Y-axis Geocentric coordinate"
  OBSGEO-Z:
   value: -3195172.08
-  type: F
-  comment: [m] Z-axis Geocentric coordinate
+  comment: "[m] Z-axis Geocentric coordinate"
+ None:
+  value: ""
+  comment: "---- Pointing info, etc. ----"
  RATEL:
   value: 10.0
-  type: F
-  comment: Telescope RA of observation
+  comment: "Telescope RA of observation"
  DECTEL:
   value: -35.0
-  type: F
-  comment: Telescope DEC of observation
+  comment: "Telescope DEC of observation"
  ROTPATEL:
   value: 90.0
-  type: F
-  comment: Telescope Rotation
+  comment: "Telescope Rotation"
  ROTCOORD:
-  value: 'sky     '
-  type: C
-  comment: Telescope Rotation Coordinates
+  value: "sky"
+  comment: "Telescope Rotation Coordinates"
  RA:
   value: 10.0
-  type: F
-  comment: RA of Target
+  comment: "RA of Target"
  DEC:
   value: -35.0
-  type: F
-  comment: DEC of Target
+  comment: "DEC of Target"
  ROTPA:
   value: 90.0
-  type: F
-  comment: Rotation angle relative to the sky (deg)
+  comment: "Rotation angle relative to the sky (deg)"
  HASTART:
-  value: '30.0'
-  type: C
-  comment: [HH:MM:SS] Telescope hour angle at start
+  value: "30.0"
+  comment: "[HH:MM:SS] Telescope hour angle at start"
  ELSTART:
   value: 75.0
-  type: F
-  comment: [deg] Telescope zenith distance at start
+  comment: "[deg] Telescope zenith distance at start"
  AZSTART:
   value: 45.0
-  type: F
-  comment: [deg] Telescope azimuth angle at start
+  comment: "[deg] Telescope azimuth angle at start"
  AMSTART:
   value: 1.78
-  type: F
-  comment: Airmass at start
+  comment: "Airmass at start"
  HAEND:
-  value: '36.0'
-  type: C
-  comment: [HH:MM:SS] Telescope hour angle at end
+  value: "36.0"
+  comment: "[HH:MM:SS] Telescope hour angle at end"
  ELEND:
   value: 90.0
-  type: F
-  comment: [deg] Telescope zenith distance at end
+  comment: "[deg] Telescope zenith distance at end"
  AZEND:
   value: 54.0
-  type: F
-  comment: [deg] Telescope azimuth angle at end
+  comment: "[deg] Telescope azimuth angle at end"
  AMEND:
   value: 2.136
-  type: F
-  comment: Airmass at end
+  comment: "Airmass at end"
+ None:
+  value: ""
+  comment: "---- Image-identifying used to build OBS-ID ----"
  TELCODE:
-  value: 'AT      '
-  type: C
-  comment: The code for the telecope
+  value: "AT"
+  comment: "The code for the telecope"
  CONTRLLR:
-  value: 'O       '
-  type: C
-  comment: The controller (e.g. O for OCS, C for CCS)
+  value: None
+  comment: "The controller (e.g. O for OCS, C for CCS)"
  DAYOBS:
-  value: '20190515'
-  type: C
-  comment: The observation day as defined by image name
+  value: "20190531"
+  comment: "The observation day as defined by image name"
  SEQNUM:
   value: 1
-  type: I
-  comment: The sequence number from the image name
+  comment: "The sequence number from the image name"
+ None:
+  value: ""
+  comment: "---- Information from Camera"
  SEQCKSUM:
-  value: 123
-  type: I
-  comment: Checksum of Sequencer
+  value: None
+  comment: "Checksum of Sequencer"
  SEQNAME:
-  value: 'SEQTEST'
-  type: C
-  comment: SequenceName from Camera StartIntergration
+  value: None
+  comment: "SequenceName from Camera StartIntergration"
  IMAGETAG:
-  value: 'TESTTAG  '
-  type: C
-  comment: DAQ Image id
+  value: None
+  comment: "DAQ Image id"
+ None:
+  value: ""
+  comment: "---- Filter/grating information ----"
  FILTER:
-  value: 'r       '
-  type: C
-  comment: Name of the filter
+  value: "r"
+  comment: "Name of the filter"
  FILTPOS:
   value: 1
-  type: I
-  comment: Filter position
+  comment: "Filter position"
  GRATING:
-  value: 'R400    '
-  type: C
-  comment: Name of the second disperser
+  value: "R400"
+  comment: "Name of the second disperser"
  GRATPOS:
   value: 2
-  type: I
-  comment: disperser position
+  comment: "disperser position"
  LINSPOS:
   value: 2.0
-  type: F
-  comment: Linear Stage
+  comment: "Linear Stage"
+ None:
+  value: ""
+  comment: "---- Exposure-related information ----"
  EXPTIME:
-  value: 0.0
-  type: F
-  comment: Exposure time in seconds
+  value: 3.0
+  comment: "Exposure time in seconds"
  SHUTTIME:
-  value: 0.35
-  type: F
-  comment: Shutter exposure time in seconds
+  value: 3.35
+  comment: "Shutter exposure time in seconds"
  DARKTIME:
-  value: 1.23
-  type: I
-  comment: Dark time in seconds
+  value: None
+  comment: "Dark time in seconds"
+ None:
+  value: ""
+  comment: "---- Header information ----"
  FILENAME:
-  value: 'AT_O_20190515_000001.fits'
-  type: C
-  comment: Original file name
+  value: "AT_O_20190531_000001.fits"
+  comment: "Original file name"
  HEADVER:
-  value: '0.9.3   '
-  type: C
-  comment: Version of header
+  value: "0.9.5"
+  comment: "Version of header"
+ None:
+  value: ""
+  comment: "---- Checksums ----"
 
 # --- Specific PRIMARY information for CCD/Sensons ----
 PRIMARY_R01S01:
  CCD_MANU:
-  value: 'ITL     '
-  type: C
-  comment: CCD Manufacturer
+  value: "ITL"
+  comment: "CCD Manufacturer"
  CCD_TYPE:
-  value: '3800C   '
-  type: C
-  comment: CCD Model Number
+  value: "3800C"
+  comment: "CCD Model Number"
  CCD_SERN:
-  value: '20304'
-  type: C
-  comment: Manufacturers? CCD Serial Number
+  value: "20304"
+  comment: "Manufacturers? CCD Serial Number"
  LSST_NUM:
-  value: 'ITL-3800C-098'
-  type: C
-  comment: LSST Assigned CCD Number
+  value: "ITL-3800C-098"
+  comment: "LSST Assigned CCD Number"
  REBNAME:
-  value: 'DUMMY_REBNAME'
-  type: C
-  comment: Name of the REB
+  value: "TEST_REBNAME"
+  comment: "Name of the REB"
  CONTNUM:
-  value: 'DUMMY_NUM '
-  type: C
-  comment: CCD Controller (WREB) Serial Number
+  value: "TEST_SERNUM"
+  comment: "CCD Controller (WREB) Serial Number"
  TEMP_SET:
-  value: 23.3
-  type: F
-  comment: Temperature set point (deg C)
+  value: None
+  comment: "Temperature set point (deg C)"
  CCDTEMP:
-  value: -15.8788795471191
-  type: F
-  comment: Measured temperature (deg C)
+  value: -18.1388607025146
+  comment: "Measured temperature (deg C)"
+ None:
+  value: ""
+  comment: "---- Geometry from Camera ----"
  DETSIZE:
-  value: '[1:4072,1:4000]'
-  type: C
-  comment: Size of sensor
+  value: "[1:4072,1:4000]"
+  comment: "Size of sensor"
  OVERH:
   value: 54
-  type: I
-  comment: Over-scan pixels
+  comment: "Over-scan pixels"
  OVERV:
   value: 46
-  type: I
-  comment: Vert-overscan pix
+  comment: "Vert-overscan pix"
  PREH:
   value: 10
-  type: I
-  comment: Pre-scan pixels
+  comment: "Pre-scan pixels"
 
 # --- Segments/Sensor HDUs ---
 R01S01_Segment10:
  XTENSION:
-  value: 'IMAGE   '
-  type: C
-  comment: IMAGE extension
+  value: "IMAGE"
+  comment: "IMAGE extension"
  BITPIX:
   value: 16
-  type: I
-  comment: number of bits per data pixel
+  comment: "number of bits per data pixel"
  NAXIS:
   value: 0
-  type: I
-  comment: number of data axes
+  comment: "number of data axes"
  PCOUNT:
   value: 0
-  type: I
-  comment: required keyword; must = 0
+  comment: "required keyword; must = 0"
  GCOUNT:
   value: 1
-  type: I
-  comment: required keyword; must = 1
+  comment: "required keyword; must = 1"
  EXTNAME:
-  value: 'Segment10'
-  type: C
-  comment:
+  value: "Segment10"
+  comment: ""
  INHERIT:
   value: True
-  type: L
-  comment: Inherits global header
+  comment: "Inherits global header"
  DATASEC:
-  value: '[11:519,1:2000]'
-  type: C
-  comment: 
+  value: "[11:519,1:2000]"
+  comment: ""
  DETSEC:
-  value: '[509:1,1:2000]'
-  type: C
-  comment: 
+  value: "[509:1,1:2000]"
+  comment: ""
  DTV1:
   value: 520
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTV2:
   value: 0
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTM1_1:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_2:
   value: 1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM1_2:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_1:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
 
 R01S01_Segment11:
  XTENSION:
-  value: 'IMAGE   '
-  type: C
-  comment: IMAGE extension
+  value: "IMAGE"
+  comment: "IMAGE extension"
  BITPIX:
   value: 16
-  type: I
-  comment: number of bits per data pixel
+  comment: "number of bits per data pixel"
  NAXIS:
   value: 0
-  type: I
-  comment: number of data axes
+  comment: "number of data axes"
  PCOUNT:
   value: 0
-  type: I
-  comment: required keyword; must = 0
+  comment: "required keyword; must = 0"
  GCOUNT:
   value: 1
-  type: I
-  comment: required keyword; must = 1
+  comment: "required keyword; must = 1"
  EXTNAME:
-  value: 'Segment11'
-  type: C
-  comment: 
+  value: "Segment11"
+  comment: ""
  INHERIT:
   value: True
-  type: L
-  comment: Inherits global header
+  comment: "Inherits global header"
  DATASEC:
-  value: '[11:519,1:2000]'
-  type: C
-  comment: 
+  value: "[11:519,1:2000]"
+  comment: ""
  DETSEC:
-  value: '[1018:510,1:2000]'
-  type: C
-  comment: 
+  value: "[1018:510,1:2000]"
+  comment: ""
  DTV1:
   value: 1029
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTV2:
   value: 0
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTM1_1:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_2:
   value: 1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM1_2:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_1:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
 
 R01S01_Segment12:
  XTENSION:
-  value: 'IMAGE   '
-  type: C
-  comment: IMAGE extension
+  value: "IMAGE"
+  comment: "IMAGE extension"
  BITPIX:
   value: 16
-  type: I
-  comment: number of bits per data pixel
+  comment: "number of bits per data pixel"
  NAXIS:
   value: 0
-  type: I
-  comment: number of data axes
+  comment: "number of data axes"
  PCOUNT:
   value: 0
-  type: I
-  comment: required keyword; must = 0
+  comment: "required keyword; must = 0"
  GCOUNT:
   value: 1
-  type: I
-  comment: required keyword; must = 1
+  comment: "required keyword; must = 1"
  EXTNAME:
-  value: 'Segment12'
-  type: C
-  comment: 
+  value: "Segment12"
+  comment: ""
  INHERIT:
   value: True
-  type: L
-  comment: Inherits global header
+  comment: "Inherits global header"
  DATASEC:
-  value: '[11:519,1:2000]'
-  type: C
-  comment: 
+  value: "[11:519,1:2000]"
+  comment: ""
  DETSEC:
-  value: '[1527:1019,1:2000]'
-  type: C
-  comment: 
+  value: "[1527:1019,1:2000]"
+  comment: ""
  DTV1:
   value: 1538
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTV2:
   value: 0
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTM1_1:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_2:
   value: 1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM1_2:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_1:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
 
 R01S01_Segment13:
  XTENSION:
-  value: 'IMAGE   '
-  type: C
-  comment: IMAGE extension
+  value: "IMAGE"
+  comment: "IMAGE extension"
  BITPIX:
   value: 16
-  type: I
-  comment: number of bits per data pixel
+  comment: "number of bits per data pixel"
  NAXIS:
   value: 0
-  type: I
-  comment: number of data axes
+  comment: "number of data axes"
  PCOUNT:
   value: 0
-  type: I
-  comment: required keyword; must = 0
+  comment: "required keyword; must = 0"
  GCOUNT:
   value: 1
-  type: I
-  comment: required keyword; must = 1
+  comment: "required keyword; must = 1"
  EXTNAME:
-  value: 'Segment13'
-  type: C
-  comment: 
+  value: "Segment13"
+  comment: ""
  INHERIT:
   value: True
-  type: L
-  comment: Inherits global header
+  comment: "Inherits global header"
  DATASEC:
-  value: '[11:519,1:2000]'
-  type: C
-  comment: 
+  value: "[11:519,1:2000]"
+  comment: ""
  DETSEC:
-  value: '[2036:1528,1:2000]'
-  type: C
-  comment: 
+  value: "[2036:1528,1:2000]"
+  comment: ""
  DTV1:
   value: 2047
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTV2:
   value: 0
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTM1_1:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_2:
   value: 1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM1_2:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_1:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
 
 R01S01_Segment14:
  XTENSION:
-  value: 'IMAGE   '
-  type: C
-  comment: IMAGE extension
+  value: "IMAGE"
+  comment: "IMAGE extension"
  BITPIX:
   value: 16
-  type: I
-  comment: number of bits per data pixel
+  comment: "number of bits per data pixel"
  NAXIS:
   value: 0
-  type: I
-  comment: number of data axes
+  comment: "number of data axes"
  PCOUNT:
   value: 0
-  type: I
-  comment: required keyword; must = 0
+  comment: "required keyword; must = 0"
  GCOUNT:
   value: 1
-  type: I
-  comment: required keyword; must = 1
+  comment: "required keyword; must = 1"
  EXTNAME:
-  value: 'Segment14'
-  type: C
-  comment: 
+  value: "Segment14"
+  comment: ""
  INHERIT:
   value: True
-  type: L
-  comment: Inherits global header
+  comment: "Inherits global header"
  DATASEC:
-  value: '[11:519,1:2000]'
-  type: C
-  comment: 
+  value: "[11:519,1:2000]"
+  comment: ""
  DETSEC:
-  value: '[2545:2037,1:2000]'
-  type: C
-  comment: 
+  value: "[2545:2037,1:2000]"
+  comment: ""
  DTV1:
   value: 2556
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTV2:
   value: 0
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTM1_1:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_2:
   value: 1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM1_2:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_1:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
 
 R01S01_Segment15:
  XTENSION:
-  value: 'IMAGE   '
-  type: C
-  comment: IMAGE extension
+  value: "IMAGE"
+  comment: "IMAGE extension"
  BITPIX:
   value: 16
-  type: I
-  comment: number of bits per data pixel
+  comment: "number of bits per data pixel"
  NAXIS:
   value: 0
-  type: I
-  comment: number of data axes
+  comment: "number of data axes"
  PCOUNT:
   value: 0
-  type: I
-  comment: required keyword; must = 0
+  comment: "required keyword; must = 0"
  GCOUNT:
   value: 1
-  type: I
-  comment: required keyword; must = 1
+  comment: "required keyword; must = 1"
  EXTNAME:
-  value: 'Segment15'
-  type: C
-  comment: 
+  value: "Segment15"
+  comment: ""
  INHERIT:
   value: True
-  type: L
-  comment: Inherits global header
+  comment: "Inherits global header"
  DATASEC:
-  value: '[11:519,1:2000]'
-  type: C
-  comment: 
+  value: "[11:519,1:2000]"
+  comment: ""
  DETSEC:
-  value: '[3054:2546,1:2000]'
-  type: C
-  comment: 
+  value: "[3054:2546,1:2000]"
+  comment: ""
  DTV1:
   value: 3065
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTV2:
   value: 0
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTM1_1:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_2:
   value: 1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM1_2:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_1:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
 
 R01S01_Segment16:
  XTENSION:
-  value: 'IMAGE   '
-  type: C
-  comment: IMAGE extension
+  value: "IMAGE"
+  comment: "IMAGE extension"
  BITPIX:
   value: 16
-  type: I
-  comment: number of bits per data pixel
+  comment: "number of bits per data pixel"
  NAXIS:
   value: 0
-  type: I
-  comment: number of data axes
+  comment: "number of data axes"
  PCOUNT:
   value: 0
-  type: I
-  comment: required keyword; must = 0
+  comment: "required keyword; must = 0"
  GCOUNT:
   value: 1
-  type: I
-  comment: required keyword; must = 1
+  comment: "required keyword; must = 1"
  EXTNAME:
-  value: 'Segment16'
-  type: C
-  comment: 
+  value: "Segment16"
+  comment: ""
  INHERIT:
   value: True
-  type: L
-  comment: Inherits global header
+  comment: "Inherits global header"
  DATASEC:
-  value: '[11:519,1:2000]'
-  type: C
-  comment: 
+  value: "[11:519,1:2000]"
+  comment: ""
  DETSEC:
-  value: '[3563:3055,1:2000]'
-  type: C
-  comment: 
+  value: "[3563:3055,1:2000]"
+  comment: ""
  DTV1:
   value: 3574
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTV2:
   value: 0
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTM1_1:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_2:
   value: 1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM1_2:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_1:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
 
 R01S01_Segment17:
  XTENSION:
-  value: 'IMAGE   '
-  type: C
-  comment: IMAGE extension
+  value: "IMAGE"
+  comment: "IMAGE extension"
  BITPIX:
   value: 16
-  type: I
-  comment: number of bits per data pixel
+  comment: "number of bits per data pixel"
  NAXIS:
   value: 0
-  type: I
-  comment: number of data axes
+  comment: "number of data axes"
  PCOUNT:
   value: 0
-  type: I
-  comment: required keyword; must = 0
+  comment: "required keyword; must = 0"
  GCOUNT:
   value: 1
-  type: I
-  comment: required keyword; must = 1
+  comment: "required keyword; must = 1"
  EXTNAME:
-  value: 'Segment17'
-  type: C
-  comment: 
+  value: "Segment17"
+  comment: ""
  INHERIT:
   value: True
-  type: L
-  comment: Inherits global header
+  comment: "Inherits global header"
  DATASEC:
-  value: '[11:519,1:2000]'
-  type: C
-  comment: 
+  value: "[11:519,1:2000]"
+  comment: ""
  DETSEC:
-  value: '[4072:3564,1:2000]'
-  type: C
-  comment: 
+  value: "[4072:3564,1:2000]"
+  comment: ""
  DTV1:
   value: 4083
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTV2:
   value: 0
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTM1_1:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_2:
   value: 1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM1_2:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_1:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
 
 R01S01_Segment07:
  XTENSION:
-  value: 'IMAGE   '
-  type: C
-  comment: IMAGE extension
+  value: "IMAGE"
+  comment: "IMAGE extension"
  BITPIX:
   value: 16
-  type: I
-  comment: number of bits per data pixel
+  comment: "number of bits per data pixel"
  NAXIS:
   value: 0
-  type: I
-  comment: number of data axes
+  comment: "number of data axes"
  PCOUNT:
   value: 0
-  type: I
-  comment: required keyword; must = 0
+  comment: "required keyword; must = 0"
  GCOUNT:
   value: 1
-  type: I
-  comment: required keyword; must = 1
+  comment: "required keyword; must = 1"
  EXTNAME:
-  value: 'Segment07'
-  type: C
-  comment: 
+  value: "Segment07"
+  comment: ""
  INHERIT:
   value: True
-  type: L
-  comment: Inherits global header
+  comment: "Inherits global header"
  DATASEC:
-  value: '[11:519,1:2000]'
-  type: C
-  comment: 
+  value: "[11:519,1:2000]"
+  comment: ""
  DETSEC:
-  value: '[4072:3564,4000:2001]'
-  type: C
-  comment: 
+  value: "[4072:3564,4000:2001]"
+  comment: ""
  DTV1:
   value: 4083
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTV2:
   value: 4001
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTM1_1:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_2:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM1_2:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_1:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
 
 R01S01_Segment06:
  XTENSION:
-  value: 'IMAGE   '
-  type: C
-  comment: IMAGE extension
+  value: "IMAGE"
+  comment: "IMAGE extension"
  BITPIX:
   value: 16
-  type: I
-  comment: number of bits per data pixel
+  comment: "number of bits per data pixel"
  NAXIS:
   value: 0
-  type: I
-  comment: number of data axes
+  comment: "number of data axes"
  PCOUNT:
   value: 0
-  type: I
-  comment: required keyword; must = 0
+  comment: "required keyword; must = 0"
  GCOUNT:
   value: 1
-  type: I
-  comment: required keyword; must = 1
+  comment: "required keyword; must = 1"
  EXTNAME:
-  value: 'Segment06'
-  type: C
-  comment: 
+  value: "Segment06"
+  comment: ""
  INHERIT:
   value: True
-  type: L
-  comment: Inherits global header
+  comment: "Inherits global header"
  DATASEC:
-  value: '[11:519,1:2000]'
-  type: C
-  comment: 
+  value: "[11:519,1:2000]"
+  comment: ""
  DETSEC:
-  value: '[3563:3055,4000:2001]'
-  type: C
-  comment: 
+  value: "[3563:3055,4000:2001]"
+  comment: ""
  DTV1:
   value: 3574
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTV2:
   value: 4001
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTM1_1:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_2:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM1_2:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_1:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
 
 R01S01_Segment05:
  XTENSION:
-  value: 'IMAGE   '
-  type: C
-  comment: IMAGE extension
+  value: "IMAGE"
+  comment: "IMAGE extension"
  BITPIX:
   value: 16
-  type: I
-  comment: number of bits per data pixel
+  comment: "number of bits per data pixel"
  NAXIS:
   value: 0
-  type: I
-  comment: number of data axes
+  comment: "number of data axes"
  PCOUNT:
   value: 0
-  type: I
-  comment: required keyword; must = 0
+  comment: "required keyword; must = 0"
  GCOUNT:
   value: 1
-  type: I
-  comment: required keyword; must = 1
+  comment: "required keyword; must = 1"
  EXTNAME:
-  value: 'Segment05'
-  type: C
-  comment: 
+  value: "Segment05"
+  comment: ""
  INHERIT:
   value: True
-  type: L
-  comment: Inherits global header
+  comment: "Inherits global header"
  DATASEC:
-  value: '[11:519,1:2000]'
-  type: C
-  comment: 
+  value: "[11:519,1:2000]"
+  comment: ""
  DETSEC:
-  value: '[3054:2546,4000:2001]'
-  type: C
-  comment: 
+  value: "[3054:2546,4000:2001]"
+  comment: ""
  DTV1:
   value: 3065
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTV2:
   value: 4001
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTM1_1:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_2:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM1_2:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_1:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
 
 R01S01_Segment04:
  XTENSION:
-  value: 'IMAGE   '
-  type: C
-  comment: IMAGE extension
+  value: "IMAGE"
+  comment: "IMAGE extension"
  BITPIX:
   value: 16
-  type: I
-  comment: number of bits per data pixel
+  comment: "number of bits per data pixel"
  NAXIS:
   value: 0
-  type: I
-  comment: number of data axes
+  comment: "number of data axes"
  PCOUNT:
   value: 0
-  type: I
-  comment: required keyword; must = 0
+  comment: "required keyword; must = 0"
  GCOUNT:
   value: 1
-  type: I
-  comment: required keyword; must = 1
+  comment: "required keyword; must = 1"
  EXTNAME:
-  value: 'Segment04'
-  type: C
-  comment: 
+  value: "Segment04"
+  comment: ""
  INHERIT:
   value: True
-  type: L
-  comment: Inherits global header
+  comment: "Inherits global header"
  DATASEC:
-  value: '[11:519,1:2000]'
-  type: C
-  comment: 
+  value: "[11:519,1:2000]"
+  comment: ""
  DETSEC:
-  value: '[2545:2037,4000:2001]'
-  type: C
-  comment: 
+  value: "[2545:2037,4000:2001]"
+  comment: ""
  DTV1:
   value: 2556
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTV2:
   value: 4001
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTM1_1:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_2:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM1_2:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_1:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
 
 R01S01_Segment03:
  XTENSION:
-  value: 'IMAGE   '
-  type: C
-  comment: IMAGE extension
+  value: "IMAGE"
+  comment: "IMAGE extension"
  BITPIX:
   value: 16
-  type: I
-  comment: number of bits per data pixel
+  comment: "number of bits per data pixel"
  NAXIS:
   value: 0
-  type: I
-  comment: number of data axes
+  comment: "number of data axes"
  PCOUNT:
   value: 0
-  type: I
-  comment: required keyword; must = 0
+  comment: "required keyword; must = 0"
  GCOUNT:
   value: 1
-  type: I
-  comment: required keyword; must = 1
+  comment: "required keyword; must = 1"
  EXTNAME:
-  value: 'Segment03'
-  type: C
-  comment: 
+  value: "Segment03"
+  comment: ""
  INHERIT:
   value: True
-  type: L
-  comment: Inherits global header
+  comment: "Inherits global header"
  DATASEC:
-  value: '[11:519,1:2000]'
-  type: C
-  comment: 
+  value: "[11:519,1:2000]"
+  comment: ""
  DETSEC:
-  value: '[2036:1528,4000:2001]'
-  type: C
-  comment: 
+  value: "[2036:1528,4000:2001]"
+  comment: ""
  DTV1:
   value: 2047
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTV2:
   value: 4001
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTM1_1:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_2:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM1_2:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_1:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
 
 R01S01_Segment02:
  XTENSION:
-  value: 'IMAGE   '
-  type: C
-  comment: IMAGE extension
+  value: "IMAGE"
+  comment: "IMAGE extension"
  BITPIX:
   value: 16
-  type: I
-  comment: number of bits per data pixel
+  comment: "number of bits per data pixel"
  NAXIS:
   value: 0
-  type: I
-  comment: number of data axes
+  comment: "number of data axes"
  PCOUNT:
   value: 0
-  type: I
-  comment: required keyword; must = 0
+  comment: "required keyword; must = 0"
  GCOUNT:
   value: 1
-  type: I
-  comment: required keyword; must = 1
+  comment: "required keyword; must = 1"
  EXTNAME:
-  value: 'Segment02'
-  type: C
-  comment: 
+  value: "Segment02"
+  comment: ""
  INHERIT:
   value: True
-  type: L
-  comment: Inherits global header
+  comment: "Inherits global header"
  DATASEC:
-  value: '[11:519,1:2000]'
-  type: C
-  comment: 
+  value: "[11:519,1:2000]"
+  comment: ""
  DETSEC:
-  value: '[1527:1019,4000:2001]'
-  type: C
-  comment: 
+  value: "[1527:1019,4000:2001]"
+  comment: ""
  DTV1:
   value: 1538
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTV2:
   value: 4001
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTM1_1:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_2:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM1_2:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_1:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
 
 R01S01_Segment01:
  XTENSION:
-  value: 'IMAGE   '
-  type: C
-  comment: IMAGE extension
+  value: "IMAGE"
+  comment: "IMAGE extension"
  BITPIX:
   value: 16
-  type: I
-  comment: number of bits per data pixel
+  comment: "number of bits per data pixel"
  NAXIS:
   value: 0
-  type: I
-  comment: number of data axes
+  comment: "number of data axes"
  PCOUNT:
   value: 0
-  type: I
-  comment: required keyword; must = 0
+  comment: "required keyword; must = 0"
  GCOUNT:
   value: 1
-  type: I
-  comment: required keyword; must = 1
+  comment: "required keyword; must = 1"
  EXTNAME:
-  value: 'Segment01'
-  type: C
-  comment: 
+  value: "Segment01"
+  comment: ""
  INHERIT:
   value: True
-  type: L
-  comment: Inherits global header
+  comment: "Inherits global header"
  DATASEC:
-  value: '[11:519,1:2000]'
-  type: C
-  comment: 
+  value: "[11:519,1:2000]"
+  comment: ""
  DETSEC:
-  value: '[1018:510,4000:2001]'
-  type: C
-  comment: 
+  value: "[1018:510,4000:2001]"
+  comment: ""
  DTV1:
   value: 1029
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTV2:
   value: 4001
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTM1_1:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_2:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM1_2:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_1:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
 
 R01S01_Segment00:
  XTENSION:
-  value: 'IMAGE   '
-  type: C
-  comment: IMAGE extension
+  value: "IMAGE"
+  comment: "IMAGE extension"
  BITPIX:
   value: 16
-  type: I
-  comment: number of bits per data pixel
+  comment: "number of bits per data pixel"
  NAXIS:
   value: 0
-  type: I
-  comment: number of data axes
+  comment: "number of data axes"
  PCOUNT:
   value: 0
-  type: I
-  comment: required keyword; must = 0
+  comment: "required keyword; must = 0"
  GCOUNT:
   value: 1
-  type: I
-  comment: required keyword; must = 1
+  comment: "required keyword; must = 1"
  EXTNAME:
-  value: 'Segment00'
-  type: C
-  comment: 
+  value: "Segment00"
+  comment: ""
  INHERIT:
   value: True
-  type: L
-  comment: Inherits global header
+  comment: "Inherits global header"
  DATASEC:
-  value: '[11:519,1:2000]'
-  type: C
-  comment: 
+  value: "[11:519,1:2000]"
+  comment: ""
  DETSEC:
-  value: '[509:1,4000:2001]'
-  type: C
-  comment: 
+  value: "[509:1,4000:2001]"
+  comment: ""
  DTV1:
   value: 520
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTV2:
   value: 4001
-  type: I
-  comment: detector transformation vector
+  comment: "detector transformation vector"
  DTM1_1:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_2:
   value: -1.0
-  type: F
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM1_2:
   value: 0
-  type: I
-  comment: detector transformation matrix
+  comment: "detector transformation matrix"
  DTM2_1:
   value: 0
-  type: I
-  comment: detector transformation matrix
-
+  comment: "detector transformation matrix"
