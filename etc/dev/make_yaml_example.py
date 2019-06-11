@@ -12,7 +12,7 @@ header_file = "AT_O_20190531_000001.header"
 header_primary = fitsio.read_header(header_file, ext='PRIMARY')
 
 header = header_primary
-print ("{}:".format(header["EXTNAME"]))
+print("{}:".format(header["EXTNAME"]))
 
 # Retrieve all records in the header
 recs = header.records()
@@ -20,20 +20,20 @@ for rec in recs:
     name = rec['name']
     value = rec['value']
     comment = rec['comment']
-    print (" {}:".format(rec['name']))
+    print(" {}:".format(rec['name']))
     if type(value) is str:
-        print ("  value: \"{}\"".format(rec['value']))
+        print("  value: \"{}\"".format(rec['value']))
     else:
-        print ("  value: {}".format(rec['value']))
-    print ("  comment: \"{}\"".format(rec['comment']))
+        print("  value: {}".format(rec['value']))
+    print("  comment: \"{}\"".format(rec['comment']))
 
 
 # Loop over each of segments
 for k in range(16):
 
     header = fitsio.read_header(header_file, ext=k+1)
-    print ("")
-    print ("R01S01_{}:".format(header['EXTNAME']))
+    print("")
+    print("R01S01_{}:".format(header['EXTNAME']))
 
     # Get all records
     recs = header.records()
@@ -41,9 +41,9 @@ for k in range(16):
         name = rec['name']
         value = rec['value']
         comment = rec['comment']
-        print (" {}:".format(rec['name']))
+        print(" {}:".format(rec['name']))
         if type(value) is str:
-            print ("  value: \"{}\"".format(rec['value']))
+            print("  value: \"{}\"".format(rec['value']))
         else:
-            print ("  value: {}".format(rec['value']))
-        print ("  comment: \"{}\"".format(rec['comment']))
+            print("  value: {}".format(rec['value']))
+        print("  comment: \"{}\"".format(rec['comment']))

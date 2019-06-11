@@ -22,7 +22,7 @@ for hdu in F:
     else:
         hfname = "%s.header" % extname
 
-    print "Writing header from %s --> %s" % (extname, hfname)
-    o = open(hfname, "w")
-    o.write("%s" % header)
-    o.close()
+    print("Writing header from {} --> {}".format(extname, hfname))
+    with open(hfname, "w") as o:
+        o.write("%s" % header)
+        o.close()
