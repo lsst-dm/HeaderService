@@ -25,4 +25,3 @@ for hdu in F:
     print("Writing header from {} --> {}".format(extname, hfname))
     with open(hfname, "w") as o:
         o.write("%s" % header)
-        o.close()
