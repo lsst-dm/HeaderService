@@ -53,15 +53,15 @@ LCA-13501
 #
 
 SCAN_GEOM = {}
-SCAN_GEOM['ITL'] = {'dimv':  2000,
-                    'dimh':  509,
-                    'preh':  3,
+SCAN_GEOM['ITL'] = {'dimv': 2000,
+                    'dimh': 509,
+                    'preh': 3,
                     'overh': 32,
                     'overv': 48}
 
 SCAN_GEOM['E2V'] = {'dimv': 2002,
                     'dimh': 512,
-                    'preh':  10,
+                    'preh': 10,
                     'overh': 54,
                     'overv': 46}
 
@@ -74,25 +74,25 @@ CHANNEL['E2V'] = {'00': 16,
                   '04': 12,
                   '05': 11,
                   '06': 10,
-                  '07':  9,
-                  '10':  1,
-                  '11':  2,
-                  '12':  3,
-                  '13':  4,
-                  '14':  5,
-                  '15':  6,
-                  '16':  7,
-                  '17':  8}
+                  '07': 9,
+                  '10': 1,
+                  '11': 2,
+                  '12': 3,
+                  '13': 4,
+                  '14': 5,
+                  '15': 6,
+                  '16': 7,
+                  '17': 8}
 
-CHANNEL['ITL'] = {'00':  8,
-                  '01':  7,
-                  '02':  6,
-                  '03':  5,
-                  '04':  4,
-                  '05':  3,
-                  '06':  2,
-                  '07':  1,
-                  '10':  9,
+CHANNEL['ITL'] = {'00': 8,
+                  '01': 7,
+                  '02': 6,
+                  '03': 5,
+                  '04': 4,
+                  '05': 3,
+                  '06': 2,
+                  '07': 1,
+                  '10': 9,
                   '11': 10,
                   '12': 11,
                   '13': 12,
@@ -350,8 +350,8 @@ RADESYS = 'FK5     '           / Telescope coordinate system
 #
 # In addition we could add  CDELT1/CDEL2 and
 # CROTA2  =              0.00000 / Rotation in degrees.
-# CDELT1  =           0.00166667 /Coordinate increment per pixel in DEGREES/PIXEL
-# CDELT2  =          -0.00166667 /Coordinate increment per pixel in DEGREES/PIXEL
+# CDELT1  =       0.00166667 /Coordinate increment per pixel in DEGREES/PIXEL
+# CDELT2  =      -0.00166667 /Coordinate increment per pixel in DEGREES/PIXEL
 #
 # CD1_1 = CDELT1*cos(CROTA2)
 # CD1_2 = -CDELT2*sin(CROTA2)
