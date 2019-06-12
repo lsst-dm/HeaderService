@@ -75,8 +75,8 @@ class HSworker:
 
     def setup_logging(self):
         """
-        Simple Logger definitions across this module, we call the generic function
-        defined in hutils.py
+        Simple Logger definitions across this module, we call the generic
+        function defined in hutils.py
         """
         # Make sure the directory exists
         dirname = os.path.dirname(self.logfile)
@@ -115,7 +115,7 @@ class HSworker:
                                                    end_collection_event=self.end_collection_event,
                                                    imageParam_event=self.imageParam_event)
 
-        # Now separate the keys to collect at the 'end' from the ones at 'start'
+        # Separate the keys to collect at the 'end' from the ones at 'start'
         t = self.telemetry  # Short-cut
         self.keywords_start = [k for k in t.keys() if t[k]['collect_after_event'] == 'start_collection_event']
         self.keywords_end = [k for k in t.keys() if t[k]['collect_after_event'] == 'end_collection_event']
@@ -257,7 +257,7 @@ class HSworker:
                                                                                  self.name_end))
                 self.EndTelem.waitEvent(timeout=self.timeout_endTelem,
                                         after_timeStamp=self.StartInt.timeStamp)
-                # Make sure that EndTelem.newEvent happens AFTER StartInt.newEvent
+                # Ensure that EndTelem.newEvent happens AFTER StartInt.newEvent
                 if self.EndTelem.newEvent:
                     sys.stdout.flush()
                     LOGGER.info("Received: {} Signal".format(self.name_end))
@@ -269,7 +269,8 @@ class HSworker:
                     # Collect metadata created by the HeaderService
                     LOGGER.info("Collecting Metadata from HeaderService")
                     self.collect_from_HeaderService()
-                    # First we update the header using the information from the camera geometry
+                    # First we update the header using the information
+                    # from the camera geometry
                     self.update_header_geometry()
                     self.update_header()
                     # Write the header
@@ -347,15 +348,17 @@ class HSworker:
             # Only access data payload once
             if name not in self.myData:
                 self.myData[name] = self.SALconn[name].getCurrent(getNone=True)
-
-                # Only update metadata if self.myData is defined (i.e. not None)
+                # Only update metadata if self.myData is defined (not None)
             if self.myData[name] is None:
                 LOGGER.warning("Cannot get keyword: {} from topic: {}".format(k, name))
             else:
                 self.metadata[k] = getattr(self.myData[name], param)
 
     def collect_from_HeaderService(self):
-        """Collect and update custom meta-data generated or transformed by the HeaderService"""
+        """
+        Collect and update custom meta-data generated or transformed by
+        the HeaderService
+        """
         self.DATE_OBS = hutils.get_date_utc(self.metadata['DATE-OBS'])
         self.DATE_BEG = hutils.get_date_utc(self.metadata['DATE-BEG'])
         self.DATE_END = hutils.get_date_utc(self.metadata['DATE-END'])

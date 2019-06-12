@@ -142,8 +142,8 @@ def md5Checksum(filePath, blocksize=1024*512):
 def get_obsnite(date=None, thresh_hour=14, format='{year}{month:02d}{day:02d}'):
     import datetime
     """
-    Get the obs-nite from a 'datetime.datetime.now()' kind of data object, but it will not
-    work 'datetime.date.today()' has it has no hour
+    Get the obs-nite from a 'datetime.datetime.now()' kind of data object, but
+    it will not work 'datetime.date.today()' has it has no hour
     """
     if date is None:
         date = datetime.datetime.now()
@@ -220,14 +220,14 @@ def get_image_size_from_imageReadoutParameters(myData):
      '''
 
     geom = {
+        # 'dimh': myData.readCols  -- not in myData, in case want to fudge it
+        # 'dimv': myData.readRows  -- not in myData, in case want to fudge it
         'NAXIS1': myData.readCols + myData.readCols2 + myData.overCols + myData.preCols,
         'NAXIS2': myData.readRows + myData.overRows,
         'overv': myData.overRows,
         'overh': myData.overCols,
-        'preh': myData.preCols,
-        # 'dimh': myData.readCols  -- not in myData, in case we want to fudge it
-        # 'dimv': myData.readRows  -- not in myData, in case we want to fudge it
-        }
+        'preh': myData.preCols}
+
     geom['naxis1'] = geom['NAXIS1']
     geom['naxis2'] = geom['NAXIS2']
     return geom
@@ -332,7 +332,8 @@ class HDRTEMPL_ATSCam:
         PRIMARY_DATA = self.CCDGEOM.get_extension('PRIMARY')
         self.update_records(PRIMARY_DATA, 'PRIMARY')
 
-        # For the Segments, we load it once and then copy and modify each segment
+        # For the Segments, we load it once and then copy and
+        # modify each segment
         for SEG in self.segment_names:
             EXTNAME = '{}{}'.format(self.segname, format(SEG))
             LOGGER.info("Loading template for: {}".format(EXTNAME))
@@ -375,7 +376,8 @@ class HDRTEMPL_ATSCam:
     def write_headers(self, filenames, hstring, MP=False, NP=2, md5=False):
 
         """
-        Write one header per CCD (all the same) for now in order to test I/O performance
+        Write one header per CCD (all the same) for now
+        in order to test I/O performance
         """
         if MP:
             pool = multiprocessing.Pool(processes=NP)
@@ -405,7 +407,10 @@ class HDRTEMPL_ATSCam:
 
     def write_dummy_fits(self, filename, dtype='random', naxis1=None, naxis2=None, btype='int32'):
 
-        """ Write a dummy fits file filled with random or zeros -- use for testing only"""
+        """
+        Write a dummy fits file filled with random or zeros
+        -- use for testing only
+        """
 
         # Figure out the dimensions following the camera geometry
         if not naxis1:
@@ -438,9 +443,9 @@ class HDRTEMPL_ATSCam:
 
     def write_header(self, filename):
         """
-        Writes single header file using the strict FITS format (i.e. empty HDUs,
-        write_mode='fits') or more human readable (write_mode='string') with a
-        delimiter for multiple HDU's
+        Writes single header file using the strict FITS format (i.e. empty
+        HDUs, write_mode='fits') or more human readable (write_mode='string')
+        with a delimiter for multiple HDU's
         """
         t0 = time.time()
         if self.write_mode == 'fits':
