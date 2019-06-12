@@ -129,7 +129,7 @@ class HSworker:
         # The dict containing all of the threads and connections
         self.SALconn = {}
         for name, c in self.channels.items():
-            self.SALconn[name] = salpytools.DDSSubcriber(c['device'], c['topic'], Stype=c['Stype'])
+            self.SALconn[name] = salpytools.DDSSubscriber(c['device'], c['topic'], Stype=c['Stype'])
             if start:
                 self.SALconn[name].start()
 
@@ -431,7 +431,7 @@ def subscribe_to_channels(channels, start=True):
     """ make connection to channels and start the threads"""
     SAL_connection = {}
     for name, c in channels.items():
-        SAL_connection[name] = salpytools.DDSSubcriber(c['device'], c['topic'], Stype=c['Stype'])
+        SAL_connection[name] = salpytools.DDSSubscriber(c['device'], c['topic'], Stype=c['Stype'])
         if start:
             SAL_connection[name].start()
 
