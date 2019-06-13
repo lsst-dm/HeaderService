@@ -17,15 +17,15 @@ compress_choices = [None, 0, 11, 'RICE_1', 'PLIO_1', 21, None,
 
 def cmdline():
 
-    # 1. We make a proto-parse use to read in the default yaml
-    # configuration file, Turn off help, so we print all options in response to -h
+    # 1. We make a proto-parse use to read in the default yaml configuration
+    # file, Turn off help, so we print all options in response to -h
     conf_parser = argparse.ArgumentParser(add_help=False)
     conf_parser.add_argument("-c", "--config", help="assemble FITS config file")
     args, remaining_argv = conf_parser.parse_known_args()
 
     # If we have -c or --config, then we proceed to read it
     if args.config:
-        conf_defaults = yaml.load(open(args.config))
+        conf_defaults = yaml.safe_load(open(args.config))
     else:
         conf_defaults = {}
 
@@ -74,7 +74,10 @@ def read_pixels(filename, shape, dtype=numpy.int32):
 
 def assemble_FITS(**kwargs):
 
-    """Simple function to assemble header file with pixels written in raw binary format"""
+    """
+    Simple function to assemble header file with pixels written in
+    raw binary format
+    """
 
     # Extract the kwrags from the function
     header_file = kwargs.get('header_file', None)
@@ -97,7 +100,7 @@ def assemble_FITS(**kwargs):
             outname = os.path.splitext(header_file)[0]+".fits.fz"
         else:
             outname = os.path.splitext(header_file)[0]+".fits"
-    print ("Will write out FITS file to: {}".format(outname))
+    print("Will write out FITS file to: {}".format(outname))
 
     # Now read the header and insert img
     hdr_fits = fitsio.FITS(header_file)
@@ -110,25 +113,27 @@ def assemble_FITS(**kwargs):
         for img in image_list:
             extname = 'Segment{}'.format(img[-2:])
             image_list_byext[extname] = img
-
+            # print(extname,image_list_byext[extname])
     # Loop over all HDUs on the header file
     for hdu in hdus:
 
         extname = hdr_fits[hdu].get_extname()
         if hdu == 0:
             out_data = None
-            print ("{:2d} - {}".format(hdu, extname))
+            print("{:2d} - {}".format(hdu, extname))
         else:
             if byext:
                 out_data = read_pixels(image_list_byext[extname], shape, dtype=dtype)
+                print("{:2d} - {} - {}".format(hdu, extname, image_list_byext[extname]))
             else:
                 out_data = read_pixels(image_list[hdu-1], shape, dtype=dtype)
-            print ("{:2d} - {} - {}".format(hdu, extname, image_list[hdu-1]))
+                print("{:2d} - {} - {}".format(hdu, extname, image_list[hdu-1]))
 
         # Read in the hdu from header file
         hdr_data, header = fitsio.read(header_file, ext=extname, header=True)
-        fitsio.write(outname, out_data, extname=extname, header=header, compress=compress_type)
-    print ("File: {} is ready".format(outname))
+        fitsio.write(outname, out_data, extname=extname, header=header,
+                     ignore_empty=True, compress=compress_type)
+    print("File: {} is ready".format(outname))
     return
 
 
@@ -138,4 +143,4 @@ if __name__ == "__main__":
     t1 = time.time()
     args = cmdline()
     assemble_FITS(**args.__dict__)
-    print ("Total time:{}".format(elapsed_time(t1)))
+    print("Total time:{}".format(elapsed_time(t1)))
