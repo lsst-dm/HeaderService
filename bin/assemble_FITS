@@ -25,7 +25,8 @@ def cmdline():
 
     # If we have -c or --config, then we proceed to read it
     if args.config:
-        conf_defaults = yaml.safe_load(open(args.config))
+        with open(args.config) as conf:
+            conf_defaults = yaml.safe_load(conf)
     else:
         conf_defaults = {}
 
