@@ -4,7 +4,7 @@ NAXIS   =                    0 / number of axes
 EXTEND  =                    T / Extensions are permitted
 ORIGIN  = 'LSST DM Header Service'/ FITS file originator
 
-         ---- Date, night and basic image information ----
+        ---- Date, night and basic image information ----
 DATE    =                      / Creation Date and Time of File
 DATE-OBS=                      / Date of the observation (image acquisition)
 DATE-BEG=                      / Time at the start of integration
@@ -18,7 +18,7 @@ GROUPID =                      / imageSequenceName from StartIntergration
 OBSTYPE =                      / BIAS, DARK, FLAT, OBJECT
 BUNIT   = 'adu     '           / Brightness units for pixel array
 
-         ---- Telescope info, location, observer ----
+        ---- Telescope info, location, observer ----
 TELESCOP= 'LSST AuxTelescope'  / Telescope name
 INSTRUME= 'LATISS'             / Instrument used to obtain these data
 OBSERVER= 'LSST'               / Observer name(s)
