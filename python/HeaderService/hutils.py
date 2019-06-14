@@ -33,6 +33,10 @@ import hashlib
 import itertools
 import copy
 from .camera_coords import CCDGeom
+from astropy.time import Time
+import datetime
+import subprocess
+
 spinner = itertools.cycle(['-', '/', '|', '\\'])
 
 try:
@@ -120,11 +124,24 @@ def get_values(header):
 
 
 def elapsed_time(t1, verb=False):
-    import time
+    """
+    Returns the time between t1 and the current time now
+    I can can also print the formatted elapsed time.
+    ----------
+    t1: float
+        The initial time (in seconds)
+    verb: bool, optional
+        Optionally print the formatted elapsed time
+    returns
+    -------
+    stime: float
+        The elapsed time in seconds since t1
+
+    """
     t2 = time.time()
     stime = "%dm %2.2fs" % (int((t2-t1)/60.), (t2-t1) - 60*int((t2-t1)/60.))
     if verb:
-        print("Elapsed time: %s" % stime)
+        print("Elapsed time: {}".format(stime))
     return stime
 
 
@@ -140,7 +157,6 @@ def md5Checksum(filePath, blocksize=1024*512):
 
 
 def get_obsnite(date=None, thresh_hour=14, format='{year}{month:02d}{day:02d}'):
-    import datetime
     """
     Get the obs-nite from a 'datetime.datetime.now()' kind of data object, but
     it will not work 'datetime.date.today()' has it has no hour
@@ -192,13 +208,10 @@ def get_date_utc(timeStamp=None, format='isot'):
 
     """
 
-    from astropy.time import Time
-    from datetime import datetime
     if timeStamp is None:
-        utc_time = (datetime.utcnow()).isoformat()
+        t = Time.now()
     else:
-        utc_time = datetime.utcfromtimestamp(timeStamp).isoformat()
-    t = Time(utc_time, format=format, scale='utc')
+        t = Time(timeStamp, format="unix")
     return t
 
 
@@ -234,8 +247,6 @@ def get_image_size_from_imageReadoutParameters(myData):
 
 
 def start_web_server(dirname, port_number=8000, httpserver="http.server"):
-    import subprocess
-    import sys
     # Get the system's python
     python_exe = sys.executable
     # Make sure there isn't another process running
