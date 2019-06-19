@@ -128,6 +128,7 @@ telemetry:
   collect_after_event: start_collection_event
 
 # --- Pointing Information ---------------
+
  RA:
   device: ATPtg
   Stype: Event
@@ -142,33 +143,13 @@ telemetry:
   value: declination
   collect_after_event: start_collection_event
 
- ROTPA:
-  device: ATPtg
-  Stype: Event
-  topic: currentTarget
-  value: rotPA
-  collect_after_event: start_collection_event
-
- RATEL:
-  device: ATPtg
-  Stype: Event
-  topic: currentTarget
-  value: ra
-  collect_after_event: start_collection_event
-
- DECTEL:
-  device: ATPtg
-  Stype: Event
-  topic: currentTarget
-  value: declination
-  collect_after_event: start_collection_event
-
- ROTPATEL:
-  device: ATPtg
-  Stype: Event
-  topic: currentTarget
-  value: rotPA
-  collect_after_event: start_collection_event
+# --- Will come from ATMCS rotator angle when available
+# ROTPA:
+#  device: ATPtg
+#  Stype: Event
+#  topic: currentTarget
+#  value: rotPA
+#  collect_after_event: start_collection_event
 
  HASTART:
   device: ATPtg

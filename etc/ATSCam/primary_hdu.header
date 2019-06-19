@@ -30,13 +30,14 @@ OBSGEO-Y=          -5208470.95 / [m] Y-axis Geocentric coordinate
 OBSGEO-Z=          -3195172.08 / [m] Z-axis Geocentric coordinate
 
         ---- Pointing info, etc. ----
-RATEL   =                      / Telescope RA of observation
-DECTEL  =                      / Telescope DEC of observation
-ROTPATEL=                      / Telescope Rotation
-ROTCOORD= 'sky'                / Telescope Rotation Coordinates
-RA      =                      / RA of Target
-DEC     =                      / DEC of Target
+RA      =                      / Telescope RA 
+DEC     =                      / Telescope DEC
+RASTART =                      / RA of Target at start
+DECSTART=                      / DEC of Target at start
+RAEND   =                      / RA of Target at end
+DECEND  =                      / DEC of Target at end
 ROTPA   =                      / Rotation angle relative to the sky (deg)
+ROTCOORD= 'sky'                / Telescope Rotation Coordinates
 HASTART =                      / [HH:MM:SS] Telescope hour angle at start
 ELSTART =                      / [deg] Telescope zenith distance at start
 AZSTART =                      / [deg] Telescope azimuth angle at start

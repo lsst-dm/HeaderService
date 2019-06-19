@@ -33,7 +33,6 @@ import hashlib
 import itertools
 import copy
 from .camera_coords import CCDGeom
-from astropy.time import Time
 import datetime
 import subprocess
 
@@ -184,35 +183,6 @@ def write_header_string(arg):
         md5value = md5Checksum(filename)
         LOGGER.info("Got MD5SUM: %s" % md5value)
     return
-
-
-def get_date_utc(timeStamp=None, format='isot'):
-    """
-    A simple function to the get an UTC astropy.datetime.Time object
-
-    Parameters
-    ----------
-
-    timeStamp : float
-        Optional timestamp (in seconds) passed as an argument. If None
-        is received, then the function will get the time now()
-
-    format: string
-        Optional format to provide the Time object
-
-    Returns
-    -------
-
-    t: type of astropy.datetime.Time object
-       The astropy.datetime.Time object with the timeStamp requested in UTC.
-
-    """
-
-    if timeStamp is None:
-        t = Time.now()
-    else:
-        t = Time(timeStamp, format="unix")
-    return t
 
 
 def get_image_size_from_imageReadoutParameters(myData):

@@ -4,6 +4,7 @@ import time
 import argparse
 import salpytools
 import HeaderService.hutils as hutils
+import HeaderService.hscalc as hscalc
 import HeaderService.camera_coords as camera_coords
 import random
 
@@ -150,7 +151,7 @@ if __name__ == "__main__":
         if args.dayobs:
             DAYOBS = args.dayobs
         else:
-            DATE_OBS = hutils.get_date_utc(timeStamp)
+            DATE_OBS = hscalc.get_date_utc(timeStamp)
             DAYOBS = DATE_OBS.datetime.strftime('%Y%m%d')
         imageName = "{}_{}_{}_{:06d}".format(args.telcode, args.controller, DAYOBS, seqN)
 
