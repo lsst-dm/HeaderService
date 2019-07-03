@@ -386,7 +386,10 @@ class HSworker:
             LOGGER.info("Computing RA/DEC from ELSTART/AZSTART")
             ra, dec = hscalc.get_radec_from_altaz(alt=self.metadata['ELSTART'],
                                                   az=self.metadata['AZSTART'],
-                                                  obstime=self.DATE_BEG)
+                                                  obstime=self.DATE_BEG,
+                                                  lat=self.HDR.header['PRIMARY']['OBS-LAT'],
+                                                  lon=self.HDR.header['PRIMARY']['OBS-LONG'],
+                                                  height=self.HDR.header['PRIMARY']['OBS-ELEV'])
             self.metadata['RASTART'] = ra
             self.metadata['DECSTART'] = dec
         else:
@@ -397,7 +400,10 @@ class HSworker:
             LOGGER.info("Computing RA/DEC from ELEND/AZEND")
             ra, dec = hscalc.get_radec_from_altaz(alt=self.metadata['ELEND'],
                                                   az=self.metadata['AZEND'],
-                                                  obstime=self.DATE_BEG)
+                                                  obstime=self.DATE_BEG,
+                                                  lat=self.HDR.header['PRIMARY']['OBS-LAT'],
+                                                  lon=self.HDR.header['PRIMARY']['OBS-LONG'],
+                                                  height=self.HDR.header['PRIMARY']['OBS-ELEV'])
             self.metadata['RAEND'] = ra
             self.metadata['DECEND'] = dec
         else:

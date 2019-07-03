@@ -76,9 +76,9 @@ def get_radec_from_altaz(alt, az, obstime, lat=-30.244639, lon=-70.749417, heigh
     obstime: float
         The time of the observation
     lat: float
-        Optional, the geografic latitude in degrees
+        Optional, the geographic latitude in degrees
     lon: float
-        Optional, the geografic longitude in degrees
+        Optional, the geographic longitude in degrees
     height: float
         Optional, the height in meters
 
@@ -86,7 +86,7 @@ def get_radec_from_altaz(alt, az, obstime, lat=-30.244639, lon=-70.749417, heigh
     -------
 
     ra: float
-       The Right Ascencion
+       The Right Ascension
     dec: float
 
 

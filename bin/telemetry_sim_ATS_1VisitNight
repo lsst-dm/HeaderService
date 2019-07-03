@@ -83,7 +83,7 @@ if __name__ == "__main__":
     camCommand = cam
 
     # Camera Geometry
-    # Send sub-set of imageReadoutParameters -- here we populate only a few fields
+    # Send sub-set of imageReadoutParameters, we populate only a few fields
     kw = {'overRows': args.overv,
           'overCols': args.overh,
           'preCols': args.preh,
@@ -94,7 +94,8 @@ if __name__ == "__main__":
     cam.send_Event('imageReadoutParameters', **kw)
 
     # Poiting information
-    # Send the pointing event -- here we populate only a few fields from: "ATPtg_logevent_currentTarget"
+    # Send the pointing event -- here we populate only a few fields
+    # from: "ATPtg_logevent_currentTarget"
     kw = {'timestamp': time.time(),
           'ra': args.ra,
           'declination': args.dec,
@@ -157,7 +158,7 @@ if __name__ == "__main__":
 
         # send CCD temperature telemetry
         kw = {'timestamp': time.time(),
-              'ccdTemp0': random.uniform(-30,0)}
+              'ccdTemp0': random.uniform(-30, 0)}
         cam.send_Telemetry('wreb', **kw)
         LOGGER.info("Sending wreb {}:\n".format(cam.get_myData()))
 
@@ -206,16 +207,20 @@ if __name__ == "__main__":
         time.sleep(0.1)
 
         # end telemetry for Airmass using ATPtg.prospectiveTargetStatus
+        # WARNING: Here we use a 1.001 factor simple to change by 0.001
+        # the END values compared to the START values above
         kw = {'timestamp': time.time(),
-              'ha': str(float(args.ha)*1.2),
-              'airmass': args.airmass*1.2}
+              'ha': str(float(args.ha)*1.001),
+              'airmass': args.airmass*1.001}
         ptg.send_Telemetry('prospectiveTargetStatus', **kw)
         LOGGER.info("Sending prospectiveTargetStatus {}:\n".format(ptg.get_myData()))
 
         # end telemetry for EL and AZ from the ATMCS.mountEncoders
+        # WARNING: Here we use a 1.001 factor simple to change by 0.001
+        # the END values compared to the START values above
         kw = {'timestamp': time.time(),
-              'elevationCalculatedAngle': args.el*1.2,
-              'azimuthCalculatedAngle': args.az*1.2}
+              'elevationCalculatedAngle': args.el*1.001,
+              'azimuthCalculatedAngle': args.az*1.001}
         mcs.send_Telemetry('mountEncoders', **kw)
         LOGGER.info("Sending mountEncoders {}:\n".format(mcs.get_myData()))
 
