@@ -39,9 +39,23 @@ class HSWorker(salobj.BaseCsc):
             print(f"Current State is {self.summary_state.name}")
             return
         print(f"Got startIntegration({data})")
-        print(f"Collecting...")
+        print(f"Collecting start...")
         self.collect_beg()
         print(f"Metadata:{self.metadata}")
+
+        self.atcam.evt_endOfImageTelemetry.callback = self.endOfImageTelemetry_callback
+        #self.myData["startIntegration"] = data
+        #self.metadata["endReadout"] = self.atcam.evt_endReadout.get()
+
+
+    def endOfImageTelemetry_callback(self, data):
+        #if self.summary_state != salobj.State.ENABLED:
+        #    print(f"Current State is {self.summary_state.name}")
+        #    return
+        print(f"Got endOfImageTelemetry({data})")
+        print(f"Collecting end...")
+        #self.collect_end()
+        #print(f"Metadata:{self.metadata}")
         #self.myData["startIntegration"] = data
         #self.metadata["endReadout"] = self.atcam.evt_endReadout.get()
 

@@ -58,8 +58,21 @@ class HSWorker(salobj.BaseCsc):
         # Make the connections using saloj.Remote
         self.create_Remotes()
 
+        # Define the callbacks start/end
+        self.define_evt_callbacks()
 
-        self.Remote['ATCamera'].evt_startIntegration.callback = self.start_collection_event_callback
+    def define_evt_callbacks(self):
+        """Set the callback functions based on configuration"""
+
+        # Select the start_collection callback
+        devname = self.start_collection_event['device']
+        topic   = self.start_collection_event['topic']
+        getattr(self.Remote[devname],f"evt_{topic}").callback = self.start_collection_event_callback
+
+        # Select the end_collection callback
+        devname = self.end_collection_event['device']
+        topic   = self.end_collection_event['topic']
+        getattr(self.Remote[devname],f"evt_{topic}").callback = self.end_collection_event_callback
 
     def report_summary_state(self):
         super().report_summary_state()
@@ -69,7 +82,7 @@ class HSWorker(salobj.BaseCsc):
         if self.summary_state != salobj.State.ENABLED:
             print(f"Current State is {self.summary_state.name}")
             return
- 
+
         # Clean/purge all metadata
         self.clean()
         sys.stdout.flush()
@@ -77,11 +90,22 @@ class HSWorker(salobj.BaseCsc):
         self.get_filenames()
         LOGGER.info(f"Extracted value for imageName: {self.imageName}")
 
-        #LOGGER.info(f"Collecting start metadata...")
-        # self.collect_beg()
-        # print(f"Metadata:{self.metadata}")
-        # self.myData["startIntegration"] = data
-        # self.metadata["endReadout"] = self.atcam.evt_endReadout.get()
+        # Collect metadata at start of integration
+        LOGGER.info(f"Collecting Metadata START : {self.name_start} Event")
+        self.collect(self.keywords_start)
+
+        # Now we wait for end event
+        LOGGER.info(f"Waiting for {self.name_end} Eevent")
+        self.end_collection_event_callback
+
+    def end_collection_event_callback(self, data):
+
+        # Clean/purge all metadata
+        self.clean()
+        sys.stdout.flush()
+        LOGGER.info(f"Received: {self.name_end} Event")
+        print(f"Got endOfImageTelemetry({data})")
+        print(f"Collecting END")
 
     def get_ip(self):
         self.ip_address = socket.gethostbyname(socket.gethostname())
@@ -366,7 +390,7 @@ class HSWorker(salobj.BaseCsc):
             param = self.telemetry[k]['value']
             # Only access data payload once
             if name not in self.myData:
-                self.myData[name] = self.SALconn[name].getCurrent(getNone=True)
+                self.myData[name] = self.Remote_get[name]()
                 # Only update metadata if self.myData is defined (not None)
             if self.myData[name] is None:
                 LOGGER.warning("Cannot get keyword: {} from topic: {}".format(k, name))
