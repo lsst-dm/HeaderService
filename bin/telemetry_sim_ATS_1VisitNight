@@ -180,8 +180,11 @@ if __name__ == "__main__":
         LOGGER.info("Sending starIntegration")
         kw = {'imageSequenceName': args.imageSequenceName,
               'imageName': imageName,
-              'imageIndex': k+1,
-              'timeStamp': timeStamp,
+              'imageNumber': k+1,
+              'imageSource': 'AT',
+              'imageController': 'O',
+              'imageDate': DAYOBS,
+              'timeStampAcquisitionStart': timeStamp,
               'exposureTime': args.exptime,
               'priority': 1}
         cam.send_Event("startIntegration", **kw)
