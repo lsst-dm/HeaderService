@@ -12,27 +12,32 @@ async def main():
         atcam = salobj.Controller(name="ATCamera", index=0)
 
         print("Sending StartIntergration")
-        kw = {'imageSequenceName': 'Hello',
-              'imageName': 'CAT',
+        kwInt = {'imageSequenceName': 'Hello',
+              'imageName': 'AT_O_20190510_000003',
               'imageIndex': 3,
               'timeStamp': time.time(),
               'exposureTime': 10,
               'priority': 1}
-        atcam.evt_startIntegration.set_put(**kw)
+        atcam.evt_startIntegration.set_put(**kwInt)
+        time.sleep(1)
 
         print("Sending imageReadoutParameters")
-        kwend = {'overRows': 10,
+        kwRO = {'overRows': 10,
                 'overCols': 20,
                 'preCols':  30,
                 'readCols': 40,
                 'readCols2': 50,
                 'readRows':  60}
-        atcam.evt_imageReadoutParameters.set_put(**kwend)
+        atcam.evt_imageReadoutParameters.set_put(**kwRO)
 
-        time.sleep(3)
-        print("Sending to endOfImageTelemetry")
-        kw['timeStamp'] = time.time()
-        atcam.evt_endOfImageTelemetry.set_put(**kw)
+        print("Sending endReadout")
+        kwEND = kwInt
+        kwEND['timeStamp'] = time.time()
+        atcam.evt_endReadout.set_put(**kwEND)
+
+        print("Sending endOfImageTelemetry")
+        kwEND['timeStamp'] = time.time()
+        atcam.evt_endOfImageTelemetry.set_put(**kwEND)
 
         ## Sending to OFFLINE now
         #print("Sending to OFFLINE")

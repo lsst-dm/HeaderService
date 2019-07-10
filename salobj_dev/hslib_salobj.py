@@ -27,6 +27,7 @@ import sys
 import socket
 import time
 import lsst.ts.salobj as salobj
+import asyncio
 
 spinner = hutils.spinner
 
@@ -58,8 +59,32 @@ class HSWorker(salobj.BaseCsc):
         # Make the connections using saloj.Remote
         self.create_Remotes()
 
+        # Make the connections using saloj.Controller
+        self.create_Controllers()
+
         # Define the callbacks start/end
         self.define_evt_callbacks()
+
+        # Initialize the timeout task
+        self.end_evt_timeout_task = salobj.make_done_future()
+
+    async def close_tasks(self):
+        await super().close_tasks()
+        self.end_evt_timeout_task.cancel()
+
+    async def end_evt_timeout(self, timeout):
+        """Timeout timer for end event telemetry callback"""
+        await asyncio.sleep(timeout)
+        LOGGER.info(f"{self.name_end} not seen in {timeout} seconds; giving up")
+        # Send the error
+        self.timeoutError()
+        self.clean()
+
+    def report_summary_state(self):
+        super().report_summary_state()
+        LOGGER.info(f"Current state is: {self.summary_state.name}")
+        if self.summary_state != salobj.State.ENABLED:
+            self.end_evt_timeout_task.cancel()
 
     def define_evt_callbacks(self):
         """Set the callback functions based on configuration"""
@@ -74,19 +99,25 @@ class HSWorker(salobj.BaseCsc):
         topic   = self.end_collection_event['topic']
         getattr(self.Remote[devname],f"evt_{topic}").callback = self.end_collection_event_callback
 
-    def report_summary_state(self):
-        super().report_summary_state()
-        LOGGER.info(f"Current state is: {self.summary_state.name}")
-
     def start_collection_event_callback(self, data):
+
+        """ The callback function for the START collection event"""
+
+        # If not in ENABLED mode we do nothing
         if self.summary_state != salobj.State.ENABLED:
-            print(f"Current State is {self.summary_state.name}")
+            LOGGER.info(f"Current State is {self.summary_state.name}")
             return
 
         # Clean/purge all metadata
         self.clean()
         sys.stdout.flush()
         LOGGER.info(f"Received: {self.name_start} Event")
+
+        # For safety cancel the timeout task before we start it
+        self.end_evt_timeout_task.cancel()
+        self.end_evt_timeout_task = asyncio.ensure_future(self.end_evt_timeout(timeout=self.timeout_endTelem))
+
+        # Get the filenames from the start event payload.
         self.get_filenames()
         LOGGER.info(f"Extracted value for imageName: {self.imageName}")
 
@@ -95,17 +126,45 @@ class HSWorker(salobj.BaseCsc):
         self.collect(self.keywords_start)
 
         # Now we wait for end event
-        LOGGER.info(f"Waiting for {self.name_end} Eevent")
-        self.end_collection_event_callback
+        LOGGER.info(f"Waiting for {self.name_end} Event")
 
     def end_collection_event_callback(self, data):
 
-        # Clean/purge all metadata
-        self.clean()
-        sys.stdout.flush()
+        """ The callback function for the END collection event"""
+
+        # If not in ENABLED mode we do nothing
+        if self.summary_state != salobj.State.ENABLED:
+            LOGGER.info(f"Current State is {self.summary_state.name}")
+            return
+
         LOGGER.info(f"Received: {self.name_end} Event")
-        print(f"Got endOfImageTelemetry({data})")
-        print(f"Collecting END")
+        if self.end_evt_timeout_task.done():
+            LOGGER.info(f"Not collecting end data because not expecting {self.name_end}")
+            LOGGER.error(f"{self.name_end} seen when not expected; ignored")
+            LOGGER.info(f"Current State is {self.summary_state.name}")
+            return
+
+        # Cancel/stop the timeout task because we got the END callback
+        self.end_evt_timeout_task.cancel()
+        # The creation date of the header file -- now!!
+        self.DATE_HDR = hutils.get_date_utc()
+        # Collect metadata at end of integration
+        LOGGER.info(f"Collecting Metadata END: {self.name_end} Event")
+        self.collect(self.keywords_end)
+        # Collect metadata created by the HeaderService
+        LOGGER.info("Collecting Metadata from HeaderService")
+        self.collect_from_HeaderService()
+        # First we update the header using the information
+        # from the camera geometry
+        self.update_header_geometry()
+        self.update_header()
+        # Write the header
+        self.write()
+        # Announce creation to DDS
+        self.announce()
+        LOGGER.info(f"-------- Done: {self.imageName} -------------------")
+        LOGGER.info(f"-------- Ready for next {self.name_start} -----")
+        self.report_summary_state()
 
     def get_ip(self):
         self.ip_address = socket.gethostbyname(socket.gethostname())
@@ -130,7 +189,7 @@ class HSWorker(salobj.BaseCsc):
         """
         LOGGER.info(f"Starting the CSC with {self.hs_name}")
         super().__init__(name=self.hs_name, index=self.hs_index, initial_state=self.hs_initial_state)
-        LOGGER.info(f"Creating worker for: ATHeaderService")
+        LOGGER.info(f"Creating worker for: {self.hs_name}")
         LOGGER.info(f"Running salobj version: {salobj.__version__}")
         LOGGER.info(f"Starting in State:{self.summary_state.name}")
 
@@ -161,22 +220,24 @@ class HSWorker(salobj.BaseCsc):
                 self.Remote_get[name] = getattr(self.Remote[devname],f"tel_{c['topic']}").get
                 LOGGER.info(f"Storing Remote.tel_{c['topic']}.get() for {name}")
 
-        # We also need to create a Remote for the HeaderService
-        devname = self.hs_name
-        if devname not in self.devices:
-            self.Remote[devname] = salobj.Remote(domain=self.domain, name=devname, index=0)
-            LOGGER.info(f"Created Remote for {devname}")
-
-        # And another optional in case we want to emulate the EFD
-        devname = 'EFD'
-        if self.send_efd_message and devname not in self.devices:
-            self.Remote[devname] = salobj.Remote(domain=self.domain, name=devname, index=0)
-            LOGGER.info(f"Created Remote for {devname}")
-
         # Select the start_collection channel
         self.name_start = get_channel_name(self.start_collection_event)
         # Select the end_collection channel
         self.name_end = get_channel_name(self.end_collection_event)
+
+    def create_Controllers(self):
+        """
+        Create Controllers to send LFO message Event for the HederService
+        and optionally for the EDF if we want to emulate it
+        """
+        # We also need to create a Controller for the HeaderService
+        self.hs_controller = salobj.Controller(name=self.hs_name, index=0)
+        LOGGER.info(f"Created Controller for {self.hs_name}")
+
+        # And another optional in case we want to emulate the EFD
+        if self.send_efd_message:
+            self.efd_controller = salobj.Controller(name='EDF', index=0)
+            LOGGER.info(f"Created Controller for EFD")
 
     def get_channels(self):
         """Extract the unique channel by topic/device"""
@@ -197,11 +258,9 @@ class HSWorker(salobj.BaseCsc):
             LOGGER.info("Created dirname:{}".format(filepath))
 
     def prepare(self):
-
         """
         Set on non-SAL/salobj relate task that need to be prepared
         """
-
         # Logging
         self.setup_logging()
         LOGGER.info("Logging Started")
@@ -230,7 +289,7 @@ class HSWorker(salobj.BaseCsc):
         LOGGER.info("Extracting Image Parameters")
         # Extract from telemetry and identify the channel
         name = get_channel_name(self.imageParam_event)
-        myData = self.SALconn[name].getCurrent(getNone=True)
+        myData = self.Remote_get[name]()
         # exit in case we cannot get data from SAL
         if myData is None:
             LOGGER.warning("Cannot get geometry myData from {}".format(name))
@@ -271,83 +330,16 @@ class HSWorker(salobj.BaseCsc):
         self.filename_HDR = os.path.join(self.filepath, self.format_HDR.format(self.imageName))
         self.filename_FITS = self.format_FITS.format(self.imageName)
 
-    def run_loop(self):
-
-        """Run the loop that waits for a newEvent"""
-        loop_n = 0
-        while True:
-
-            if self.State.current_state != 'ENABLED':
-                sys.stdout.flush()
-                sys.stdout.write("Current State is {} [{}]".format(self.State.current_state, next(spinner)))
-                sys.stdout.write('\r')
-
-            # newEvent (i.e. startIntegration) loop
-            elif self.StartInt.newEvent:
-                # Clean/purge all metadata
-                self.clean()
-                sys.stdout.flush()
-                LOGGER.info("Received: {} Event".format(self.name_start))
-                self.get_filenames()
-                LOGGER.info("Extracted value for imageName: {}".format(self.imageName))
-
-                # Collect metadata at start of integration
-                LOGGER.info("Collecting Metadata START : {} Event".format(self.name_start))
-                self.collect(self.keywords_start)
-
-                # Wait for end Event (i.e. end of telemetry)
-                LOGGER.info("Current State is {} -- waiting for {} event".format(self.State.current_state,
-                                                                                 self.name_end))
-                self.EndTelem.waitEvent(timeout=self.timeout_endTelem,
-                                        after_timeStamp=self.StartInt.timeStamp)
-                # Ensure that EndTelem.newEvent happens AFTER StartInt.newEvent
-                if self.EndTelem.newEvent:
-                    sys.stdout.flush()
-                    LOGGER.info("Received: {} Signal".format(self.name_end))
-                    # The creation date of the header file -- now!!
-                    self.DATE_HDR = hutils.get_date_utc()
-                    # Collect metadata at end of integration
-                    LOGGER.info("Collecting Metadata END: {} Event".format(self.name_end))
-                    self.collect(self.keywords_end)
-                    # Collect metadata created by the HeaderService
-                    LOGGER.info("Collecting Metadata from HeaderService")
-                    self.collect_from_HeaderService()
-                    # First we update the header using the information
-                    # from the camera geometry
-                    self.update_header_geometry()
-                    self.update_header()
-                    # Write the header
-                    self.write()
-                    # Announce creation to DDS
-                    self.announce()
-                    self.EndTelem.newEvent = False
-                    LOGGER.info("------------------------------------------")
-                elif self.EndTelem.timeoutEvent:
-                    sys.stdout.flush()
-                    LOGGER.warning("Received timeout: {} Signal".format(self.name_end))
-                    LOGGER.info("Sending Error Event for timeout")
-                    self.timeoutError()
-                else:
-                    LOGGER.warning("Exited newEvent wait without newEvent or timeout")
-            else:
-                sys.stdout.flush()
-                sys.stdout.write("Current State is {} -- waiting for {} Event...[{}]".format(
-                    self.State.current_state, self.name_start, next(spinner)))
-                sys.stdout.write('\r')
-                time.sleep(self.tsleep)
-
-            time.sleep(self.tsleep)
-            loop_n += 1
-
     def timeoutError(self):
         # Send error code for timeout case
         kw = {'errorCode': 3010,
-              'errorReport': "Timeout while waiting for {} Event".format(self.name_end),
+              'errorReport': f"Timeout while waiting for {self.name_end} Event",
               'traceback': '',
               'priority': 1,
               }
-        self.dmhs.send_Event('errorCode', **kw)
+        self.hs_controller.evt_errorCode.set_put(**kw)
         LOGGER.info("Sent errorCode: {}".format(kw))
+        LOGGER.info(f"Current State is {self.summary_state.name}")
 
     def announce(self):
         # Get the md5 for the header file
@@ -358,7 +350,7 @@ class HSWorker(salobj.BaseCsc):
         # Build the kwargs
         kw = {'byteSize': bytesize,
               'checkSum': md5value,
-              'generator': 'ATHeaderService',
+              'generator': self.hs_name,
               'mimeType': 'FITS',
               'url': self.url_format.format(ip_address=self.ip_address,
                                             port_number=self.port_number,
@@ -367,10 +359,11 @@ class HSWorker(salobj.BaseCsc):
               'version': 1,
               'priority': 1,
               }
-        self.dmhs.send_Event('largeFileObjectAvailable', **kw)
+
+        self.hs_controller.evt_largeFileObjectAvailable.set_put(**kw)
         LOGGER.info("Sent largeFileObjectAvailable: {}".format(kw))
         if self.send_efd_message:
-            self.efd.send_Event('largeFileObjectAvailable', **kw)
+            self.efd_controller.evt_largeFileObjectAvailable.set_put(**kw)
 
     def write(self):
         """ Function to call to write the header"""
