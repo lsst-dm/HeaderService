@@ -10,7 +10,7 @@ logfile: 'www/HeaderService.log'
 vendor: ITL
 
 # The ts_xml version we are using -- for now this is just curated and need to be changed manually when we change version
-ts_xml: "3.10.0"
+ts_xml: "3.10.2"
 
 # port_number for webserver
 port_number: 8000
@@ -58,21 +58,21 @@ telemetry:
   device: ATCamera
   Stype: Event
   topic: startIntegration
-  value: timeStamp
+  value: timeStampAcquisitionStart
   collect_after_event: start_collection_event
 
  DATE-BEG:
   device: ATCamera
   Stype: Event
   topic: startIntegration
-  value: timeStamp
+  value: timeStampAcquisitionStart
   collect_after_event: start_collection_event
 
  DATE-END:
   device: ATCamera
   Stype: Event
   topic: endReadout
-  value: timeStamp
+  value: timeStampAcquisitionStart
   collect_after_event: end_collection_event
 
  OBSID:
@@ -82,11 +82,32 @@ telemetry:
   value: imageName
   collect_after_event: start_collection_event
 
+ TELCODE:
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageSource
+  collect_after_event: start_collection_event
+
+ CONTRLLR:
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageController
+  collect_after_event: start_collection_event
+
+ DAYOBS:
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageDate
+  collect_after_event: start_collection_event
+
  SEQNUM:
   device: ATCamera
   Stype: Event
   topic: startIntegration
-  value: imageIndex
+  value: imageNumber
   collect_after_event: start_collection_event
 
  GROUPID:

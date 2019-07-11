@@ -256,8 +256,10 @@ class HSworker:
                 # Wait for end Event (i.e. end of telemetry)
                 LOGGER.info("Current State is {} -- waiting for {} event".format(self.State.current_state,
                                                                                  self.name_end))
+                # Get the timeStampAcquisitionStart for StartInt
+                myData = self.StartInt.getCurrent(getNone=True)
                 self.EndTelem.waitEvent(timeout=self.timeout_endTelem,
-                                        after_timeStamp=self.StartInt.timeStamp)
+                                        after_timeStamp=myData.timeStampAcquisitionStart)
                 # Ensure that EndTelem.newEvent happens AFTER StartInt.newEvent
                 if self.EndTelem.newEvent:
                     sys.stdout.flush()
@@ -374,12 +376,7 @@ class HSworker:
         self.metadata['MJD-OBS'] = self.DATE_OBS.mjd
         self.metadata['MJD-BEG'] = self.DATE_BEG.mjd
         self.metadata['MJD-END'] = self.DATE_END.mjd
-
         self.metadata['FILENAME'] = self.filename_FITS
-        # THIS IS AN UGLY HACK TO MAKE IT WORK SEQNUM
-        # FIX THIS -- FELIPE, TIAGO, MICHAEL and TIM J. are accomplices
-        self.metadata['SEQNUM'] = int(self.metadata['OBSID'].split('_')[-1])
-        self.metadata['DAYOBS'] = self.metadata['OBSID'].split('_')[2]
 
         # The EL/AZ at start
         if 'ELSTART' and 'AZSTART' in self.metadata:

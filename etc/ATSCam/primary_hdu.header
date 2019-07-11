@@ -48,8 +48,8 @@ AZEND   =                      / [deg] Telescope azimuth angle at end
 AMEND   =                      / Airmass at end
 
         ---- Image-identifying used to build OBS-ID ----
-TELCODE = 'AT'                 / The code for the telecope
-CONTRLLR=                      / The controller (e.g. O for OCS, C for CCS)
+TELCODE =                      / The code for the telecope (AT/CC/MC)
+CONTRLLR=                      / The controller (e.g. O for OCS, C for (A)CCS)
 DAYOBS  =                      / The observation day as defined by image name
 SEQNUM  =                      / The sequence number from the image name
 GROUPID =                      /
