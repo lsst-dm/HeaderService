@@ -49,7 +49,7 @@ AMEND   =                      / Airmass at end
 
         ---- Image-identifying used to build OBS-ID ----
 TELCODE =                      / The code for the telecope (AT/CC/MC)
-CONTRLLR=                      / The controller (e.g. O for OCS, C for CCS)
+CONTRLLR=                      / The controller (e.g. O for OCS, C for (A)CCS)
 DAYOBS  =                      / The observation day as defined by image name
 SEQNUM  =                      / The sequence number from the image name
 GROUPID =                      /
