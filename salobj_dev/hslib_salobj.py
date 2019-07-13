@@ -378,18 +378,22 @@ class HSWorker(salobj.BaseCsc):
         """ Collect meta-data from the telemetry-connected channels
         and store it in the 'metadata' dictionary"""
 
+        # Make sure the myData payload is reset before collection
+        # to clean up data from previous events/telemetry
+        self.myData = {}
         for k in keys:
             name = get_channel_name(self.telemetry[k])
             param = self.telemetry[k]['value']
-            # Only access data payload once
+            # Access data payload only once
             if name not in self.myData:
                 self.myData[name] = self.Remote_get[name]()
                 # Only update metadata if self.myData is defined (not None)
             if self.myData[name] is None:
-                LOGGER.warning("Cannot get keyword: {} from topic: {}".format(k, name))
+                LOGGER.warning(f"Cannot get keyword: {k} from topic: {name}")
             else:
                 self.metadata[k] = getattr(self.myData[name], param)
-
+                LOGGER.info(f"Extacted {k}={self.metadata[k]} from topic: {name}")
+                
     def collect_from_HeaderService(self):
         """
         Collect and update custom meta-data generated or transformed by
