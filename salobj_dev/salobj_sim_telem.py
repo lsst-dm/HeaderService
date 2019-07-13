@@ -8,9 +8,17 @@ import HeaderService.camera_coords as camera_coords
 import random
 
 import lsst.ts.salobj as salobj
+<<<<<<< HEAD
 
 LOGGER = hutils.create_logger()
 
+=======
+import asyncio
+
+LOGGER = hutils.create_logger()
+
+
+>>>>>>> c67fc0281ea4296070dfc3a1d9ada00edf17dee1
 # Get the info from the camera_coords library for and E2V sensor
 _GEO = camera_coords.CCDGeom('E2V')
 
@@ -67,12 +75,23 @@ def cmdline():
     return args
 
 
+<<<<<<< HEAD
 if __name__ == "__main__":
 
     # Get the command line arguments
     args = cmdline()
     
     # Create handlers for the CSCs we want to simulate messages
+=======
+
+async def main():
+
+    # Get the command line arguments
+    args = cmdline()
+
+    
+    # Create handler for CSCs we want to simulate
+>>>>>>> c67fc0281ea4296070dfc3a1d9ada00edf17dee1
     cam = salobj.Controller(name="ATCamera", index=0)
     ptg = salobj.Controller(name="ATPtg", index=0)
     mcs = salobj.Controller(name="ATMCS", index=0)
@@ -113,17 +132,27 @@ if __name__ == "__main__":
     spec.evt_reportedDisperserPosition.set_put(**kwDP)
     LOGGER.info("Sending reportedDisperserPosition")
 
+<<<<<<< HEAD
     # Linear Stage position for ATSpectrograph
+=======
+    # Linear Stage position
+>>>>>>> c67fc0281ea4296070dfc3a1d9ada00edf17dee1
     kwLS = {'position': 2,  # Made up
             'priority': 1}
     spec.evt_reportedLinearStagePosition.set_put(**kwLS)
     LOGGER.info("Sending reportedLinearStagePosition")
 
+<<<<<<< HEAD
     LOGGER.info("---Sleeping for 1 s ---")
     time.sleep(1)
     LOGGER.info("---Starting Image loop---")
 
     # Loop over NSequence
+=======
+    LOGGER.info("---Starting Image loop---")
+
+    # Loop over nsequence
+>>>>>>> c67fc0281ea4296070dfc3a1d9ada00edf17dee1
     for k in range(args.NSequence):
 
         timeStamp = time.time()
@@ -139,25 +168,41 @@ if __name__ == "__main__":
             DAYOBS = DATE_OBS.datetime.strftime('%Y%m%d')
         imageName = "{}_{}_{}_{:06d}".format(args.telcode, args.controller, DAYOBS, seqN)
 
+<<<<<<< HEAD
         # Send CCD temperature telemetry using a random generator
+=======
+        # send CCD temperature telemetry
+>>>>>>> c67fc0281ea4296070dfc3a1d9ada00edf17dee1
         kwCCD = {'ccdTemp0': random.uniform(-30,0)}
         cam.tel_wreb.set_put(**kwCCD)
         LOGGER.info("Sending wreb")
 
+<<<<<<< HEAD
         # The START telemetry for Airmass using ATPtg.prospectiveTargetStatus
+=======
+        # start telemetry for Airmass using ATPtg.prospectiveTargetStatus
+>>>>>>> c67fc0281ea4296070dfc3a1d9ada00edf17dee1
         kwTA = {'timestamp': time.time(),
                 'ha': args.ha,
                 'airmass': args.airmass}
         ptg.tel_prospectiveTargetStatus.set_put(**kwTA)
         LOGGER.info("Sending prospectiveTargetStatus")
 
+<<<<<<< HEAD
         # The START telemetry for EL and AZ from the ATMCS.mountEncoders
+=======
+        # start telemetry for EL and AZ from the ATMCS.mountEncoders
+>>>>>>> c67fc0281ea4296070dfc3a1d9ada00edf17dee1
         kwMC = {'elevationCalculatedAngle': args.el,
                 'azimuthCalculatedAngle': args.az}
         mcs.tel_mountEncoders.set_put(**kwMC)
         LOGGER.info("Sending mountEncoders")
         
+<<<<<<< HEAD
         # Send the startIntegration for image: k
+=======
+        # Send startIntegration k
+>>>>>>> c67fc0281ea4296070dfc3a1d9ada00edf17dee1
         LOGGER.info("Sending starIntegration")
         kwInt = {'imageSequenceName': args.imageSequenceName,
                 'imageName': imageName,
@@ -168,7 +213,11 @@ if __name__ == "__main__":
         cam.evt_startIntegration.set_put(**kwInt)
         LOGGER.info("Sending startIntergration: {}".format(kwInt))
         LOGGER.info(f"Waiting for {args.exptime} sec")
+<<<<<<< HEAD
         time.sleep(args.exptime)
+=======
+        await asyncio.sleep(args.exptime)
+>>>>>>> c67fc0281ea4296070dfc3a1d9ada00edf17dee1
 
         # Send startReadout Event after integration is finished
         LOGGER.info("Sending startReadout")
@@ -178,6 +227,7 @@ if __name__ == "__main__":
         LOGGER.info("Sending Measured Exptime")
         cam.evt_shutterMotionProfile.set_put(measuredExposureTime=args.exptime+0.35)
 
+<<<<<<< HEAD
         # The END telemetry for Airmass using ATPtg.prospectiveTargetStatus
         kwTA = {'timestamp': time.time(),
                 'ha': str(float(args.ha)*1.01),
@@ -188,6 +238,18 @@ if __name__ == "__main__":
         # The END telemetry for EL and AZ from the ATMCS.mountEncoders
         kwMC = {'elevationCalculatedAngle': args.el*1.01,
                 'azimuthCalculatedAngle': args.az*1.01}
+=======
+        # end telemetry for Airmass using ATPtg.prospectiveTargetStatus
+        kwTA = {'timestamp': time.time(),
+                'ha': str(float(args.ha)*1.1),
+                'airmass': args.airmass*1.1}
+        ptg.tel_prospectiveTargetStatus.set_put(**kwTA)
+        LOGGER.info("Sending prospectiveTargetStatus")
+
+        # end telemetry for EL and AZ from the ATMCS.mountEncoders
+        kwMC = {'elevationCalculatedAngle': args.el*1.1,
+                'azimuthCalculatedAngle': args.az*1.1}
+>>>>>>> c67fc0281ea4296070dfc3a1d9ada00edf17dee1
         mcs.tel_mountEncoders.set_put(**kwMC)
         LOGGER.info("Sending mountEncoders")
 
@@ -202,5 +264,12 @@ if __name__ == "__main__":
         cam.evt_endOfImageTelemetry.set_put(**kwInt)
 
 
+<<<<<<< HEAD
     
+=======
+if __name__ == "__main__":
+
+    # Get the args from the command-line
+    asyncio.get_event_loop().run_until_complete(main())
+>>>>>>> c67fc0281ea4296070dfc3a1d9ada00edf17dee1
 
