@@ -25,6 +25,7 @@ version = __version__
 
 from . import hutils
 from . import hslib
+from . import hslib_salobj
 from . import camera_coords
 from .hutils import HDRTEMPL_ATSCam
 from .camera_coords import CCDGeom

@@ -2,8 +2,7 @@
 
 import os
 import logging
-#import hslib_salobj_simple as hslib_salobj
-import hslib_salobj
+import HeaderService.hslib_salobj as hslib_salobj
 import argparse
 import yaml
 import datetime
