@@ -3,7 +3,7 @@
 import time
 import argparse
 import HeaderService.hutils as hutils
-#import HeaderService.hscalc as hscalc
+# import HeaderService.hscalc as hscalc
 import HeaderService.camera_coords as camera_coords
 import random
 
@@ -13,6 +13,7 @@ LOGGER = hutils.create_logger()
 
 # Get the info from the camera_coords library for and E2V sensor
 _GEO = camera_coords.CCDGeom('E2V')
+
 
 def cmdline():
 
@@ -76,7 +77,7 @@ if __name__ == "__main__":
     cam = salobj.Controller(name="ATCamera", index=0)
     ptg = salobj.Controller(name="ATPtg", index=0)
     mcs = salobj.Controller(name="ATMCS", index=0)
-    spec = salobj.Controller(name="ATSpectrograph",index=0)
+    spec = salobj.Controller(name="ATSpectrograph", index=0)
 
     # Camera Geometry
     # Send sub-set of imageReadoutParameters, we populate only a few fields
@@ -140,7 +141,7 @@ if __name__ == "__main__":
         imageName = "{}_{}_{}_{:06d}".format(args.telcode, args.controller, DAYOBS, seqN)
 
         # Send CCD temperature telemetry using a random generator
-        kwCCD = {'ccdTemp0': random.uniform(-30,0)}
+        kwCCD = {'ccdTemp0': random.uniform(-30, 0)}
         cam.tel_wreb.set_put(**kwCCD)
         LOGGER.info("Sending wreb")
 
@@ -160,11 +161,11 @@ if __name__ == "__main__":
         # Send the startIntegration for image: k
         LOGGER.info("Sending starIntegration")
         kwInt = {'imageSequenceName': args.imageSequenceName,
-                'imageName': imageName,
-                'imageIndex': k+1,
-                'timeStamp': timeStamp,
-                'exposureTime': args.exptime,
-                'priority': 1}
+                 'imageName': imageName,
+                 'imageIndex': k+1,
+                 'timeStamp': timeStamp,
+                 'exposureTime': args.exptime,
+                 'priority': 1}
         cam.evt_startIntegration.set_put(**kwInt)
         LOGGER.info("Sending startIntergration: {}".format(kwInt))
         LOGGER.info(f"Waiting for {args.exptime} sec")
@@ -200,4 +201,3 @@ if __name__ == "__main__":
         LOGGER.info("Sending endOfImageTelemetry")
         kwInt['timeStamp'] = time.time()
         cam.evt_endOfImageTelemetry.set_put(**kwInt)
-

@@ -25,7 +25,6 @@ import logging
 import os
 import sys
 import socket
-import time
 import lsst.ts.salobj as salobj
 import asyncio
 
@@ -91,13 +90,13 @@ class HSWorker(salobj.BaseCsc):
 
         # Select the start_collection callback
         devname = self.start_collection_event['device']
-        topic   = self.start_collection_event['topic']
-        getattr(self.Remote[devname],f"evt_{topic}").callback = self.start_collection_event_callback
+        topic = self.start_collection_event['topic']
+        getattr(self.Remote[devname], f"evt_{topic}").callback = self.start_collection_event_callback
 
         # Select the end_collection callback
         devname = self.end_collection_event['device']
-        topic   = self.end_collection_event['topic']
-        getattr(self.Remote[devname],f"evt_{topic}").callback = self.end_collection_event_callback
+        topic = self.end_collection_event['topic']
+        getattr(self.Remote[devname], f"evt_{topic}").callback = self.end_collection_event_callback
 
     def start_collection_event_callback(self, data):
 
@@ -214,10 +213,10 @@ class HSWorker(salobj.BaseCsc):
                 LOGGER.info(f"Created Remote for {devname}")
             # capture the evt.get() function for the channel
             if c['Stype'] == 'Event':
-                self.Remote_get[name] = getattr(self.Remote[devname],f"evt_{c['topic']}").get
+                self.Remote_get[name] = getattr(self.Remote[devname], f"evt_{c['topic']}").get
                 LOGGER.info(f"Storing Remote.evt_{c['topic']}.get() for {name}")
             if c['Stype'] == 'Telemetry':
-                self.Remote_get[name] = getattr(self.Remote[devname],f"tel_{c['topic']}").get
+                self.Remote_get[name] = getattr(self.Remote[devname], f"tel_{c['topic']}").get
                 LOGGER.info(f"Storing Remote.tel_{c['topic']}.get() for {name}")
 
         # Select the start_collection channel
@@ -393,7 +392,7 @@ class HSWorker(salobj.BaseCsc):
             else:
                 self.metadata[k] = getattr(self.myData[name], param)
                 LOGGER.info(f"Extacted {k}={self.metadata[k]} from topic: {name}")
-                
+
     def collect_from_HeaderService(self):
         """
         Collect and update custom meta-data generated or transformed by
@@ -421,9 +420,11 @@ def get_channel_name(c):
     """ Standard formatting for the name of a channel across modules"""
     return '{}_{}'.format(c['device'], c['topic'])
 
+
 def get_channel_device(c):
     """ Standard formatting for the name of a channel across modules"""
     return c['device']
+
 
 def extract_telemetry_channels(telem, start_collection_event=None,
                                end_collection_event=None,

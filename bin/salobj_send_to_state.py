@@ -2,8 +2,7 @@
 
 import lsst.ts.salobj as salobj
 import asyncio
-import time
-import sys
+
 
 def cmdline():
 
@@ -18,10 +17,11 @@ def cmdline():
     args = parser.parse_args()
     return args
 
+
 async def main(args):
     async with salobj.Domain() as domain:
         aths = salobj.Remote(domain=domain, name=args.csc_name, index=0)
-        newstate = getattr(salobj.State,args.state)
+        newstate = getattr(salobj.State, args.state)
         print(f"Sending {args.csc_name} to: {args.state}")
         await salobj.set_summary_state(remote=aths, state=newstate)
         print(f"Done")
@@ -29,4 +29,3 @@ async def main(args):
 if __name__ == "__main__":
     args = cmdline()
     asyncio.get_event_loop().run_until_complete(main(args))
-

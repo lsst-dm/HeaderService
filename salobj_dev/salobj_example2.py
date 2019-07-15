@@ -76,10 +76,6 @@ class HSWorker(salobj.BaseCsc):
         self.myData = {}
         self.metadata = {}
 
-    def report_summary_state(self):
-        super().report_summary_state()
-        print(f"State is: {self.summary_state.name}")
-
 
 if __name__ == "__main__":
 
