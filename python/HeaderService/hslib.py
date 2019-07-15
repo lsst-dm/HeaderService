@@ -22,6 +22,7 @@
 import salpytools
 import HeaderService
 import HeaderService.hutils as hutils
+import HeaderService.hscalc as hscalc
 import logging
 import os
 import sys
@@ -255,14 +256,16 @@ class HSworker:
                 # Wait for end Event (i.e. end of telemetry)
                 LOGGER.info("Current State is {} -- waiting for {} event".format(self.State.current_state,
                                                                                  self.name_end))
+                # Get the timeStampAcquisitionStart for StartInt
+                myData = self.StartInt.getCurrent(getNone=True)
                 self.EndTelem.waitEvent(timeout=self.timeout_endTelem,
-                                        after_timeStamp=self.StartInt.timeStamp)
+                                        after_timeStamp=myData.timeStampAcquisitionStart)
                 # Ensure that EndTelem.newEvent happens AFTER StartInt.newEvent
                 if self.EndTelem.newEvent:
                     sys.stdout.flush()
                     LOGGER.info("Received: {} Signal".format(self.name_end))
-                    # The creation date of the header file -- now!!
-                    self.DATE_HDR = hutils.get_date_utc()
+                    # Store the creation date of the header file -- i.e. now!!
+                    self.metadata['DATE'] = time.time()
                     # Collect metadata at end of integration
                     LOGGER.info("Collecting Metadata END: {} Event".format(self.name_end))
                     self.collect(self.keywords_end)
@@ -359,22 +362,49 @@ class HSworker:
         Collect and update custom meta-data generated or transformed by
         the HeaderService
         """
-        self.DATE_OBS = hutils.get_date_utc(self.metadata['DATE-OBS'])
-        self.DATE_BEG = hutils.get_date_utc(self.metadata['DATE-BEG'])
-        self.DATE_END = hutils.get_date_utc(self.metadata['DATE-END'])
+
+        # Reformat and calculate dates based on different timeStamps
+        self.DATE = hscalc.get_date_utc(self.metadata['DATE'])
+        self.DATE_OBS = hscalc.get_date_utc(self.metadata['DATE-OBS'])
+        self.DATE_BEG = hscalc.get_date_utc(self.metadata['DATE-BEG'])
+        self.DATE_END = hscalc.get_date_utc(self.metadata['DATE-END'])
+        self.metadata['DATE'] = self.DATE.isot
         self.metadata['DATE-OBS'] = self.DATE_OBS.isot
         self.metadata['DATE-BEG'] = self.DATE_BEG.isot
         self.metadata['DATE-END'] = self.DATE_END.isot
+        self.metadata['MJD'] = self.DATE.mjd
         self.metadata['MJD-OBS'] = self.DATE_OBS.mjd
         self.metadata['MJD-BEG'] = self.DATE_BEG.mjd
         self.metadata['MJD-END'] = self.DATE_END.mjd
-        self.metadata['DATE'] = self.DATE_HDR.isot
-        self.metadata['MJD'] = self.DATE_HDR.mjd
         self.metadata['FILENAME'] = self.filename_FITS
-        # THIS IS AN UGLY HACK TO MAKE IT WORK SEQNUM
-        # FIX THIS -- FELIPE, TIAGO, MICHAEL and TIM J. are accomplices
-        self.metadata['SEQNUM'] = int(self.metadata['OBSID'].split('_')[-1])
-        self.metadata['DAYOBS'] = self.metadata['OBSID'].split('_')[2]
+
+        # The EL/AZ at start
+        if 'ELSTART' and 'AZSTART' in self.metadata:
+            LOGGER.info("Computing RA/DEC from ELSTART/AZSTART")
+            ra, dec = hscalc.get_radec_from_altaz(alt=self.metadata['ELSTART'],
+                                                  az=self.metadata['AZSTART'],
+                                                  obstime=self.DATE_BEG,
+                                                  lat=self.HDR.header['PRIMARY']['OBS-LAT'],
+                                                  lon=self.HDR.header['PRIMARY']['OBS-LONG'],
+                                                  height=self.HDR.header['PRIMARY']['OBS-ELEV'])
+            self.metadata['RASTART'] = ra
+            self.metadata['DECSTART'] = dec
+        else:
+            LOGGER.info("No 'ELSTART' and 'AZSTART'")
+
+        # The EL/AZ at end
+        if 'ELEND' and 'AZEND' in self.metadata:
+            LOGGER.info("Computing RA/DEC from ELEND/AZEND")
+            ra, dec = hscalc.get_radec_from_altaz(alt=self.metadata['ELEND'],
+                                                  az=self.metadata['AZEND'],
+                                                  obstime=self.DATE_BEG,
+                                                  lat=self.HDR.header['PRIMARY']['OBS-LAT'],
+                                                  lon=self.HDR.header['PRIMARY']['OBS-LONG'],
+                                                  height=self.HDR.header['PRIMARY']['OBS-ELEV'])
+            self.metadata['RAEND'] = ra
+            self.metadata['DECEND'] = dec
+        else:
+            LOGGER.info("No 'ELEND' and 'AZEND'")
 
 
 def get_channel_name(c):
