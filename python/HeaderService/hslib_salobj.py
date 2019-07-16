@@ -21,14 +21,14 @@
 
 import HeaderService
 import HeaderService.hutils as hutils
+import HeaderService.hscalc as hscalc
 import logging
 import os
 import sys
 import socket
 import lsst.ts.salobj as salobj
 import asyncio
-
-spinner = hutils.spinner
+import time
 
 LOGGER = logging.getLogger(__name__)
 
@@ -45,11 +45,10 @@ class HSWorker(salobj.BaseCsc):
         for k, v in list(keys.items()):
             setattr(self, k, v)
 
-        # Get Ready non-SAL related tasks
+        # Get ready non-SAL related tasks
         self.prepare()
 
         # Extract the unique channel by topic/device
-        LOGGER.info("Extracting Telemetry channels from telemetry dictionary")
         self.get_channels()
 
         # Create a salobj.BaseCsc for the HeaderService
@@ -61,13 +60,14 @@ class HSWorker(salobj.BaseCsc):
         # Make the connections using saloj.Controller
         self.create_Controllers()
 
-        # Define the callbacks start/end
+        # Define the callbacks for start/end
         self.define_evt_callbacks()
 
         # Initialize the timeout task
         self.end_evt_timeout_task = salobj.make_done_future()
 
     async def close_tasks(self):
+        """Close tasks on super and evt timeout"""
         await super().close_tasks()
         self.end_evt_timeout_task.cancel()
 
@@ -80,6 +80,7 @@ class HSWorker(salobj.BaseCsc):
         self.clean()
 
     def report_summary_state(self):
+        """Call to report_summary_state and LOGGER"""
         super().report_summary_state()
         LOGGER.info(f"Current state is: {self.summary_state.name}")
         if self.summary_state != salobj.State.ENABLED:
@@ -99,7 +100,6 @@ class HSWorker(salobj.BaseCsc):
         getattr(self.Remote[devname], f"evt_{topic}").callback = self.end_collection_event_callback
 
     def start_collection_event_callback(self, data):
-
         """ The callback function for the START collection event"""
 
         # If not in ENABLED mode we do nothing
@@ -128,7 +128,6 @@ class HSWorker(salobj.BaseCsc):
         LOGGER.info(f"Waiting for {self.name_end} Event")
 
     def end_collection_event_callback(self, data):
-
         """ The callback function for the END collection event"""
 
         # If not in ENABLED mode we do nothing
@@ -145,8 +144,8 @@ class HSWorker(salobj.BaseCsc):
 
         # Cancel/stop the timeout task because we got the END callback
         self.end_evt_timeout_task.cancel()
-        # The creation date of the header file -- now!!
-        self.DATE_HDR = hutils.get_date_utc()
+        # Store the creation date of the header file -- i.e. now!!
+        self.metadata['DATE'] = time.time()
         # Collect metadata at end of integration
         LOGGER.info(f"Collecting Metadata END: {self.name_end} Event")
         self.collect(self.keywords_end)
@@ -159,10 +158,11 @@ class HSWorker(salobj.BaseCsc):
         self.update_header()
         # Write the header
         self.write()
-        # Announce creation to DDS
+        # Announce creation event
         self.announce()
         LOGGER.info(f"-------- Done: {self.imageName} -------------------")
         LOGGER.info(f"-------- Ready for next {self.name_start} -----")
+        # Report and print the state
         self.report_summary_state()
 
     def get_ip(self):
@@ -394,26 +394,58 @@ class HSWorker(salobj.BaseCsc):
                 LOGGER.info(f"Extacted {k}={self.metadata[k]} from topic: {name}")
 
     def collect_from_HeaderService(self):
+
         """
         Collect and update custom meta-data generated or transformed by
         the HeaderService
         """
-        self.DATE_OBS = hutils.get_date_utc(self.metadata['DATE-OBS'])
-        self.DATE_BEG = hutils.get_date_utc(self.metadata['DATE-BEG'])
-        self.DATE_END = hutils.get_date_utc(self.metadata['DATE-END'])
+
+        # Reformat and calculate dates based on different timeStamps
+        self.DATE = hscalc.get_date_utc(self.metadata['DATE'])
+        self.DATE_OBS = hscalc.get_date_utc(self.metadata['DATE-OBS'])
+        self.DATE_BEG = hscalc.get_date_utc(self.metadata['DATE-BEG'])
+        self.DATE_END = hscalc.get_date_utc(self.metadata['DATE-END'])
+        self.metadata['DATE'] = self.DATE.isot
         self.metadata['DATE-OBS'] = self.DATE_OBS.isot
         self.metadata['DATE-BEG'] = self.DATE_BEG.isot
         self.metadata['DATE-END'] = self.DATE_END.isot
+        self.metadata['MJD'] = self.DATE.mjd
         self.metadata['MJD-OBS'] = self.DATE_OBS.mjd
         self.metadata['MJD-BEG'] = self.DATE_BEG.mjd
         self.metadata['MJD-END'] = self.DATE_END.mjd
-        self.metadata['DATE'] = self.DATE_HDR.isot
-        self.metadata['MJD'] = self.DATE_HDR.mjd
         self.metadata['FILENAME'] = self.filename_FITS
         # THIS IS AN UGLY HACK TO MAKE IT WORK SEQNUM
         # FIX THIS -- FELIPE, TIAGO, MICHAEL and TIM J. are accomplices
         self.metadata['SEQNUM'] = int(self.metadata['OBSID'].split('_')[-1])
         self.metadata['DAYOBS'] = self.metadata['OBSID'].split('_')[2]
+
+        # The EL/AZ at start
+        if 'ELSTART' and 'AZSTART' in self.metadata:
+            LOGGER.info("Computing RA/DEC from ELSTART/AZSTART")
+            ra, dec = hscalc.get_radec_from_altaz(alt=self.metadata['ELSTART'],
+                                                  az=self.metadata['AZSTART'],
+                                                  obstime=self.DATE_BEG,
+                                                  lat=self.HDR.header['PRIMARY']['OBS-LAT'],
+                                                  lon=self.HDR.header['PRIMARY']['OBS-LONG'],
+                                                  height=self.HDR.header['PRIMARY']['OBS-ELEV'])
+            self.metadata['RASTART'] = ra
+            self.metadata['DECSTART'] = dec
+        else:
+            LOGGER.info("No 'ELSTART' and 'AZSTART'")
+
+        # The EL/AZ at end
+        if 'ELEND' and 'AZEND' in self.metadata:
+            LOGGER.info("Computing RA/DEC from ELEND/AZEND")
+            ra, dec = hscalc.get_radec_from_altaz(alt=self.metadata['ELEND'],
+                                                  az=self.metadata['AZEND'],
+                                                  obstime=self.DATE_BEG,
+                                                  lat=self.HDR.header['PRIMARY']['OBS-LAT'],
+                                                  lon=self.HDR.header['PRIMARY']['OBS-LONG'],
+                                                  height=self.HDR.header['PRIMARY']['OBS-ELEV'])
+            self.metadata['RAEND'] = ra
+            self.metadata['DECEND'] = dec
+        else:
+            LOGGER.info("No 'ELEND' and 'AZEND'")
 
 
 def get_channel_name(c):

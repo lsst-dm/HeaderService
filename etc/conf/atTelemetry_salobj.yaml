@@ -1,0 +1,269 @@
+# Configuration file for the AuxTelescope
+
+# Default logging level
+loglevel: 'INFO'
+
+# Path to the log location
+logfile: 'www/HeaderService.log'
+
+# The camera vendor
+vendor: ITL
+
+# The ts_xml version we are using -- for now this is just curated and need to be changed manually when we change version
+ts_xml: "3.10.0"
+
+# port_number for webserver
+port_number: 8000
+
+# The URL format to be used
+url_format: "http://{ip_address}:{port_number}/{filename_HDR}"
+
+# Default write_mode (fits or string)
+write_mode: fits
+
+# Timeout for waiting for end of Telemetry event (in seconds)
+timeout_endTelem: 120
+
+# Default string delimeter (string mode only)
+hdu_delimiter: END
+
+# The file naming event source and definitions
+filepath: 'www/DMHS_filerepo'
+format_HDR: "{}.header"
+format_FITS: "{}.fits"
+imageName_event:
+    device: ATCamera
+    topic: startIntegration
+    value: imageName
+
+# The Events that we use to define where we collect
+start_collection_event:
+    device: ATCamera
+    topic: startIntegration
+
+end_collection_event:
+    device: ATCamera
+    topic: endOfImageTelemetry
+
+# The event for the image readout paramters
+imageParam_event:
+    device: ATCamera
+    topic: imageReadoutParameters
+
+# Telemetry values for images meta-data
+# https://confluence.lsstcorp.org/pages/viewpage.action?spaceKey=SYSENG&title=Auxiliary+Telescope+Header+Information+Topic+Mapping
+telemetry:
+
+ DATE-OBS:
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: timeStamp
+  collect_after_event: start_collection_event
+
+ DATE-BEG:
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: timeStamp
+  collect_after_event: start_collection_event
+
+ DATE-END:
+  device: ATCamera
+  Stype: Event
+  topic: endReadout
+  value: timeStamp
+  collect_after_event: end_collection_event
+
+ OBSID:
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageName
+  collect_after_event: start_collection_event
+
+ SEQNUM:
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageIndex
+  collect_after_event: start_collection_event
+
+ GROUPID:
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageSequenceName
+  collect_after_event: start_collection_event
+
+# ----------------------------------------
+# -- still not available from SAL --------
+# OBSTYPE:
+#   device: ATCamera
+#   Stype: Event
+#   topic: startIntegration
+#   value: imageType
+#   collect_after_event: start_collection_event
+# ---------------------------------------------
+
+ EXPTIME:
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: exposureTime
+  collect_after_event: start_collection_event
+
+ SHUTTIME:
+  device: ATCamera
+  Stype: Event
+  topic: shutterMotionProfile
+  value: measuredExposureTime
+  collect_after_event: end_collection_event
+
+ CCDTEMP:
+  device: ATCamera
+  Stype: Telemetry
+  topic: wreb
+  value: ccdTemp0
+  collect_after_event: start_collection_event
+
+# --- Pointing Information ---------------
+
+ RA:
+  device: ATPtg
+  Stype: Event
+  topic: currentTarget
+  value: ra
+  collect_after_event: start_collection_event
+
+ DEC:
+  device: ATPtg
+  Stype: Event
+  topic: currentTarget
+  value: declination
+  collect_after_event: start_collection_event
+
+# --- Will come from ATMCS rotator angle when available
+# ROTPA:
+#  device: ATPtg
+#  Stype: Event
+#  topic: currentTarget
+#  value: rotPA
+#  collect_after_event: start_collection_event
+
+ HASTART:
+  device: ATPtg
+  Stype: Telemetry
+  topic: prospectiveTargetStatus
+  value: ha
+  collect_after_event: start_collection_event
+
+ AMSTART:
+  device: ATPtg
+  Stype: Telemetry
+  topic: prospectiveTargetStatus
+  value: airmass
+  collect_after_event: start_collection_event
+
+ ELSTART:
+  device: ATMCS
+  Stype: Telemetry
+  topic: mountEncoders
+  value: elevationCalculatedAngle
+  collect_after_event: start_collection_event
+
+ AZSTART:
+  device: ATMCS
+  Stype: Telemetry
+  topic: mountEncoders
+  value: azimuthCalculatedAngle
+  collect_after_event: start_collection_event
+
+ HAEND:
+  device: ATPtg
+  Stype: Telemetry
+  topic: prospectiveTargetStatus
+  value: ha
+  collect_after_event: end_collection_event
+
+ AMEND:
+  device: ATPtg
+  Stype: Telemetry
+  topic: prospectiveTargetStatus
+  value: airmass
+  collect_after_event: end_collection_event
+
+ ELEND:
+  device: ATMCS
+  Stype: Telemetry
+  topic: mountEncoders
+  value: elevationCalculatedAngle
+  collect_after_event: end_collection_event
+
+ AZEND:
+  device: ATMCS
+  Stype: Telemetry
+  topic: mountEncoders
+  value: azimuthCalculatedAngle
+  collect_after_event: end_collection_event
+
+# --------------------------------------------------------------
+# ----- Filter/Grating information from ATSpectrograph ---------
+
+ FILTER:
+  device: ATSpectrograph
+  Stype: Event
+  topic: reportedFilterPosition
+  value: name
+  collect_after_event: start_collection_event
+
+ FILTPOS:
+  device: ATSpectrograph
+  Stype: Event
+  topic: reportedFilterPosition
+  value: position
+  collect_after_event: start_collection_event
+
+ GRATING:
+  device: ATSpectrograph
+  Stype: Event
+  topic: reportedDisperserPosition
+  value: name
+  collect_after_event: start_collection_event
+
+ GRATPOS:
+  device: ATSpectrograph
+  Stype: Event
+  topic: reportedDisperserPosition
+  value: position
+  collect_after_event: start_collection_event
+
+ LINSPOS:
+  device: ATSpectrograph
+  Stype: Event
+  topic: reportedLinearStagePosition
+  value: position
+  collect_after_event: start_collection_event
+
+# --------------------------------------------------------------
+
+ OVERH:
+  device: ATCamera
+  Stype: Event
+  topic: imageReadoutParameters
+  value: overCols
+  collect_after_event: end_collection_event
+
+ OVERV:
+  device: ATCamera
+  Stype: Event
+  topic: imageReadoutParameters
+  value: overRows
+  collect_after_event: end_collection_event
+
+ PREH:
+  device: ATCamera
+  Stype: Event
+  topic: imageReadoutParameters
+  value: preCols
+  collect_after_event: end_collection_event
