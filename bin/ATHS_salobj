@@ -34,21 +34,30 @@ def cmdline():
     parser.add_argument("--url_format", action="store",
                         default="http://{ip_address}:{port_number}/{filename_HDR}",
                         help="The URL format to be used")
-    parser.add_argument("--tsleep", action="store", default=0.1, type=float,
-                        help="Sleep Time for loop")
     parser.add_argument("--timeout_endTelem", action="store", type=float, default=120,
                         help="Timeout for end Telemetry event in seconds")
     parser.add_argument("--port_number", action="store", default='8000', type=str,
                         help="Port number for webserver")
     parser.add_argument("--send_efd_message", action="store_true", default=False,
                         help="Send and EDF message as well?")
+
+    # Logging options (loglevel/loggile/log_format/log_format_date)
     parser.add_argument("--loglevel", action="store", default='INFO', type=str.upper,
                         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
                         help="Logging Level [DEBUG/INFO/WARNING/ERROR/CRITICAL]")
-    default_log = "HeaxderService_{}.log".format(datetime.datetime.now().strftime("%Y-%m-%d-%H%M"))
+    default_log = "HeaderService_{}.log".format(datetime.datetime.now().strftime("%Y-%m-%d-%H%M"))
     parser.add_argument("--logfile", action="store", type=str,
                         default=default_log,
                         help="Logfile where to also send logging information")
+    default_log_format = '[%(asctime)s.%(msecs)03d][%(levelname)s][%(name)s][%(funcName)s] %(message)s'
+    parser.add_argument("--log_format", action="store", type=str,
+                        default=default_log_format,
+                        help="Format for logging")
+    default_log_format_date = '%Y-%m-%d %H:%M:%S'
+    parser.add_argument("--log_format_date", action="store", type=str,
+                        default=default_log_format_date,
+                        help="Format for date section of logging")
+
     parser.add_argument("--write_mode", action="store", default='fits', type=str.lower,
                         choices=["fits", "string"],
                         help="Mode for writing header files [fits/string]")
