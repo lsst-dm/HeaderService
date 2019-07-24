@@ -261,7 +261,7 @@ class HSWorker(salobj.BaseCsc):
 
     def prepare(self):
         """
-        Set on non-SAL/salobj relate task that need to be prepared
+        Non-SAL/salobj related task that need to be prepared
         """
         # Logging
         self.setup_logging()
@@ -278,14 +278,14 @@ class HSWorker(salobj.BaseCsc):
         # Start the web server
         hutils.start_web_server(self.filepath, port_number=self.port_number)
 
-        # Load up the header template
+        # Load up the header templates
         self.HDR = HeaderService.HDRTEMPL_ATSCam(vendor=self.vendor,
                                                  write_mode=self.write_mode,
                                                  hdu_delimiter=self.hdu_delimiter)
         self.HDR.load_templates()
 
     def update_header_geometry(self):
-
+        """ Update the image geometry Camera Event """
         # Image paramters
         LOGGER.info("Extracting Image Parameters")
         # Extract from telemetry and identify the channel
@@ -319,7 +319,7 @@ class HSWorker(salobj.BaseCsc):
 
     def get_filenames(self):
         """
-        Figure out from which section of the telemetry we will extract
+        Figure out the section of the telemetry from which we will extract
         'imageName' and define the output names based on that ID
         """
         # Extract from telemetry and identify the channel
@@ -332,6 +332,10 @@ class HSWorker(salobj.BaseCsc):
         self.filename_FITS = self.format_FITS.format(self.imageName)
 
     def announce(self):
+        """
+        Broadcast the LFO Event for the HeaderService and optionally
+        emulate it for the EFD
+        """
         # Get the md5 for the header file
         md5value = hutils.md5Checksum(self.filename_HDR)
         bytesize = os.path.getsize(self.filename_HDR)
@@ -362,6 +366,7 @@ class HSWorker(salobj.BaseCsc):
         LOGGER.info("Wrote header to: {}".format(self.filename_HDR))
 
     def clean(self):
+        """ Clean up metadata and myData dicts"""
         self.myData = {}
         self.metadata = {}
 
@@ -457,7 +462,6 @@ def extract_telemetry_channels(telem, start_collection_event=None,
     Get the unique telemetry channels from telemetry dictionary to
     define the topics that we need to subscribe to
     """
-
     channels = {}
     for key in telem:
         # Make the name of the channel unique by appending device
