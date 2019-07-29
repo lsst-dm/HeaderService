@@ -1,5 +1,5 @@
 HSUSER=headerservice
-DOCKER_IMA=centos7_sal
+DOCKER_IMA=centos7_sal:sal3.10.0-4.0.0
 hostname="`hostname -s`-docker"
 ip=$(ifconfig en0 | grep inet | awk '$1=="inet" {print $2}')
 xhost + $ip

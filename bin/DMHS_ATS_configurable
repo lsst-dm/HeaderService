@@ -49,7 +49,7 @@ def cmdline():
                          default="HeaderService_{}.log".format(datetime.datetime.now().strftime("%Y-%m-%d-%H%M")),
                          help="Logfile where to also send logging information")
     parser.add_argument("--write_mode", action="store", default='fits', type=str.lower,
-                        choices=["fits", "string"],
+                        choices=["fits", "yaml", "string"],
                         help="Mode for writing header files [fits/string]")
     parser.add_argument("--hdu_delimiter", action="store", default='END',
                         help="Delimiter for string-based headers")

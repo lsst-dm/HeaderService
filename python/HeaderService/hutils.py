@@ -25,6 +25,7 @@ import os
 import sys
 import time
 import fitsio
+import yaml
 import numpy
 import logging
 from logging.handlers import RotatingFileHandler
@@ -372,6 +373,32 @@ class HDRTEMPL_ATSCam:
                 write_header_string(arg)
         return
 
+    def write_header_yaml(self, filename):
+        """Write a header file in yaml format"""
+
+        # The dict where we will store the header contents
+        self.yaml_header = {}
+
+        # Let's loop over all of the extensions to build
+        # the dictionary to hold the metadata
+        for extname in self.HDRLIST:
+            # Set the empty list per extname
+            self.yaml_header[extname] = []
+            # Get all records for EXTNAME
+            recs = self.header[extname].records()
+            for rec in recs:
+                # Avoid undef comments and set them as empty strings
+                if 'comment' not in rec:
+                    rec['comment'] = ''
+                new_rec = {'keyword': rec['name'],
+                           'value': rec['value'],
+                           'comment': rec['comment']}
+                self.yaml_header[extname].append(new_rec)
+
+        # Write out directly using yaml
+        with open(filename, 'w') as outfile:
+            yaml.dump(self.yaml_header, outfile, default_flow_style=False, sort_keys=False)
+
     def write_header_fits(self, filename):
         """Write a header file using the FITS format with empty HDUs"""
         data = None
@@ -431,6 +458,8 @@ class HDRTEMPL_ATSCam:
         t0 = time.time()
         if self.write_mode == 'fits':
             self.write_header_fits(filename)
+        elif self.write_mode == 'yaml' or self.write_mode == 'yml':
+            self.write_header_yaml(filename)
         elif self.write_mode == 'string':
             self.write_header_string(filename)
         else:

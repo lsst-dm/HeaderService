@@ -319,7 +319,8 @@ class HSworker:
         kw = {'byteSize': bytesize,
               'checkSum': md5value,
               'generator': 'ATHeaderService',
-              'mimeType': 'FITS',
+              # Make sure this is also changed on hslib_salobj when merged
+              'mimeType': self.write_mode.upper(),
               'url': self.url_format.format(ip_address=self.ip_address,
                                             port_number=self.port_number,
                                             filename_HDR=os.path.basename(self.filename_HDR)),
