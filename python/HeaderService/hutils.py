@@ -29,7 +29,6 @@ import yaml
 import numpy
 import logging
 from logging.handlers import RotatingFileHandler
-import multiprocessing
 import hashlib
 import itertools
 import copy
@@ -168,22 +167,6 @@ def get_obsnite(date=None, thresh_hour=14, format='{year}{month:02d}{day:02d}'):
         date = date - datetime.timedelta(days=1)
     obsnite = format.format(year=date.year, month=date.month, day=date.day)
     return obsnite
-
-
-def write_header_string(arg):
-    """
-    Simple method to write a header string to a filename that can be
-    called by the multiprocess function. Therefore the filename and
-    str_header are passed as a tuple
-    """
-    filename, str_header, md5 = arg
-    with open(filename, 'w') as fobj:
-        fobj.write(str_header)
-    LOGGER.info("Wrote header to: %s" % filename)
-    if md5:
-        md5value = md5Checksum(filename)
-        LOGGER.info("Got MD5SUM: %s" % md5value)
-    return
 
 
 def get_image_size_from_imageReadoutParameters(myData):
@@ -355,32 +338,14 @@ class HDRTEMPL_ATSCam:
             hstring = hstring + str(self.header[extname]) + '\n' + self.hdu_delimiter
         return hstring
 
-    def write_headers(self, filenames, hstring, MP=False, NP=2, md5=False):
-
-        """
-        Write one header per CCD (all the same) for now
-        in order to test I/O performance
-        """
-        if MP:
-            pool = multiprocessing.Pool(processes=NP)
-            args = [(filename, hstring, md5) for filename in filenames]
-            pool.map(write_header_string, args)
-            pool.close()
-            pool.join()
-        else:
-            for filename in filenames:
-                arg = filename, hstring, md5
-                write_header_string(arg)
-        return
-
     def write_header_yaml(self, filename):
         """Write a header file in yaml format"""
 
         # The dict where we will store the header contents
         self.yaml_header = {}
 
-        # Let's loop over all of the extensions to build
-        # the dictionary to hold the metadata
+        # Loop over all of the image extensions to build
+        # the dictionary that will hold the metadata
         for extname in self.HDRLIST:
             # Set the empty list per extname
             self.yaml_header[extname] = []
@@ -406,12 +371,6 @@ class HDRTEMPL_ATSCam:
             for extname in self.HDRLIST:
                 hdr = copy.deepcopy(self.header[extname])
                 fits.write(data, header=hdr, extname=extname)
-
-    def write_header_string(self, filename):
-        """ Write header as string"""
-        hstring = self.calculate_string_header()
-        with open(filename, 'w') as fobj:
-            fobj.write(hstring)
 
     def write_dummy_fits(self, filename, dtype='random', naxis1=None, naxis2=None, btype='int32'):
 
@@ -460,8 +419,6 @@ class HDRTEMPL_ATSCam:
             self.write_header_fits(filename)
         elif self.write_mode == 'yaml' or self.write_mode == 'yml':
             self.write_header_yaml(filename)
-        elif self.write_mode == 'string':
-            self.write_header_string(filename)
         else:
             msg = "ERROR: header write_mode: {} not recognized".format(self.write_mode)
             LOGGER.error(msg)
