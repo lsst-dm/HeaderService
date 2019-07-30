@@ -10,8 +10,8 @@ import datetime
 
 def cmdline():
 
-    # 1. We make a proto-parse use to read in the default yaml
-    # configuration file, Turn off help, so we print all options in response to -h
+    # 1. We make a proto-parse use to read in the default yaml configuration
+    # file, Turn off help, so we print all options in response to -h
     conf_parser = argparse.ArgumentParser(add_help=False)
     conf_parser.add_argument("-c", "--config", help="HeaderService config file")
     args, remaining_argv = conf_parser.parse_known_args()
@@ -45,11 +45,11 @@ def cmdline():
     parser.add_argument("--loglevel", action="store", default='INFO', type=str.upper,
                         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
                         help="Logging Level [DEBUG/INFO/WARNING/ERROR/CRITICAL]")
-    parser.add_argument("--logfile", action="store", type=str,
-                         default="HeaderService_{}.log".format(datetime.datetime.now().strftime("%Y-%m-%d-%H%M")),
-                         help="Logfile where to also send logging information")
+    default_log = "HeaderService_{}.log".format(datetime.datetime.now().strftime("%Y-%m-%d-%H%M"))
+    parser.add_argument("--logfile", action="store", type=str, default=default_log,
+                        help="Logfile where to also send logging information")
     parser.add_argument("--write_mode", action="store", default='fits', type=str.lower,
-                        choices=["fits", "string"],
+                        choices=["fits", "yaml"],
                         help="Mode for writing header files [fits/string]")
     parser.add_argument("--hdu_delimiter", action="store", default='END',
                         help="Delimiter for string-based headers")
