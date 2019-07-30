@@ -256,6 +256,9 @@ class HDRTEMPL_ATSCam:
 
         # Set template file names
         self.set_template_filenames()
+
+        # Set the mimeType
+        self.set_mimeType()
         # Load them up
         # self.load_templates()
 
@@ -342,13 +345,13 @@ class HDRTEMPL_ATSCam:
         """Write a header file in yaml format"""
 
         # The dict where we will store the header contents
-        self.yaml_header = {}
+        yaml_header = {}
 
         # Loop over all of the image extensions to build
         # the dictionary that will hold the metadata
         for extname in self.HDRLIST:
             # Set the empty list per extname
-            self.yaml_header[extname] = []
+            yaml_header[extname] = []
             # Get all records for EXTNAME
             recs = self.header[extname].records()
             for rec in recs:
@@ -358,11 +361,11 @@ class HDRTEMPL_ATSCam:
                 new_rec = {'keyword': rec['name'],
                            'value': rec['value'],
                            'comment': rec['comment']}
-                self.yaml_header[extname].append(new_rec)
+                yaml_header[extname].append(new_rec)
 
         # Write out directly using yaml
         with open(filename, 'w') as outfile:
-            yaml.dump(self.yaml_header, outfile, default_flow_style=False, sort_keys=False)
+            yaml.dump(yaml_header, outfile, default_flow_style=False, sort_keys=False)
 
     def write_header_fits(self, filename):
         """Write a header file using the FITS format with empty HDUs"""
@@ -417,7 +420,7 @@ class HDRTEMPL_ATSCam:
         t0 = time.time()
         if self.write_mode == 'fits':
             self.write_header_fits(filename)
-        elif self.write_mode == 'yaml' or self.write_mode == 'yml':
+        elif self.write_mode == 'yaml':
             self.write_header_yaml(filename)
         else:
             msg = "ERROR: header write_mode: {} not recognized".format(self.write_mode)
@@ -427,3 +430,18 @@ class HDRTEMPL_ATSCam:
 
         LOGGER.info("Header write time:{}".format(elapsed_time(t0)))
         return
+
+    def set_mimeType(self):
+        """
+        Set the mime TYPE of the header based on the write mode
+        """
+        if self.write_mode == 'fits':
+            self.mimeType = 'application/fits'
+        elif self.write_mode == 'yaml':
+            self.mimeType = 'text/yaml'
+        else:
+            msg = "ERROR: header write_mode: {} not recognized".format(self.write_mode)
+            LOGGER.error(msg)
+            raise ValueError(msg)
+            return
+        LOGGER.info(f"Set mime Type to: {self.mimeType}")

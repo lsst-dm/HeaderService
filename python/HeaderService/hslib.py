@@ -320,7 +320,7 @@ class HSworker:
               'checkSum': md5value,
               'generator': 'ATHeaderService',
               # Make sure this is also changed on hslib_salobj when merged
-              'mimeType': self.write_mode.upper(),
+              'mimeType': self.HDR.mimeType,
               'url': self.url_format.format(ip_address=self.ip_address,
                                             port_number=self.port_number,
                                             filename_HDR=os.path.basename(self.filename_HDR)),
