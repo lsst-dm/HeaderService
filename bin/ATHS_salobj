@@ -59,7 +59,7 @@ def cmdline():
                         help="Format for date section of logging")
 
     parser.add_argument("--write_mode", action="store", default='fits', type=str.lower,
-                        choices=["fits", "string"],
+                        choices=["fits", "yaml", "string"],
                         help="Mode for writing header files [fits/string]")
     parser.add_argument("--hdu_delimiter", action="store", default='END',
                         help="Delimiter for string-based headers")

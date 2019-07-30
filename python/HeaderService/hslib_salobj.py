@@ -345,7 +345,7 @@ class HSWorker(salobj.BaseCsc):
         kw = {'byteSize': bytesize,
               'checkSum': md5value,
               'generator': self.hs_name,
-              'mimeType': 'FITS',
+              'mimeType': self.write_mode.upper(),
               'url': self.url_format.format(ip_address=self.ip_address,
                                             port_number=self.port_number,
                                             filename_HDR=os.path.basename(self.filename_HDR)),
