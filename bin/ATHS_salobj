@@ -19,7 +19,7 @@ def cmdline():
     args, remaining_argv = conf_parser.parse_known_args()
     # If we have -c or --config, then we proceed to read it
     if args.configfile:
-        conf_defaults = yaml.load(open(args.configfile))
+        conf_defaults = yaml.safe_load(open(args.configfile))
     else:
         conf_defaults = {}
 
