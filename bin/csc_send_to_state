@@ -10,10 +10,8 @@ def cmdline():
     parser = argparse.ArgumentParser(description="Send CSC to a given State")
 
     # The optional arguments
-    parser.add_argument("state", action="store",
-                        help="Desired State")
-    parser.add_argument("-c", "--csc_name", action="store", default='ATHeaderService',
-                        help="Name of CSC")
+    parser.add_argument("csc_name", action="store", help="Name of CSC")
+    parser.add_argument("state", action="store", help="Desired State for CSC")
     args = parser.parse_args()
     return args
 

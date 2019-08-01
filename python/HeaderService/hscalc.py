@@ -33,10 +33,10 @@ import logging
 LOGGER = logging.getLogger(__name__)
 
 
-def get_date_utc(timeStamp=None):
+def get_date(timeStamp=None, scale='tai'):
 
     """
-    A simple function to the get an UTC astropy.datetime.Time object
+    A simple function to the get an astropy.datetime.Time object
 
     Parameters
     ----------
@@ -49,14 +49,15 @@ def get_date_utc(timeStamp=None):
     -------
 
     t: type of astropy.datetime.Time object
-       The astropy.datetime.Time object with the timeStamp requested in UTC.
+       The astropy.datetime.Time object with the timeStamp requested
+       in the defined scale.
 
     """
 
     if timeStamp is None:
         t = Time.now()
     else:
-        t = Time(timeStamp, format="unix")
+        t = Time(timeStamp, format="unix", scale=scale)
     return t
 
 

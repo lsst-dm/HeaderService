@@ -6,13 +6,12 @@ import HeaderService.hutils as hutils
 import HeaderService.hscalc as hscalc
 import HeaderService.camera_coords as camera_coords
 import random
-
 import lsst.ts.salobj as salobj
 
 LOGGER = hutils.create_logger()
 
 # Get the info from the camera_coords library for and E2V sensor
-_GEO = camera_coords.CCDGeom('E2V')
+CCDGEOM = camera_coords.CCDGeom('E2V')
 
 
 def cmdline():
@@ -58,14 +57,19 @@ def cmdline():
 
     parser.add_argument("--sleeptime", action="store", default=1, type=float,
                         help="Sleep Time between step, in seconds")
-    parser.add_argument("--preh", action="store", default=_GEO.preh, type=int,
+    parser.add_argument("--preh", action="store", default=CCDGEOM.preh, type=int,
                         help="prescan horizontal")
-    parser.add_argument("--overh", action="store", default=_GEO.overh, type=int,
+    parser.add_argument("--overh", action="store", default=CCDGEOM.overh, type=int,
                         help="overscal horizontal")
-    parser.add_argument("--overv", action="store", default=_GEO.overv, type=int,
+    parser.add_argument("--overv", action="store", default=CCDGEOM.overv, type=int,
                         help="overscal vertical")
     args = parser.parse_args()
     return args
+
+
+def get_tai_time():
+    """ Shortcut to get tai time now"""
+    return salobj.tai_from_utc(time.time())
 
 
 if __name__ == "__main__":
@@ -84,39 +88,44 @@ if __name__ == "__main__":
     kwRO = {'overRows': args.overv,
             'overCols': args.overh,
             'preCols': args.preh,
-            'readCols': _GEO.dimh,
+            'readCols': CCDGEOM.dimh,
             'readCols2': 0,
-            'readRows': _GEO.dimv}
+            'readRows': CCDGEOM.dimv,
+            'force_output': True}
     cam.evt_imageReadoutParameters.set_put(**kwRO)
     LOGGER.info("Sending imageReadoutParameters")
 
     # Poiting information
     # Send the pointing event -- here we populate only a few fields
-    kwTA = {'timestamp': time.time(),
+    kwTA = {'timestamp': get_tai_time(),
             'ra': args.ra,
             'declination': args.dec,
             'rotPA': args.rotpa,
-            'priority': 1}
+            'priority': 1,
+            'force_output': True}
     ptg.evt_currentTarget.set_put(**kwTA)
     LOGGER.info("Sending currentTarget")
 
     # Filter information for ATSpectrograph
     kwFT = {'name': args.filter,
             'position': 1,  # Made up
-            'priority': 1}
+            'priority': 1,
+            'force_output': True}
     spec.evt_reportedFilterPosition.set_put(**kwFT)
     LOGGER.info("Sending reportedFilterPosition")
 
     # Disperser information for ATSpectrograph
     kwDP = {'name': args.grating,
             'position': 2,  # Made up
-            'priority': 1}
+            'priority': 1,
+            'force_output': True}
     spec.evt_reportedDisperserPosition.set_put(**kwDP)
     LOGGER.info("Sending reportedDisperserPosition")
 
     # Linear Stage position for ATSpectrograph
     kwLS = {'position': 2,  # Made up
-            'priority': 1}
+            'priority': 1,
+            'force_output': True}
     spec.evt_reportedLinearStagePosition.set_put(**kwLS)
     LOGGER.info("Sending reportedLinearStagePosition")
 
@@ -127,7 +136,7 @@ if __name__ == "__main__":
     # Loop over NSequence
     for k in range(args.NSequence):
 
-        timeStamp = time.time()
+        timeStamp = get_tai_time()
         seqN = args.seqnum + k
         LOGGER.info("----Starting Integration {}".format(seqN))
 
@@ -136,7 +145,7 @@ if __name__ == "__main__":
         if args.dayobs:
             DAYOBS = args.dayobs
         else:
-            DATE_OBS = hscalc.get_date_utc(timeStamp)
+            DATE_OBS = hscalc.get_date(timeStamp)
             DAYOBS = DATE_OBS.datetime.strftime('%Y%m%d')
         imageName = "{}_{}_{}_{:06d}".format(args.telcode, args.controller, DAYOBS, seqN)
 
@@ -146,7 +155,7 @@ if __name__ == "__main__":
         LOGGER.info("Sending wreb")
 
         # The START telemetry for Airmass using ATPtg.prospectiveTargetStatus
-        kwTA = {'timestamp': time.time(),
+        kwTA = {'timestamp': get_tai_time(),
                 'ha': args.ha,
                 'airmass': args.airmass}
         ptg.tel_prospectiveTargetStatus.set_put(**kwTA)
@@ -165,7 +174,8 @@ if __name__ == "__main__":
                  'imageIndex': k+1,
                  'timeStamp': timeStamp,
                  'exposureTime': args.exptime,
-                 'priority': 1}
+                 'priority': 1,
+                 'force_output': True}
         cam.evt_startIntegration.set_put(**kwInt)
         LOGGER.info("Sending startIntergration: {}".format(kwInt))
         LOGGER.info(f"Waiting for {args.exptime} sec")
@@ -180,7 +190,7 @@ if __name__ == "__main__":
         cam.evt_shutterMotionProfile.set_put(measuredExposureTime=args.exptime+0.35)
 
         # The END telemetry for Airmass using ATPtg.prospectiveTargetStatus
-        kwTA = {'timestamp': time.time(),
+        kwTA = {'timestamp': get_tai_time(),
                 'ha': str(float(args.ha)*1.01),
                 'airmass': args.airmass*1.01}
         ptg.tel_prospectiveTargetStatus.set_put(**kwTA)
@@ -194,10 +204,10 @@ if __name__ == "__main__":
 
         # Send endReadout event
         LOGGER.info("Sending endReadout")
-        kwInt['timeStamp'] = time.time()
+        kwInt['timeStamp'] = get_tai_time()
         cam.evt_endReadout.set_put(**kwInt)
 
         # send endOfImageTelemetry event
         LOGGER.info("Sending endOfImageTelemetry")
-        kwInt['timeStamp'] = time.time()
+        kwInt['timeStamp'] = get_tai_time()
         cam.evt_endOfImageTelemetry.set_put(**kwInt)
