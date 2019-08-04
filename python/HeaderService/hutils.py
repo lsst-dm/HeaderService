@@ -25,10 +25,10 @@ import os
 import sys
 import time
 import fitsio
+import yaml
 import numpy
 import logging
 from logging.handlers import RotatingFileHandler
-import multiprocessing
 import hashlib
 import itertools
 import copy
@@ -188,22 +188,6 @@ def get_obsnite(date=None, thresh_hour=14, format='{year}{month:02d}{day:02d}'):
     return obsnite
 
 
-def write_header_string(arg):
-    """
-    Simple method to write a header string to a filename that can be
-    called by the multiprocess function. Therefore the filename and
-    str_header are passed as a tuple
-    """
-    filename, str_header, md5 = arg
-    with open(filename, 'w') as fobj:
-        fobj.write(str_header)
-    LOGGER.info("Wrote header to: %s" % filename)
-    if md5:
-        md5value = md5Checksum(filename)
-        LOGGER.info("Got MD5SUM: %s" % md5value)
-    return
-
-
 def get_image_size_from_imageReadoutParameters(myData):
 
     ''' The stucture of the myData object for the imageReadoutParameters is:
@@ -291,6 +275,9 @@ class HDRTEMPL_ATSCam:
 
         # Set template file names
         self.set_template_filenames()
+
+        # Set the mimeType
+        self.set_mimeType()
         # Load them up
         # self.load_templates()
 
@@ -373,23 +360,31 @@ class HDRTEMPL_ATSCam:
             hstring = hstring + str(self.header[extname]) + '\n' + self.hdu_delimiter
         return hstring
 
-    def write_headers(self, filenames, hstring, MP=False, NP=2, md5=False):
+    def write_header_yaml(self, filename):
+        """Write a header file in yaml format"""
 
-        """
-        Write one header per CCD (all the same) for now
-        in order to test I/O performance
-        """
-        if MP:
-            pool = multiprocessing.Pool(processes=NP)
-            args = [(filename, hstring, md5) for filename in filenames]
-            pool.map(write_header_string, args)
-            pool.close()
-            pool.join()
-        else:
-            for filename in filenames:
-                arg = filename, hstring, md5
-                write_header_string(arg)
-        return
+        # The dict where we will store the header contents
+        yaml_header = {}
+
+        # Loop over all of the image extensions to build
+        # the dictionary that will hold the metadata
+        for extname in self.HDRLIST:
+            # Set the empty list per extname
+            yaml_header[extname] = []
+            # Get all records for EXTNAME
+            recs = self.header[extname].records()
+            for rec in recs:
+                # Avoid undef comments and set them as empty strings
+                if 'comment' not in rec:
+                    rec['comment'] = ''
+                new_rec = {'keyword': rec['name'],
+                           'value': rec['value'],
+                           'comment': rec['comment']}
+                yaml_header[extname].append(new_rec)
+
+        # Write out directly using yaml
+        with open(filename, 'w') as outfile:
+            yaml.dump(yaml_header, outfile, default_flow_style=False, sort_keys=False)
 
     def write_header_fits(self, filename):
         """Write a header file using the FITS format with empty HDUs"""
@@ -398,12 +393,6 @@ class HDRTEMPL_ATSCam:
             for extname in self.HDRLIST:
                 hdr = copy.deepcopy(self.header[extname])
                 fits.write(data, header=hdr, extname=extname)
-
-    def write_header_string(self, filename):
-        """ Write header as string"""
-        hstring = self.calculate_string_header()
-        with open(filename, 'w') as fobj:
-            fobj.write(hstring)
 
     def write_dummy_fits(self, filename, dtype='random', naxis1=None, naxis2=None, btype='int32'):
 
@@ -450,8 +439,8 @@ class HDRTEMPL_ATSCam:
         t0 = time.time()
         if self.write_mode == 'fits':
             self.write_header_fits(filename)
-        elif self.write_mode == 'string':
-            self.write_header_string(filename)
+        elif self.write_mode == 'yaml':
+            self.write_header_yaml(filename)
         else:
             msg = "ERROR: header write_mode: {} not recognized".format(self.write_mode)
             LOGGER.error(msg)
@@ -460,3 +449,18 @@ class HDRTEMPL_ATSCam:
 
         LOGGER.info("Header write time:{}".format(elapsed_time(t0)))
         return
+
+    def set_mimeType(self):
+        """
+        Set the mime TYPE of the header based on the write mode
+        """
+        if self.write_mode == 'fits':
+            self.mimeType = 'application/fits'
+        elif self.write_mode == 'yaml':
+            self.mimeType = 'text/yaml'
+        else:
+            msg = "ERROR: header write_mode: {} not recognized".format(self.write_mode)
+            LOGGER.error(msg)
+            raise ValueError(msg)
+            return
+        LOGGER.info(f"Set mime Type to: {self.mimeType}")

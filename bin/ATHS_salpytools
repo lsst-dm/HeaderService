@@ -49,7 +49,7 @@ def cmdline():
     parser.add_argument("--logfile", action="store", type=str, default=default_log,
                         help="Logfile where to also send logging information")
     parser.add_argument("--write_mode", action="store", default='fits', type=str.lower,
-                        choices=["fits", "yaml", "string"],
+                        choices=["fits", "yaml"],
                         help="Mode for writing header files [fits/string]")
     parser.add_argument("--hdu_delimiter", action="store", default='END',
                         help="Delimiter for string-based headers")
