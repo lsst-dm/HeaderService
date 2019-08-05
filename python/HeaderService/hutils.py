@@ -81,8 +81,7 @@ def configure_logger(logger, logfile=None, level=logging.NOTSET, log_format=None
     sh.setLevel(level)
     handlers.append(sh)
     logger.addHandler(sh)
-
-    return handlers
+    return
 
 
 def create_logger(logfile=None, level=logging.NOTSET, log_format=None, log_format_date=None):
@@ -90,11 +89,9 @@ def create_logger(logfile=None, level=logging.NOTSET, log_format=None, log_forma
     Simple logger that uses configure_logger()
     """
     LOGGER = logging.getLogger(__name__)
-    handlers = configure_logger(LOGGER, logfile=logfile, level=level,
-                                log_format=log_format, log_format_date=log_format_date)
-    for handle in handlers:
-        LOGGER.addHandler(handle)
-    logging.basicConfig(handlers=handlers, level=level)
+    configure_logger(LOGGER, logfile=logfile, level=level,
+                     log_format=log_format, log_format_date=log_format_date)
+    logging.basicConfig(handlers=LOGGER.handlers, level=level)
     return LOGGER
 
 
