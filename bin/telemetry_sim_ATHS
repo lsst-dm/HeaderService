@@ -176,8 +176,11 @@ if __name__ == "__main__":
         LOGGER.info("Sending starIntegration")
         kwInt = {'imageSequenceName': args.imageSequenceName,
                  'imageName': imageName,
-                 'imageIndex': k+1,
-                 'timeStamp': timeStamp,
+                 'imageNumber': k+1,
+                 'imageSource': 'AT',
+                 'imageController': 'O',
+                 'imageDate': DAYOBS,
+                 'timeStampAcquisitionStart': timeStamp,
                  'exposureTime': args.exptime,
                  'priority': 1,
                  'force_output': True}
@@ -209,10 +212,8 @@ if __name__ == "__main__":
 
         # Send endReadout event
         LOGGER.info("Sending endReadout")
-        kwInt['timeStamp'] = get_tai_time()
         cam.evt_endReadout.set_put(**kwInt)
 
         # send endOfImageTelemetry event
         LOGGER.info("Sending endOfImageTelemetry")
-        kwInt['timeStamp'] = get_tai_time()
         cam.evt_endOfImageTelemetry.set_put(**kwInt)
