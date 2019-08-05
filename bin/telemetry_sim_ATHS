@@ -176,7 +176,7 @@ if __name__ == "__main__":
         LOGGER.info("Sending starIntegration")
         kwInt = {'imageSequenceName': args.imageSequenceName,
                  'imageName': imageName,
-                 'imageNumber': k+1,
+                 'imageNumber': seqN,
                  'imageSource': 'AT',
                  'imageController': 'O',
                  'imageDate': DAYOBS,

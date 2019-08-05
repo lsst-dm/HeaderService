@@ -400,10 +400,6 @@ class HSWorker(salobj.BaseCsc):
         self.metadata['MJD-BEG'] = self.DATE_BEG.mjd
         self.metadata['MJD-END'] = self.DATE_END.mjd
         self.metadata['FILENAME'] = self.filename_FITS
-        # THIS IS AN UGLY HACK TO MAKE IT WORK SEQNUM
-        # FIX THIS -- FELIPE, TIAGO, MICHAEL and TIM J. are accomplices
-        self.metadata['SEQNUM'] = int(self.metadata['OBSID'].split('_')[-1])
-        self.metadata['DAYOBS'] = self.metadata['OBSID'].split('_')[2]
 
         # The EL/AZ at start
         if 'ELSTART' and 'AZSTART' in self.metadata:
