@@ -6,9 +6,10 @@ import HeaderService.hutils as hutils
 import HeaderService.hscalc as hscalc
 import HeaderService.camera_coords as camera_coords
 import random
+import logging
 import lsst.ts.salobj as salobj
 
-LOGGER = hutils.create_logger()
+#LOGGER = hutils.create_logger()
 
 # Get the info from the camera_coords library for and E2V sensor
 CCDGEOM = camera_coords.CCDGeom('E2V')
@@ -82,6 +83,10 @@ if __name__ == "__main__":
     ptg = salobj.Controller(name="ATPtg", index=0)
     mcs = salobj.Controller(name="ATMCS", index=0)
     spec = salobj.Controller(name="ATSpectrograph", index=0)
+
+    # use the salobj logger
+    LOGGER = cam.log
+    hutils.configure_logger(LOGGER)
 
     # Camera Geometry
     # Send sub-set of imageReadoutParameters, we populate only a few fields

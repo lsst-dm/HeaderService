@@ -92,6 +92,8 @@ def create_logger(logfile=None, level=logging.NOTSET, log_format=None, log_forma
     LOGGER = logging.getLogger(__name__)
     handlers = configure_logger(LOGGER, logfile=logfile, level=level,
                                 log_format=log_format, log_format_date=log_format_date)
+    for handle in handlers:
+        LOGGER.addHandler(handle)
     logging.basicConfig(handlers=handlers, level=level)
     return LOGGER
 
