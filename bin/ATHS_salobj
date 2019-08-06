@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+
+import os
+import logging
+import HeaderService.hslib_salobj as hslib_salobj
+import argparse
+import yaml
+import datetime
+import asyncio
+import lsst.ts.salobj as salobj
+
+
+def cmdline():
+
+    # 1. We make a proto-parse use to read in the default yaml configuration
+    # file, Turn off help, so we print all options in response to -h
+    conf_parser = argparse.ArgumentParser(add_help=False)
+    conf_parser.add_argument("-c", "--configfile", help="HeaderService config file")
+    args, remaining_argv = conf_parser.parse_known_args()
+    # If we have -c or --config, then we proceed to read it
+    if args.configfile:
+        conf_defaults = yaml.safe_load(open(args.configfile))
+    else:
+        conf_defaults = {}
+
+    # 2. This is the main parser
+    parser = argparse.ArgumentParser(description="ATHeaderService",
+                                     # Inherit options from config_parser
+                                     parents=[conf_parser])
+    parser.add_argument("--vendor", action="store", default='E2V',
+                        help="CCD Vendor Name")
+    parser.add_argument("--filepath", action="store", default=os.path.join(os.getcwd(), 'www/DMHS_filerepo'),
+                        help="Filepath where we write the headers")
+    parser.add_argument("--url_format", action="store",
+                        default="http://{ip_address}:{port_number}/{filename_HDR}",
+                        help="The URL format to be used")
+    parser.add_argument("--timeout_endTelem", action="store", type=float, default=120,
+                        help="Timeout for end Telemetry event in seconds")
+    parser.add_argument("--port_number", action="store", default='8000', type=str,
+                        help="Port number for webserver")
+    parser.add_argument("--send_efd_message", action="store_true", default=False,
+                        help="Send and EDF message as well?")
+
+    # Logging options (loglevel/loggile/log_format/log_format_date)
+    parser.add_argument("--loglevel", action="store", default='INFO', type=str.upper,
+                        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+                        help="Logging Level [DEBUG/INFO/WARNING/ERROR/CRITICAL]")
+    default_log = "HeaderService_{}.log".format(datetime.datetime.now().strftime("%Y-%m-%d-%H%M"))
+    parser.add_argument("--logfile", action="store", type=str,
+                        default=default_log,
+                        help="Logfile where to also send logging information")
+    default_log_format = '[%(asctime)s.%(msecs)03d][%(levelname)s][%(name)s][%(funcName)s] %(message)s'
+    parser.add_argument("--log_format", action="store", type=str,
+                        default=default_log_format,
+                        help="Format for logging")
+    default_log_format_date = '%Y-%m-%d %H:%M:%S'
+    parser.add_argument("--log_format_date", action="store", type=str,
+                        default=default_log_format_date,
+                        help="Format for date section of logging")
+
+    parser.add_argument("--write_mode", action="store", default='fits', type=str.lower,
+                        choices=["fits", "yaml"],
+                        help="Mode for writing header files [fits/string]")
+    parser.add_argument("--hdu_delimiter", action="store", default='END',
+                        help="Delimiter for string-based headers")
+
+    # Config salobj.BasecCsC object
+    parser.add_argument("--hs_name", action="store", default='ATHeaderService',
+                        help="HeaderService name")
+    parser.add_argument("--hs_index", action="store", default=0, type=int,
+                        help="BaseCsC index [default=0]")
+    parser.add_argument("--hs_initial_state", action="store", default=salobj.State.STANDBY,
+                        help="Initial start State of device")
+
+    # args = parser.parse_args()
+    # Set the defaults of argparse using the values in the yaml config file
+    parser.set_defaults(**conf_defaults)
+    args = parser.parse_args(args=remaining_argv)
+    args.loglevel = getattr(logging, args.loglevel)
+    return args
+
+
+if __name__ == "__main__":
+
+    # Get the args from the command-line
+    args = cmdline()
+    hs = hslib_salobj.HSWorker(**args.__dict__)
+    asyncio.get_event_loop().run_until_complete(hs.done_task)

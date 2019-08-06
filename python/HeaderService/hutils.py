@@ -50,30 +50,48 @@ HDRLIST = ['camera', 'observatory', 'primary_hdu', 'telescope']
 LOGGER = logging.getLogger(__name__)
 
 
-def create_logger(logfile=None, level=logging.NOTSET):
+def configure_logger(logger, logfile=None, level=logging.NOTSET, log_format=None, log_format_date=None):
 
     """
-    Simple logger creation used across modules using
-    the same definitions
+    Configure an existing logger
     """
-
-    LOGGER = logging.getLogger(__name__)
     # Define formats
-    FORMAT = '[%(asctime)s][%(levelname)s][%(name)s][%(funcName)s] %(message)s'
-    FORMAT_DATE = '%Y-%m-%d %H:%M:%S'
+    if log_format:
+        FORMAT = log_format
+    else:
+        FORMAT = '[%(asctime)s.%(msecs)03d][%(levelname)s][%(name)s][%(funcName)s] %(message)s'
+    if log_format_date:
+        FORMAT_DATE = log_format_date
+    else:
+        FORMAT_DATE = '%Y-%m-%d %H:%M:%S'
     formatter = logging.Formatter(FORMAT, FORMAT_DATE)
+
     handlers = []
     # Set the logfile handle if required
     if logfile:
         fh = RotatingFileHandler(logfile, maxBytes=2000000, backupCount=10)
         fh.setFormatter(formatter)
+        fh.setLevel(level)
         handlers.append(fh)
+        logger.addHandler(fh)
 
     # Set the screen handle
     sh = logging.StreamHandler(sys.stdout)
     sh.setFormatter(formatter)
+    sh.setLevel(level)
     handlers.append(sh)
-    logging.basicConfig(handlers=handlers, level=level, format=FORMAT, datefmt=FORMAT_DATE)
+    logger.addHandler(sh)
+    return
+
+
+def create_logger(logfile=None, level=logging.NOTSET, log_format=None, log_format_date=None):
+    """
+    Simple logger that uses configure_logger()
+    """
+    LOGGER = logging.getLogger(__name__)
+    configure_logger(LOGGER, logfile=logfile, level=level,
+                     log_format=log_format, log_format_date=log_format_date)
+    logging.basicConfig(handlers=LOGGER.handlers, level=level)
     return LOGGER
 
 

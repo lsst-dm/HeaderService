@@ -278,7 +278,7 @@ class HSworker:
                     self.update_header()
                     # Write the header
                     self.write()
-                    # Announce creation to DDS
+                    # Announce creation event
                     self.announce()
                     self.EndTelem.newEvent = False
                     LOGGER.info("------------------------------------------")

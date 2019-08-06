@@ -3,14 +3,16 @@
 # Default logging level
 loglevel: 'INFO'
 
-# Path to the log location
+# Path to the log location and other log definitions
 logfile: 'www/HeaderService.log'
+log_format: '[%(asctime)s.%(msecs)03d][%(levelname)s][%(name)s][%(funcName)s] %(message)s'
+log_format_date: '%Y-%m-%d %H:%M:%S'
 
 # The camera vendor
 vendor: ITL
 
 # The ts_xml version we are using -- for now this is just curated and need to be changed manually when we change version
-ts_xml: "3.10.2"
+ts_xml: "4.0.0"
 
 # port_number for webserver
 port_number: 8000
