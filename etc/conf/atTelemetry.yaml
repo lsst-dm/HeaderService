@@ -229,6 +229,13 @@ ROTPA:
   value: azimuthCalculatedAngle
   collect_after_event: end_collection_event
 
+ FOCUSZ:
+  device: ATHexapod
+  Stype: Event
+  topic: positionUpdate
+  value: positionZ
+  collect_after_event: end_collection_event
+
 # --------------------------------------------------------------
 # ----- Filter/Grating information from ATSpectrograph ---------
 
