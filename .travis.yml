@@ -5,4 +5,6 @@ matrix:
     - python: '3.6'
       install:
       - pip install flake8
-      script: flake8
+      script:
+      - flake8
+      - flake8 `find bin -type f | while read in ; do if file --mime-type "${in}" | grep -q python ; then echo "${in}" ; fi ; done;`
