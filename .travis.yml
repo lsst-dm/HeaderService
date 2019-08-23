@@ -7,4 +7,4 @@ matrix:
       - pip install flake8
       script:
       - flake8
-      - flake8 `find bin -type f | while read in ; do if file --mime-type "${in}" | grep -q python ; then echo "${in}" ; fi ; done;`
+      - flake8 $(find bin -type f -exec file --mime-type {} \; | grep python | cut -f1 -d:)
