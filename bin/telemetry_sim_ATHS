@@ -6,10 +6,8 @@ import HeaderService.hutils as hutils
 import HeaderService.hscalc as hscalc
 import HeaderService.camera_coords as camera_coords
 import random
-import logging
 import lsst.ts.salobj as salobj
 
-#LOGGER = hutils.create_logger()
 
 # Get the info from the camera_coords library for and E2V sensor
 CCDGEOM = camera_coords.CCDGeom('E2V')
