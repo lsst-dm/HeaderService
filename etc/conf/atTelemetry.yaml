@@ -166,13 +166,12 @@ telemetry:
   value: declination
   collect_after_event: start_collection_event
 
-# --- Will come from ATMCS rotator angle when available
-# ROTPA:
-#  device: ATPtg
-#  Stype: Event
-#  topic: currentTarget
-#  value: rotPA
-#  collect_after_event: start_collection_event
+ ROTPA:
+  device: ATPtg
+  Stype: Event
+  topic: currentTarget
+  value: rotPA
+  collect_after_event: start_collection_event
 
  HASTART:
   device: ATPtg
@@ -228,6 +227,13 @@ telemetry:
   Stype: Telemetry
   topic: mountEncoders
   value: azimuthCalculatedAngle
+  collect_after_event: end_collection_event
+
+ FOCUSZ:
+  device: ATHexapod
+  Stype: Event
+  topic: positionUpdate
+  value: positionZ
   collect_after_event: end_collection_event
 
 # --------------------------------------------------------------

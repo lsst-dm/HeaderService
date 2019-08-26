@@ -47,6 +47,11 @@ HAEND   =                      / [HH:MM:SS] Telescope hour angle at end
 ELEND   =                      / [deg] Telescope zenith distance at end
 AZEND   =                      / [deg] Telescope azimuth angle at end
 AMEND   =                      / Airmass at end
+INSTPORT=                      / The instrument port where LATISS is installed
+ATM3PORT=                      / The port the M3 is directing light into
+TRACKSYS=                      / Tracking coordinate system from ATMCS
+RADESYS =                      / Equatorial coordinate system
+FOCUSZ  =                      / Focus Z position from ATAOS/ATHexapod (mm)
 
         ---- Image-identifying used to build OBS-ID ----
 TELCODE =                      / The code for the telecope (AT/CC/MC)
