@@ -53,6 +53,8 @@ def cmdline():
                         help="The elevation angle")
     parser.add_argument("--az", action="store", default=45.0, type=float,
                         help="The azimuth angle")
+    parser.add_argument("--focusz", action="store", default=13, type=float,
+                        help="ATHexapod/ATAOS FocusZ position (mm)")
 
     parser.add_argument("--sleeptime", action="store", default=1, type=float,
                         help="Sleep Time between step, in seconds")
@@ -81,6 +83,7 @@ if __name__ == "__main__":
     ptg = salobj.Controller(name="ATPtg", index=0)
     mcs = salobj.Controller(name="ATMCS", index=0)
     spec = salobj.Controller(name="ATSpectrograph", index=0)
+    hexa = salobj.Controller(name="ATHexapod", index=0)
 
     # use the salobj logger
     LOGGER = cam.log
@@ -131,6 +134,18 @@ if __name__ == "__main__":
             'force_output': True}
     spec.evt_reportedLinearStagePosition.set_put(**kwLS)
     LOGGER.info("Sending reportedLinearStagePosition")
+
+    # FocusZ positionZ for ATHexapod
+    kwHexa = {'positionX': 10,  # made up
+              'positionY': 10,  # made up
+              'positionZ': args.focusz,
+              'positionU': 10,  # made up
+              'positionV': 10,  # made up
+              'positionW': 10,  # made up
+              'priority': 1,
+              'force_output': True}
+    hexa.evt_positionUpdate.set_put(**kwHexa)
+    LOGGER.info("Sending positionUpdate")
 
     LOGGER.info("---Sleeping for 1 s ---")
     time.sleep(1)

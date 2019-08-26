@@ -1,10 +1,6 @@
 # To build:
-# docker build -t at_headerservice:sal3.10.0_3.10.0_salobj4.1.0 --rm=true .
-# or
-# docker build -t at_headerservice --rm=true .
-# docker build -t at_headerservice --rm=true --build-arg salobj_image=lsstdm/salobj:<tagname> .
-# or
-# export TAGNAME=sal_3.10.0-4.0.0_salobj_4.10
+#
+# export TAGNAME=sal_3.10.0-4.0.0_salobj_4.50
 # docker build -t at_headerservice:$TAGNAME --build-arg salobj_image=lsstdm/salobj:$TAGNAME .
 
 # Clean up:
@@ -16,8 +12,7 @@
 # for help:
 # > ATHS_salobj  --help
 
-#ARG salobj_image=lsstdm/salobj:sal_3.10.0_salobj_4.10
-ARG salobj_image=lsstdm/salobj:sal_3.10.0-4.0.0_salobj_4.10
+ARG salobj_image=lsstdm/salobj:sal_3.10.0-4.0.0_salobj_4.50
 
 FROM $salobj_image
 

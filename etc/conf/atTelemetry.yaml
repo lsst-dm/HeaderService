@@ -166,7 +166,7 @@ telemetry:
   value: declination
   collect_after_event: start_collection_event
 
-ROTPA:
+ ROTPA:
   device: ATPtg
   Stype: Event
   topic: currentTarget
