@@ -64,7 +64,7 @@ def cmdline():
                         help="Port the M3 is directing light into")
     parser.add_argument("--tracksys", action="store", default="Local", type=str,
                         help="The tracking coordinate system [Local, Sidereal, or non-sidereal].")
-    parser.add_argument("--radesys", action="store", default="Fk5", type=str,
+    parser.add_argument("--radesys", action="store", default="ICRS", type=str,
                         help="The ra/dec track system value.")
     parser.add_argument("--object", action="store", default="ElGrodo", type=str,
                         help="The name of the object observed.")
