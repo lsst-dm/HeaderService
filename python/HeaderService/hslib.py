@@ -365,10 +365,10 @@ class HSworker:
         """
 
         # Reformat and calculate dates based on different timeStamps
-        self.DATE = hscalc.get_date_utc(self.metadata['DATE'])
-        self.DATE_OBS = hscalc.get_date_utc(self.metadata['DATE-OBS'])
-        self.DATE_BEG = hscalc.get_date_utc(self.metadata['DATE-BEG'])
-        self.DATE_END = hscalc.get_date_utc(self.metadata['DATE-END'])
+        self.DATE = hscalc.get_date(self.metadata['DATE'])
+        self.DATE_OBS = hscalc.get_date(self.metadata['DATE-OBS'])
+        self.DATE_BEG = hscalc.get_date(self.metadata['DATE-BEG'])
+        self.DATE_END = hscalc.get_date(self.metadata['DATE-END'])
         self.metadata['DATE'] = self.DATE.isot
         self.metadata['DATE-OBS'] = self.DATE_OBS.isot
         self.metadata['DATE-BEG'] = self.DATE_BEG.isot

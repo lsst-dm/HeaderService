@@ -230,3 +230,5 @@ if __name__ == "__main__":
         # send endOfImageTelemetry event
         LOGGER.info("Sending endOfImageTelemetry")
         cam.evt_endOfImageTelemetry.set_put(**kwInt)
+        LOGGER.info(f"---Sleeping for {args.sleeptime} s ---")
+        time.sleep(args.sleeptime)
