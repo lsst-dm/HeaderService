@@ -12,12 +12,12 @@
 # for help:
 # > ATHS_salobj  --help
 
-ARG salobj_image=lsstdm/salobj:sal_3.10.0-4.0.0_salobj_4.50
+ARG salobj_image=lsstdm/salobj:sal_3.10.0-4.1.1_salobj_4.50
 
 FROM $salobj_image
 
 # Versions
-ARG HEADERSERVICE_VERSION=0.9.8
+ARG HEADERSERVICE_VERSION=1.0.0
 ARG SALPYTOOLS_VERSION=0.9.7
 ARG FITSIO_VERSION=1.0.4
 ARG GIT_LSST_DM="https://github.com/lsst-dm"
