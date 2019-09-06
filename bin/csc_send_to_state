@@ -2,6 +2,7 @@
 
 import lsst.ts.salobj as salobj
 import asyncio
+import time
 
 
 def cmdline():
@@ -19,6 +20,10 @@ def cmdline():
 async def main(args):
     async with salobj.Domain() as domain:
         aths = salobj.Remote(domain=domain, name=args.csc_name, index=0)
+        print(f"Waiting for {args.csc_name} to complete Start")
+        t1 = time.time()
+        await aths.start_task
+        print("Wait time: {0:.2f} seconds".format(time.time()-t1))
         newstate = getattr(salobj.State, args.state)
         print(f"Sending {args.csc_name} to: {args.state}")
         await salobj.set_summary_state(remote=aths, state=newstate)
