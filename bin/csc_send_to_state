@@ -2,6 +2,8 @@
 
 import lsst.ts.salobj as salobj
 import asyncio
+import logging
+# import time
 
 
 def cmdline():
@@ -18,11 +20,15 @@ def cmdline():
 
 async def main(args):
     async with salobj.Domain() as domain:
-        aths = salobj.Remote(domain=domain, name=args.csc_name, index=0)
+        remote = salobj.Remote(domain=domain, name=args.csc_name, index=0)
+        remote.salinfo.log.addHandler(logging.StreamHandler())
+        remote.salinfo.log.setLevel(logging.INFO)
+        remote.salinfo.log.info(f"Waiting for {args.csc_name} to complete Start")
+        await remote.start_task
         newstate = getattr(salobj.State, args.state)
-        print(f"Sending {args.csc_name} to: {args.state}")
-        await salobj.set_summary_state(remote=aths, state=newstate)
-        print(f"Done")
+        remote.salinfo.log.info(f"Sending {args.csc_name} to: {args.state}")
+        await salobj.set_summary_state(remote=remote, state=newstate)
+        remote.salinfo.log.info(f"Done")
 
 if __name__ == "__main__":
     args = cmdline()
