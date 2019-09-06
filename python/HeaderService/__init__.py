@@ -20,7 +20,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 __author__ = "LSST/Felipe Menanteau"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 version = __version__
 
 from . import hutils
@@ -29,4 +29,3 @@ from . import hslib_salobj
 from . import camera_coords
 from .hutils import HDRTEMPL_ATSCam
 from .camera_coords import CCDGeom
-
