@@ -46,12 +46,7 @@ except KeyError:
 HDRLIST = ['camera', 'observatory', 'primary_hdu', 'telescope']
 
 
-# Create a logger for all functions
-LOGGER = logging.getLogger(__name__)
-
-
 def configure_logger(logger, logfile=None, level=logging.NOTSET, log_format=None, log_format_date=None):
-
     """
     Configure an existing logger
     """
@@ -65,6 +60,13 @@ def configure_logger(logger, logfile=None, level=logging.NOTSET, log_format=None
     else:
         FORMAT_DATE = '%Y-%m-%d %H:%M:%S'
     formatter = logging.Formatter(FORMAT, FORMAT_DATE)
+
+    # Need to set the root logging level as setting the level for each of the
+    # handlers won't be recognized unless the root level is set at the desired
+    # appropriate logging level. For example, if we set the root logger to
+    # INFO, and all handlers to DEBUG, we won't receive DEBUG messages on
+    # handlers.
+    logger.setLevel(level)
 
     handlers = []
     # Set the logfile handle if required
@@ -88,11 +90,11 @@ def create_logger(logfile=None, level=logging.NOTSET, log_format=None, log_forma
     """
     Simple logger that uses configure_logger()
     """
-    LOGGER = logging.getLogger(__name__)
-    configure_logger(LOGGER, logfile=logfile, level=level,
+    logger = logging.getLogger(__name__)
+    configure_logger(logger, logfile=logfile, level=level,
                      log_format=log_format, log_format_date=log_format_date)
-    logging.basicConfig(handlers=LOGGER.handlers, level=level)
-    return LOGGER
+    logging.basicConfig(handlers=logger.handlers, level=level)
+    return logger
 
 
 def read_head_template(fname, header=None):
@@ -218,33 +220,42 @@ def get_image_size_from_imageReadoutParameters(myData):
     return geom
 
 
-def start_web_server(dirname, port_number=8000, httpserver="http.server"):
+def start_web_server(dirname, port_number=8000, httpserver="http.server", logger=None):
+
+    if not logger:
+        logger = create_logger()
+        logger.setLevel(logging.INFO)
+        logger.info("Creating new logger")
+
     # Get the system's python
     python_exe = sys.executable
     # Make sure there isn't another process running
     cmd = "ps -ax | grep {0} | grep -v grep | awk '{{print $1}}'".format(httpserver)
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     pid = p.stdout.read().decode()
+
     if pid == '':
         # Store the current location so we can go back here
         cur_dirname = os.getcwd()
         os.chdir(dirname)
-        LOGGER.info("Will start web server on dir: {}".format(dirname))
+        # The subprocess call
+        logger.info(f"Will start web server on dir: {dirname}")
         subprocess.Popen([python_exe, '-m', httpserver, str(port_number)])
-        LOGGER.info("serving at port: {}".format(str(port_number)))
+        logger.info(f"Serving at port: {port_number}")
         time.sleep(1)
-        LOGGER.info("Done Starting web server")
+        logger.info("Done Starting web server")
         # Get back to where we were
         os.chdir(cur_dirname)
     elif int(pid) > 0:
-        LOGGER.info("{} already running with pid:{}... Bye".format(httpserver, int(pid)))
+        logger.info(f"{httpserver} already running with pid:{int(pid)}  ... Bye")
     else:
-        LOGGER.waring("# Wrong process id - will not start www service")
+        logger.info("Warning: Wrong process id - will not start www service")
 
 
 class HDRTEMPL_ATSCam:
 
     def __init__(self,
+                 logger=None,
                  section='ATSCam',
                  vendor='E2V',
                  segname='Segment',
@@ -262,6 +273,14 @@ class HDRTEMPL_ATSCam:
         self.templ_segment_name = templ_segment_name
         self.write_mode = write_mode
         self.hdu_delimiter = hdu_delimiter
+
+        # Figure out logging
+        if logger:
+            self.log = logger
+            self.log.info("Will recycle logger object")
+        else:
+            self.log = create_logger()
+            self.log.info("Logger created")
 
         # Init the class with geometry for a vendor
         self.CCDGEOM = CCDGeom(self.vendor, segname=self.segname)
@@ -298,9 +317,9 @@ class HDRTEMPL_ATSCam:
 
     def build_hdrlist(self):
         self.HDRLIST = ['PRIMARY']
-        for SEG in self.segment_names:
-            EXTNAME = '{}{}'.format(self.segname, format(SEG))
-            self.HDRLIST.append(EXTNAME)
+        for seg in self.segment_names:
+            extname = f"{self.segname}{seg}"
+            self.HDRLIST.append(extname)
 
     def load_templates(self):
 
@@ -310,24 +329,24 @@ class HDRTEMPL_ATSCam:
         self.header_primary = read_head_template(self.templ_primary_file)
 
         # Load up the template for the PRIMARY header
-        LOGGER.info("Loading template for: {}".format('PRIMARY'))
+        self.log.info("Loading template for: PRIMARY")
         self.header['PRIMARY'] = self.header_primary
 
         # Update PRIMARY with new value in self.CCDGEOM
-        LOGGER.debug("Updating GEOM in template for: {}".format('PRIMARY'))
+        self.log.debug("Updating GEOM in template for: PRIMARY")
         PRIMARY_DATA = self.CCDGEOM.get_extension('PRIMARY')
         self.update_records(PRIMARY_DATA, 'PRIMARY')
 
         # For the Segments, we load it once and then copy and
         # modify each segment
-        for SEG in self.segment_names:
-            EXTNAME = '{}{}'.format(self.segname, format(SEG))
-            LOGGER.info("Loading template for: {}".format(EXTNAME))
-            self.header[EXTNAME] = copy.deepcopy(self.header_segment)
+        for seg in self.segment_names:
+            extname = f"{self.segname}{seg}"
+            self.log.info(f"Loading template for: {extname}")
+            self.header[extname] = copy.deepcopy(self.header_segment)
             # Now get the new value for the SEGMENT
-            LOGGER.debug("Updating GEOM in template for: {}".format(SEG))
-            EXTENSION_DATA = self.CCDGEOM.get_extension(SEG)
-            self.update_records(EXTENSION_DATA, EXTNAME)
+            self.log.debug(f"Updating GEOM in template for: {extname}")
+            EXTENSION_DATA = self.CCDGEOM.get_extension(seg)
+            self.update_records(EXTENSION_DATA, extname)
 
     def get_record(self, keyword, extname):
         return get_record(self.header[extname], keyword)
@@ -348,9 +367,9 @@ class HDRTEMPL_ATSCam:
         for keyword, value in newdict.items():
             try:
                 self.update_record(keyword, value, extname)
-                LOGGER.debug("Updating {}".format(keyword))
+                self.log.debug(f"Updating {keyword}")
             except Exception:
-                LOGGER.debug("WARNING: Could not update {}".format(keyword))
+                self.log.debug(f"WARNING: Could not update {keyword}")
 
     def calculate_string_header(self):
         """ Format a header as a string """
@@ -423,11 +442,11 @@ class HDRTEMPL_ATSCam:
                 elif dtype == 'seq' or dtype == 'sequence':
                     data = numpy.zeros((naxis2, naxis1)).astype(btype) + int(extname[-2:])
                 else:
-                    raise NameError("Data Type: '{}' not implemented".format(dtype))
+                    raise NameError(f"Data Type: '{dtype}' not implemented")
                 hdr = copy.deepcopy(self.header[extname])
-                LOGGER.debug("Writing: {}".format(extname))
+                self.log.debug(f"Writing: {extname}".format(extname))
                 fits.write(data, extname=extname, header=hdr)
-        LOGGER.info("FITS write time:{}".format(elapsed_time(t0)))
+        self.log.info("FITS write time:{}".format(elapsed_time(t0)))
 
     def write_header(self, filename):
         """
@@ -442,11 +461,11 @@ class HDRTEMPL_ATSCam:
             self.write_header_yaml(filename)
         else:
             msg = "ERROR: header write_mode: {} not recognized".format(self.write_mode)
-            LOGGER.error(msg)
+            self.log.error(msg)
             raise ValueError(msg)
             return
 
-        LOGGER.info("Header write time:{}".format(elapsed_time(t0)))
+        self.log.info("Header write time:{}".format(elapsed_time(t0)))
         return
 
     def set_mimeType(self):
@@ -459,7 +478,7 @@ class HDRTEMPL_ATSCam:
             self.mimeType = 'text/yaml'
         else:
             msg = "ERROR: header write_mode: {} not recognized".format(self.write_mode)
-            LOGGER.error(msg)
+            self.log.error(msg)
             raise ValueError(msg)
             return
-        LOGGER.info(f"Set mime Type to: {self.mimeType}")
+        self.log.info(f"Set mime Type to: {self.mimeType}")
