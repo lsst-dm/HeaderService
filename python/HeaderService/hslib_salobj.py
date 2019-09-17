@@ -180,7 +180,7 @@ class HSWorker(salobj.BaseCsc):
                                 level=self.config.loglevel,
                                 log_format=self.config.log_format,
                                 log_format_date=self.config.log_format_date)
-        self.log.info("Logging Started")
+        self.log.info(f"Logging Started at level:{self.config.loglevel}")
         self.log.info(f"Will send logging to: {self.config.logfile}")
 
     def create_BaseCsc(self):
@@ -263,10 +263,13 @@ class HSWorker(salobj.BaseCsc):
         self.get_ip()
 
         # Start the web server
-        hutils.start_web_server(self.config.filepath, port_number=self.config.port_number)
+        hutils.start_web_server(self.config.filepath,
+                                port_number=self.config.port_number,
+                                logger=self.log)
 
         # Load up the header templates
-        self.HDR = hutils.HDRTEMPL_ATSCam(vendor=self.config.vendor,
+        self.HDR = hutils.HDRTEMPL_ATSCam(logger=self.log,
+                                          vendor=self.config.vendor,
                                           write_mode=self.config.write_mode,
                                           hdu_delimiter=self.config.hdu_delimiter)
         self.HDR.load_templates()
