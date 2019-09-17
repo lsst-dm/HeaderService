@@ -34,7 +34,6 @@ import itertools
 import copy
 from .camera_coords import CCDGeom
 import datetime
-import subprocess
 
 spinner = itertools.cycle(['-', '/', '|', '\\'])
 
@@ -218,38 +217,6 @@ def get_image_size_from_imageReadoutParameters(myData):
     geom['naxis1'] = geom['NAXIS1']
     geom['naxis2'] = geom['NAXIS2']
     return geom
-
-
-def start_web_server(dirname, port_number=8000, httpserver="http.server", logger=None):
-
-    if not logger:
-        logger = create_logger()
-        logger.setLevel(logging.INFO)
-        logger.info("Creating new logger")
-
-    # Get the system's python
-    python_exe = sys.executable
-    # Make sure there isn't another process running
-    cmd = "ps -ax | grep {0} | grep -v grep | awk '{{print $1}}'".format(httpserver)
-    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    pid = p.stdout.read().decode()
-
-    if pid == '':
-        # Store the current location so we can go back here
-        cur_dirname = os.getcwd()
-        os.chdir(dirname)
-        # The subprocess call
-        logger.info(f"Will start web server on dir: {dirname}")
-        subprocess.Popen([python_exe, '-m', httpserver, str(port_number)])
-        logger.info(f"Serving at port: {port_number}")
-        time.sleep(1)
-        logger.info("Done Starting web server")
-        # Get back to where we were
-        os.chdir(cur_dirname)
-    elif int(pid) > 0:
-        logger.info(f"{httpserver} already running with pid:{int(pid)}  ... Bye")
-    else:
-        logger.info("Warning: Wrong process id - will not start www service")
 
 
 class HDRTEMPL_ATSCam:
