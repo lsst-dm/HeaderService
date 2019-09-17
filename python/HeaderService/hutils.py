@@ -61,7 +61,11 @@ def configure_logger(logger, logfile=None, level=logging.NOTSET, log_format=None
         FORMAT_DATE = '%Y-%m-%d %H:%M:%S'
     formatter = logging.Formatter(FORMAT, FORMAT_DATE)
 
-    # Need to set the root logging level
+    # Need to set the root logging level as setting the level for each of the
+    # handlers won't be recognized unless the root level is set at the desired
+    # appropriate logging level. For example, if we set the root logger to
+    # INFO, and all handlers to DEBUG, we won't receive DEBUG messages on
+    # handlers.
     logger.setLevel(level)
 
     handlers = []
@@ -86,11 +90,11 @@ def create_logger(logfile=None, level=logging.NOTSET, log_format=None, log_forma
     """
     Simple logger that uses configure_logger()
     """
-    LOGGER = logging.getLogger(__name__)
-    configure_logger(LOGGER, logfile=logfile, level=level,
+    logger = logging.getLogger(__name__)
+    configure_logger(logger, logfile=logfile, level=level,
                      log_format=log_format, log_format_date=log_format_date)
-    logging.basicConfig(handlers=LOGGER.handlers, level=level)
-    return LOGGER
+    logging.basicConfig(handlers=logger.handlers, level=level)
+    return logger
 
 
 def read_head_template(fname, header=None):
@@ -219,11 +223,10 @@ def get_image_size_from_imageReadoutParameters(myData):
 def start_web_server(dirname, port_number=8000, httpserver="http.server", logger=None):
 
     if not logger:
-        LOGGER = create_logger()
-        LOGGER.setLevel(logging.INFO)
-        print("Creating new LOGGER")
-    else:
-        LOGGER = logger
+        logger = create_logger()
+        logger.setLevel(logging.INFO)
+        logger.info("Creating new logger")
+
     # Get the system's python
     python_exe = sys.executable
     # Make sure there isn't another process running
@@ -236,17 +239,17 @@ def start_web_server(dirname, port_number=8000, httpserver="http.server", logger
         cur_dirname = os.getcwd()
         os.chdir(dirname)
         # The subprocess call
-        LOGGER.info(f"Will start web server on dir: {dirname}")
+        logger.info(f"Will start web server on dir: {dirname}")
         subprocess.Popen([python_exe, '-m', httpserver, str(port_number)])
-        LOGGER.info(f"Serving at port: {port_number}")
+        logger.info(f"Serving at port: {port_number}")
         time.sleep(1)
-        LOGGER.info("Done Starting web server")
+        logger.info("Done Starting web server")
         # Get back to where we were
         os.chdir(cur_dirname)
     elif int(pid) > 0:
-        LOGGER.info(f"{httpserver} already running with pid:{int(pid)}  ... Bye")
+        logger.info(f"{httpserver} already running with pid:{int(pid)}  ... Bye")
     else:
-        LOGGER.info("Warning: Wrong process id - will not start www service")
+        logger.info("Warning: Wrong process id - will not start www service")
 
 
 class HDRTEMPL_ATSCam:
@@ -314,9 +317,9 @@ class HDRTEMPL_ATSCam:
 
     def build_hdrlist(self):
         self.HDRLIST = ['PRIMARY']
-        for SEG in self.segment_names:
-            EXTNAME = '{}{}'.format(self.segname, format(SEG))
-            self.HDRLIST.append(EXTNAME)
+        for seg in self.segment_names:
+            extname = f"{self.segname}{seg}"
+            self.HDRLIST.append(extname)
 
     def load_templates(self):
 
@@ -326,24 +329,24 @@ class HDRTEMPL_ATSCam:
         self.header_primary = read_head_template(self.templ_primary_file)
 
         # Load up the template for the PRIMARY header
-        self.log.info("Loading template for: {}".format('PRIMARY'))
+        self.log.info("Loading template for: PRIMARY")
         self.header['PRIMARY'] = self.header_primary
 
         # Update PRIMARY with new value in self.CCDGEOM
-        self.log.debug("Updating GEOM in template for: {}".format('PRIMARY'))
+        self.log.debug("Updating GEOM in template for: PRIMARY")
         PRIMARY_DATA = self.CCDGEOM.get_extension('PRIMARY')
         self.update_records(PRIMARY_DATA, 'PRIMARY')
 
         # For the Segments, we load it once and then copy and
         # modify each segment
-        for SEG in self.segment_names:
-            EXTNAME = '{}{}'.format(self.segname, format(SEG))
-            self.log.info("Loading template for: {}".format(EXTNAME))
-            self.header[EXTNAME] = copy.deepcopy(self.header_segment)
+        for seg in self.segment_names:
+            extname = f"{self.segname}{seg}"
+            self.log.info(f"Loading template for: {extname}")
+            self.header[extname] = copy.deepcopy(self.header_segment)
             # Now get the new value for the SEGMENT
-            self.log.debug("Updating GEOM in template for: {}".format(SEG))
-            EXTENSION_DATA = self.CCDGEOM.get_extension(SEG)
-            self.update_records(EXTENSION_DATA, EXTNAME)
+            self.log.debug(f"Updating GEOM in template for: {extname}")
+            EXTENSION_DATA = self.CCDGEOM.get_extension(seg)
+            self.update_records(EXTENSION_DATA, extname)
 
     def get_record(self, keyword, extname):
         return get_record(self.header[extname], keyword)
@@ -364,9 +367,9 @@ class HDRTEMPL_ATSCam:
         for keyword, value in newdict.items():
             try:
                 self.update_record(keyword, value, extname)
-                self.log.debug("Updating {}".format(keyword))
+                self.log.debug(f"Updating {keyword}")
             except Exception:
-                self.log.debug("WARNING: Could not update {}".format(keyword))
+                self.log.debug(f"WARNING: Could not update {keyword}")
 
     def calculate_string_header(self):
         """ Format a header as a string """
@@ -439,9 +442,9 @@ class HDRTEMPL_ATSCam:
                 elif dtype == 'seq' or dtype == 'sequence':
                     data = numpy.zeros((naxis2, naxis1)).astype(btype) + int(extname[-2:])
                 else:
-                    raise NameError("Data Type: '{}' not implemented".format(dtype))
+                    raise NameError(f"Data Type: '{dtype}' not implemented")
                 hdr = copy.deepcopy(self.header[extname])
-                self.log.debug("Writing: {}".format(extname))
+                self.log.debug(f"Writing: {extname}".format(extname))
                 fits.write(data, extname=extname, header=hdr)
         self.log.info("FITS write time:{}".format(elapsed_time(t0)))
 
