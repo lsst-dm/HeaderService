@@ -48,12 +48,16 @@ def cmdline():
     default_log = "HeaderService_{}.log".format(datetime.datetime.now().strftime("%Y-%m-%d-%H%M"))
     parser.add_argument("--logfile", action="store", type=str,
                         default=default_log,
-                        help="Logfile where to also send logging information")
+                        help="Logfile where to send logging information")
     default_log_format = '[%(asctime)s.%(msecs)03d][%(levelname)s][%(name)s][%(funcName)s] %(message)s'
     parser.add_argument("--log_format", action="store", type=str,
                         default=default_log_format,
                         help="Format for logging")
     default_log_format_date = '%Y-%m-%d %H:%M:%S'
+    default_weblog = "webserver_{}.log".format(datetime.datetime.now().strftime("%Y-%m-%d-%H%M"))
+    parser.add_argument("--weblogfile", action="store", type=str,
+                        default=default_weblog,
+                        help="Logfile where to send web server logging information")
     parser.add_argument("--log_format_date", action="store", type=str,
                         default=default_log_format_date,
                         help="Format for date section of logging")

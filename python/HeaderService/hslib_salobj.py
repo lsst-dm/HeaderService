@@ -63,37 +63,6 @@ class HSWorker(salobj.BaseCsc):
         # Initialize the timeout task
         self.end_evt_timeout_task = salobj.make_done_future()
 
-    def start_web_server(self, logfile, httpserver="http.server"):
-
-        log = open(logfile, 'a')
-        log.write('some text, as header of the file\n')
-        # log.flush()  # <-- here's something not to forget!
-        # Get the system's python
-        python_exe = sys.executable
-        # Make sure there isn't another process running
-        cmd = "ps -ax | grep {0} | grep -v grep | awk '{{print $1}}'".format(httpserver)
-        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-        pid = p.stdout.read().decode()
-        self.log.info(f"Writing web log to: {logfile}")
-
-        if pid == '':
-            # Store the current location so we can go back here
-            cur_dirname = os.getcwd()
-            os.chdir(self.config.filepath)
-            # The subprocess call
-            self.log.info(f"Will start web server on dir: {self.config.filepath}")
-            self.log.info(f"Serving at port: {self.config.port_number}")
-            p = subprocess.Popen([python_exe, '-m', httpserver, str(self.config.port_number)],
-                                 stdout=log, stderr=log)
-            time.sleep(1)
-            self.log.info("Done Starting web server")
-            # Get back to where we were
-            os.chdir(cur_dirname)
-        elif int(pid) > 0:
-            self.log.info(f"{httpserver} already running with pid:{int(pid)}  ... Bye")
-        else:
-            self.log.info("Warning: Wrong process id - will not start www service")
-
     async def close_tasks(self):
         """Close tasks on super and evt timeout"""
         await super().close_tasks()
@@ -199,6 +168,46 @@ class HSWorker(salobj.BaseCsc):
         self.ip_address = socket.gethostbyname(socket.gethostname())
         self.log.info("Will use IP: {} for web service".format(self.ip_address))
 
+    def start_web_server(self, logfile, httpserver="http.server"):
+
+        """
+        Start a light web service to serve the header files to the EFD
+        """
+
+        # Change PYTHONUNBUFFERED to 1 to allow continuous writing.
+        os.environ['PYTHONUNBUFFERED'] = '1'
+
+        # Open the file handle
+        weblog = open(logfile, 'a')
+        weblog.flush()
+
+        self.log.info(f"Will send web server logs to: {logfile}")
+        # Get the system's python
+        python_exe = sys.executable
+        # Make sure there isn't another process running
+        cmd = "ps -ax | grep {0} | grep -v grep | awk '{{print $1}}'".format(httpserver)
+        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        pid = p.stdout.read().decode()
+        self.log.info(f"Writing web log to: {logfile}")
+
+        if pid == '':
+            # Store the current location so we can go back here
+            cur_dirname = os.getcwd()
+            os.chdir(self.config.filepath)
+            # The subprocess call
+            self.log.info(f"Will start web server on dir: {self.config.filepath}")
+            self.log.info(f"Serving at port: {self.config.port_number}")
+            p = subprocess.Popen([python_exe, '-m', httpserver, str(self.config.port_number)],
+                                 stdout=weblog, stderr=weblog)
+            time.sleep(1)
+            self.log.info("Done Starting web server")
+            # Get back to where we were
+            os.chdir(cur_dirname)
+        elif int(pid) > 0:
+            self.log.info(f"{httpserver} already running with pid:{int(pid)}  ... Bye")
+        else:
+            self.log.info("Warning: Wrong process id - will not start www service")
+
     def setup_logging(self):
         """
         Simple Logger definitions across this module, we call the generic
@@ -295,7 +304,7 @@ class HSWorker(salobj.BaseCsc):
         self.get_ip()
 
         # Start the web server
-        self.start_web_server('www/wwwlog.log')
+        self.start_web_server(self.config.weblogfile)
         # Load up the header templates
         self.HDR = hutils.HDRTEMPL_ATSCam(logger=self.log,
                                           vendor=self.config.vendor,
