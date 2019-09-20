@@ -1,4 +1,4 @@
-TAGNAME=sal_3.10.0-4.1.1_salobj_4.50
+TAGNAME=sal_3.10.0-4.2.0_salobj_4.5.0
 HSUSER=headerservice
 DOCKER_IMA=at_headerservice:$TAGNAME
 hostname="`hostname -s`-docker"

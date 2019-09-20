@@ -56,6 +56,15 @@ def cmdline():
     parser.add_argument("--focusz", action="store", default=13, type=float,
                         help="ATHexapod/ATAOS FocusZ position (mm)")
 
+    parser.add_argument("--instport", action="store", default=1, type=int,
+                        help="The instrument port where LATISS is installed")
+    parser.add_argument("--m3port", action="store", default=1, type=int,
+                        help="Port the M3 is directing light into")
+    parser.add_argument("--tracksys", action="store", default="Local", type=str,
+                        help="The track system value will [Local, Sidereal, or non-sidereal.]")
+    parser.add_argument("--radesys", action="store", default="Fk5", type=str,
+                        help="The ra/dec track system value.")
+
     parser.add_argument("--sleeptime", action="store", default=1, type=float,
                         help="Sleep Time between step, in seconds")
     parser.add_argument("--preh", action="store", default=CCDGEOM.preh, type=int,
@@ -85,9 +94,7 @@ if __name__ == "__main__":
     spec = salobj.Controller(name="ATSpectrograph", index=0)
     hexa = salobj.Controller(name="ATHexapod", index=0)
 
-    # use the salobj logger
-    LOGGER = cam.log
-    hutils.configure_logger(LOGGER)
+    LOGGER = hutils.create_logger()
 
     # Camera Geometry
     # Send sub-set of imageReadoutParameters, we populate only a few fields
@@ -110,7 +117,14 @@ if __name__ == "__main__":
             'priority': 1,
             'force_output': True}
     ptg.evt_currentTarget.set_put(**kwTA)
-    LOGGER.info("Sending currentTarget")
+    LOGGER.info("Sending Ptg currentTarget")
+
+    # The settingsApplied for ATSpectrograph
+    kwSA = {'instrumentPort': args.instport,
+            'priority': 1,
+            'force_output': True}
+    spec.evt_settingsApplied.set_put(**kwSA)
+    LOGGER.info("Sending ATSpectrograph settingsApplied")
 
     # Filter information for ATSpectrograph
     kwFT = {'name': args.filter,
@@ -151,6 +165,21 @@ if __name__ == "__main__":
     time.sleep(1)
     LOGGER.info("---Starting Image loop---")
 
+    # The m3PortSelected from ATMCS
+    kwM3 = {'selected': args.m3port,
+            'priority': 1,
+            'force_output': True}
+    mcs.evt_m3PortSelected.set_put(**kwM3)
+    LOGGER.info("Sending m3PortSelected")
+
+    # The target from ATMCS
+    kwTarget = {'radesys': args.radesys,
+                'tracksys': args.tracksys,
+                'priority': 1,
+                'force_output': True}
+    mcs.evt_target.set_put(**kwTarget)
+    LOGGER.info("Sending ATMCS Target")
+
     # Loop over NSequence
     for k in range(args.NSequence):
 
@@ -179,11 +208,11 @@ if __name__ == "__main__":
         ptg.tel_prospectiveTargetStatus.set_put(**kwTA)
         LOGGER.info("Sending prospectiveTargetStatus")
 
-        # The START telemetry for EL and AZ from the ATMCS.mountEncoders
-        kwMC = {'elevationCalculatedAngle': args.el,
-                'azimuthCalculatedAngle': args.az}
-        mcs.tel_mountEncoders.set_put(**kwMC)
-        LOGGER.info("Sending mountEncoders")
+        # The START telemetry for EL and AZ from the ATMCS.mount_AzEl_Encoders
+        kwMC = {'elevationCalculatedAngle': [args.el]*100,
+                'azimuthCalculatedAngle': [args.az]*100}
+        mcs.tel_mount_AzEl_Encoders.set_put(**kwMC)
+        LOGGER.info("Sending mount_AzEl_Encoders")
 
         # Send the startIntegration for image: k
         LOGGER.info("Sending starIntegration")
@@ -217,11 +246,11 @@ if __name__ == "__main__":
         ptg.tel_prospectiveTargetStatus.set_put(**kwTA)
         LOGGER.info("Sending prospectiveTargetStatus")
 
-        # The END telemetry for EL and AZ from the ATMCS.mountEncoders
-        kwMC = {'elevationCalculatedAngle': args.el*1.01,
-                'azimuthCalculatedAngle': args.az*1.01}
-        mcs.tel_mountEncoders.set_put(**kwMC)
-        LOGGER.info("Sending mountEncoders")
+        # The END telemetry for EL and AZ from the ATMCS.mount_AzEl_Encoders
+        kwMC = {'elevationCalculatedAngle': [args.el*1.01]*100,
+                'azimuthCalculatedAngle': [args.az*1.01]*100}
+        mcs.tel_mount_AzEl_Encoders.set_put(**kwMC)
+        LOGGER.info("Sending mount_AzEl_Encoders")
 
         # Send endReadout event
         LOGGER.info("Sending endReadout")
