@@ -415,7 +415,14 @@ class HSWorker(salobj.BaseCsc):
             if self.myData[name] is None:
                 self.log.warning(f"Cannot get keyword: {k} from topic: {name}")
             else:
-                self.metadata[k] = getattr(self.myData[name], param)
+                # In case of a long telemetry array we take the first element
+                # TODO : if we happen to have many cases like this, we should
+                # state which element of the array in the configuration file.
+
+                if hasattr(getattr(self.myData[name], param), "__len__"):
+                    self.metadata[k] = getattr(self.myData[name], param)[0]
+                else:
+                    self.metadata[k] = getattr(self.myData[name], param)
                 self.log.debug(f"Extacted {k}={self.metadata[k]} from topic: {name}")
 
     def collect_from_HeaderService(self):

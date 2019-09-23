@@ -193,14 +193,14 @@ telemetry:
  ELSTART:
   device: ATMCS
   Stype: Telemetry
-  topic: mountEncoders
+  topic: mount_AzEl_Encoders
   value: elevationCalculatedAngle
   collect_after_event: start_collection_event
 
  AZSTART:
   device: ATMCS
   Stype: Telemetry
-  topic: mountEncoders
+  topic: mount_AzEl_Encoders
   value: azimuthCalculatedAngle
   collect_after_event: start_collection_event
 
@@ -221,14 +221,14 @@ telemetry:
  ELEND:
   device: ATMCS
   Stype: Telemetry
-  topic: mountEncoders
+  topic: mount_AzEl_Encoders
   value: elevationCalculatedAngle
   collect_after_event: end_collection_event
 
  AZEND:
   device: ATMCS
   Stype: Telemetry
-  topic: mountEncoders
+  topic: mount_AzEl_Encoders
   value: azimuthCalculatedAngle
   collect_after_event: end_collection_event
 
@@ -238,6 +238,34 @@ telemetry:
   topic: positionUpdate
   value: positionZ
   collect_after_event: end_collection_event
+
+ INSTPORT:
+  device: ATSpectrograph
+  Stype: Event
+  topic: settingsApplied
+  value: instrumentPort
+  collect_after_event: start_collection_event
+
+ ATM3PORT:
+  device: ATMCS
+  Stype: Event
+  topic: m3PortSelected
+  value: selected
+  collect_after_event: start_collection_event
+
+ TRACKSYS:
+  device: ATMCS
+  Stype: Event
+  topic: target
+  value: tracksys
+  collect_after_event: start_collection_event
+
+ RADESYS:
+  device: ATMCS
+  Stype: Event
+  topic: target
+  value: radesys
+  collect_after_event: start_collection_event
 
 # --------------------------------------------------------------
 # ----- Filter/Grating information from ATSpectrograph ---------

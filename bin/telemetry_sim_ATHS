@@ -56,6 +56,15 @@ def cmdline():
     parser.add_argument("--focusz", action="store", default=13, type=float,
                         help="ATHexapod/ATAOS FocusZ position (mm)")
 
+    parser.add_argument("--instport", action="store", default=1, type=int,
+                        help="The instrument port where LATISS is installed")
+    parser.add_argument("--m3port", action="store", default=1, type=int,
+                        help="Port the M3 is directing light into")
+    parser.add_argument("--tracksys", action="store", default="Local", type=str,
+                        help="The tracking coordinate system [Local, Sidereal, or non-sidereal].")
+    parser.add_argument("--radesys", action="store", default="Fk5", type=str,
+                        help="The ra/dec track system value.")
+
     parser.add_argument("--sleeptime", action="store", default=1, type=float,
                         help="Sleep Time between step, in seconds")
     parser.add_argument("--preh", action="store", default=CCDGEOM.preh, type=int,
@@ -85,9 +94,7 @@ if __name__ == "__main__":
     spec = salobj.Controller(name="ATSpectrograph", index=0)
     hexa = salobj.Controller(name="ATHexapod", index=0)
 
-    # use the salobj logger
-    LOGGER = cam.log
-    hutils.configure_logger(LOGGER)
+    LOGGER = hutils.create_logger()
 
     # Camera Geometry
     # Send sub-set of imageReadoutParameters, we populate only a few fields
@@ -99,9 +106,9 @@ if __name__ == "__main__":
             'readRows': CCDGEOM.dimv,
             'force_output': True}
     cam.evt_imageReadoutParameters.set_put(**kwRO)
-    LOGGER.info("Sending imageReadoutParameters")
+    LOGGER.info("Sending simulated imageReadoutParameters")
 
-    # Poiting information
+    # Pointing information
     # Send the pointing event -- here we populate only a few fields
     kwTA = {'timestamp': get_tai_time(),
             'ra': args.ra,
@@ -110,7 +117,14 @@ if __name__ == "__main__":
             'priority': 1,
             'force_output': True}
     ptg.evt_currentTarget.set_put(**kwTA)
-    LOGGER.info("Sending currentTarget")
+    LOGGER.info("Sending simulated Ptg currentTarget")
+
+    # The settingsApplied for ATSpectrograph
+    kwSA = {'instrumentPort': args.instport,
+            'priority': 1,
+            'force_output': True}
+    spec.evt_settingsApplied.set_put(**kwSA)
+    LOGGER.info("Sending simulated ATSpectrograph settingsApplied")
 
     # Filter information for ATSpectrograph
     kwFT = {'name': args.filter,
@@ -118,7 +132,7 @@ if __name__ == "__main__":
             'priority': 1,
             'force_output': True}
     spec.evt_reportedFilterPosition.set_put(**kwFT)
-    LOGGER.info("Sending reportedFilterPosition")
+    LOGGER.info("Sending simulated reportedFilterPosition")
 
     # Disperser information for ATSpectrograph
     kwDP = {'name': args.grating,
@@ -126,14 +140,14 @@ if __name__ == "__main__":
             'priority': 1,
             'force_output': True}
     spec.evt_reportedDisperserPosition.set_put(**kwDP)
-    LOGGER.info("Sending reportedDisperserPosition")
+    LOGGER.info("Sending simulated reportedDisperserPosition")
 
     # Linear Stage position for ATSpectrograph
     kwLS = {'position': 2,  # Made up
             'priority': 1,
             'force_output': True}
     spec.evt_reportedLinearStagePosition.set_put(**kwLS)
-    LOGGER.info("Sending reportedLinearStagePosition")
+    LOGGER.info("Sending simulated reportedLinearStagePosition")
 
     # FocusZ positionZ for ATHexapod
     kwHexa = {'positionX': 10,  # made up
@@ -145,11 +159,26 @@ if __name__ == "__main__":
               'priority': 1,
               'force_output': True}
     hexa.evt_positionUpdate.set_put(**kwHexa)
-    LOGGER.info("Sending positionUpdate")
+    LOGGER.info("Sending simulated positionUpdate")
 
     LOGGER.info("---Sleeping for 1 s ---")
     time.sleep(1)
     LOGGER.info("---Starting Image loop---")
+
+    # The m3PortSelected from ATMCS
+    kwM3 = {'selected': args.m3port,
+            'priority': 1,
+            'force_output': True}
+    mcs.evt_m3PortSelected.set_put(**kwM3)
+    LOGGER.info("Sending simulated m3PortSelected")
+
+    # The target from ATMCS
+    kwTarget = {'radesys': args.radesys,
+                'tracksys': args.tracksys,
+                'priority': 1,
+                'force_output': True}
+    mcs.evt_target.set_put(**kwTarget)
+    LOGGER.info("Sending simulated ATMCS Target")
 
     # Loop over NSequence
     for k in range(args.NSequence):
@@ -170,23 +199,23 @@ if __name__ == "__main__":
         # Send CCD temperature telemetry using a random generator
         kwCCD = {'ccdTemp0': random.uniform(-30, 0)}
         cam.tel_wreb.set_put(**kwCCD)
-        LOGGER.info("Sending wreb")
+        LOGGER.info("Sending simulated wreb")
 
         # The START telemetry for Airmass using ATPtg.prospectiveTargetStatus
         kwTA = {'timestamp': get_tai_time(),
                 'ha': args.ha,
                 'airmass': args.airmass}
         ptg.tel_prospectiveTargetStatus.set_put(**kwTA)
-        LOGGER.info("Sending prospectiveTargetStatus")
+        LOGGER.info("Sending simulated prospectiveTargetStatus")
 
-        # The START telemetry for EL and AZ from the ATMCS.mountEncoders
-        kwMC = {'elevationCalculatedAngle': args.el,
-                'azimuthCalculatedAngle': args.az}
-        mcs.tel_mountEncoders.set_put(**kwMC)
-        LOGGER.info("Sending mountEncoders")
+        # The START telemetry for EL and AZ from the ATMCS.mount_AzEl_Encoders
+        kwMC = {'elevationCalculatedAngle': [args.el]*100,
+                'azimuthCalculatedAngle': [args.az]*100}
+        mcs.tel_mount_AzEl_Encoders.set_put(**kwMC)
+        LOGGER.info("Sending simulated mount_AzEl_Encoders")
 
         # Send the startIntegration for image: k
-        LOGGER.info("Sending starIntegration")
+        LOGGER.info("Sending simulated starIntegration")
         kwInt = {'imageSequenceName': args.imageSequenceName,
                  'imageName': imageName,
                  'imageNumber': seqN,
@@ -198,16 +227,16 @@ if __name__ == "__main__":
                  'priority': 1,
                  'force_output': True}
         cam.evt_startIntegration.set_put(**kwInt)
-        LOGGER.info("Sending startIntergration: {}".format(kwInt))
+        LOGGER.info("Sending simulated startIntergration: {}".format(kwInt))
         LOGGER.info(f"Waiting for {args.exptime} sec")
         time.sleep(args.exptime)
 
         # Send startReadout Event after integration is finished
-        LOGGER.info("Sending startReadout")
+        LOGGER.info("Sending simulated startReadout")
         cam.evt_startReadout.set_put(**kwInt)
 
         # Send Measured exptime event
-        LOGGER.info("Sending Measured Exptime")
+        LOGGER.info("Sending simulated Measured Exptime")
         cam.evt_shutterMotionProfile.set_put(measuredExposureTime=args.exptime+0.35)
 
         # The END telemetry for Airmass using ATPtg.prospectiveTargetStatus
@@ -215,20 +244,20 @@ if __name__ == "__main__":
                 'ha': str(float(args.ha)*1.01),
                 'airmass': args.airmass*1.01}
         ptg.tel_prospectiveTargetStatus.set_put(**kwTA)
-        LOGGER.info("Sending prospectiveTargetStatus")
+        LOGGER.info("Sending simulated prospectiveTargetStatus")
 
-        # The END telemetry for EL and AZ from the ATMCS.mountEncoders
-        kwMC = {'elevationCalculatedAngle': args.el*1.01,
-                'azimuthCalculatedAngle': args.az*1.01}
-        mcs.tel_mountEncoders.set_put(**kwMC)
-        LOGGER.info("Sending mountEncoders")
+        # The END telemetry for EL and AZ from the ATMCS.mount_AzEl_Encoders
+        kwMC = {'elevationCalculatedAngle': [args.el*1.01]*100,
+                'azimuthCalculatedAngle': [args.az*1.01]*100}
+        mcs.tel_mount_AzEl_Encoders.set_put(**kwMC)
+        LOGGER.info("Sending simulated mount_AzEl_Encoders")
 
         # Send endReadout event
-        LOGGER.info("Sending endReadout")
+        LOGGER.info("Sending simulated endReadout")
         cam.evt_endReadout.set_put(**kwInt)
 
         # send endOfImageTelemetry event
-        LOGGER.info("Sending endOfImageTelemetry")
+        LOGGER.info("Sending simulated endOfImageTelemetry")
         cam.evt_endOfImageTelemetry.set_put(**kwInt)
         LOGGER.info(f"---Sleeping for {args.sleeptime} s ---")
         time.sleep(args.sleeptime)
