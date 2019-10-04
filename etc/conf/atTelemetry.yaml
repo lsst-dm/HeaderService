@@ -15,7 +15,7 @@ weblogfile: 'www/webserver.log'
 vendor: ITL
 
 # The ts_xml version we are using -- for now this is just curated and need to be changed manually when we change version
-ts_xml: "4.1.1"
+ts_xml: "4.3.0"
 
 # port_number for webserver
 port_number: 8000
@@ -62,22 +62,22 @@ telemetry:
  DATE-OBS:
   device: ATCamera
   Stype: Event
-  topic: startIntegration
-  value: timeStampAcquisitionStart
-  collect_after_event: start_collection_event
+  topic: endOfImageTelemetry
+  value: timestampDateObs
+  collect_after_event: end_collection_event
 
  DATE-BEG:
   device: ATCamera
   Stype: Event
-  topic: startIntegration
-  value: timeStampAcquisitionStart
-  collect_after_event: start_collection_event
+  topic: endOfImageTelemetry
+  value: timestampDateObs
+  collect_after_event: end_collection_event
 
  DATE-END:
   device: ATCamera
   Stype: Event
-  topic: endReadout
-  value: timeStampAcquisitionStart
+  topic: endOfImageTelemetry
+  value: timestampDateEnd
   collect_after_event: end_collection_event
 
  OBSID:
@@ -119,18 +119,15 @@ telemetry:
   device: ATCamera
   Stype: Event
   topic: startIntegration
-  value: imageSequenceName
+  value: groupId
   collect_after_event: start_collection_event
 
-# ----------------------------------------
-# -- still not available from SAL --------
-# OBSTYPE:
-#   device: ATCamera
-#   Stype: Event
-#   topic: startIntegration
-#   value: imageType
-#   collect_after_event: start_collection_event
-# ---------------------------------------------
+ IMGTYPE:
+   device: ATCamera
+   Stype: Event
+   topic: startIntegration
+   value: imageType
+   collect_after_event: start_collection_event
 
  EXPTIME:
   device: ATCamera
@@ -138,6 +135,13 @@ telemetry:
   topic: startIntegration
   value: exposureTime
   collect_after_event: start_collection_event
+
+ DARKTIME:
+  device: ATCamera
+  Stype: Event
+  topic: endOfImageTelemetry
+  value: darkTime
+  collect_after_event: end_collection_event
 
  SHUTTIME:
   device: ATCamera
@@ -152,6 +156,71 @@ telemetry:
   topic: wreb
   value: ccdTemp0
   collect_after_event: start_collection_event
+
+# --- Camera Sensor information
+
+ CCD_MANU:
+  device: ATCamera
+  Stype: Event
+  topic: wrebSettingsApplied
+  value: ccdManufacturer
+  collect_after_event: start_collection_event
+
+ CCD_TYPE:
+  device: ATCamera
+  Stype: Event
+  topic: wrebSettingsApplied
+  value: ccdType
+  collect_after_event: start_collection_event
+
+ CCD_SERN:
+  device: ATCamera
+  Stype: Event
+  topic: wrebSettingsApplied
+  value: ccdSerialNumber
+  collect_after_event: start_collection_event
+
+ LSST_NUM:
+  device: ATCamera
+  Stype: Event
+  topic: wrebSettingsApplied
+  value: ccdName
+  collect_after_event: start_collection_event
+
+ SEQCKSUM:
+  device: ATCamera
+  Stype: Event
+  topic: wrebSettingsApplied
+  value: sequencerChecksum
+  collect_after_event: start_collection_event
+
+ SEQNAME:
+  device: ATCamera
+  Stype: Event
+  topic: wrebSettingsApplied
+  value: sequencerKey
+  collect_after_event: start_collection_event
+
+ REBNAME:
+  device: ATCamera
+  Stype: Event
+  topic: wrebSettingsApplied
+  value: rebName
+  collect_after_event: start_collection_event
+
+ CONTNUM:
+  device: ATCamera
+  Stype: Event
+  topic: wrebSettingsApplied
+  value: rebSerialNumber
+  collect_after_event: start_collection_event
+
+ IMAGETAG:
+  device: ATCamera
+  Stype: Event
+  topic: endOfImageTelemetry
+  value: imageTag
+  collect_after_event: end_collection_event
 
 # --- Pointing Information ---------------
 

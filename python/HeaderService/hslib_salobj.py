@@ -231,7 +231,7 @@ class HSWorker(salobj.BaseCsc):
         a start_state to set the initial state
         """
         super().__init__(name=self.config.hs_name, index=self.config.hs_index,
-                         initial_state=self.config.hs_initial_state)
+                         initial_state=getattr(salobj.State, self.config.hs_initial_state))
         self.log.info(f"Starting the CSC with {self.config.hs_name}")
         self.log.info(f"Creating worker for: {self.config.hs_name}")
         self.log.info(f"Running salobj version: {salobj.__version__}")
@@ -418,11 +418,11 @@ class HSWorker(salobj.BaseCsc):
                 # In case of a long telemetry array we take the first element
                 # TODO : if we happen to have many cases like this, we should
                 # state which element of the array in the configuration file.
-
-                if hasattr(getattr(self.myData[name], param), "__len__"):
-                    self.metadata[k] = getattr(self.myData[name], param)[0]
+                payload = getattr(self.myData[name], param)
+                if hasattr(payload, "__len__") and not isinstance(payload, str):
+                    self.metadata[k] = payload[0]
                 else:
-                    self.metadata[k] = getattr(self.myData[name], param)
+                    self.metadata[k] = payload
                 self.log.debug(f"Extacted {k}={self.metadata[k]} from topic: {name}")
 
     def collect_from_HeaderService(self):
