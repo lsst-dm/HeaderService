@@ -230,7 +230,7 @@ if __name__ == "__main__":
         LOGGER.info("Sending simulated mount_AzEl_Encoders")
 
         # Send the startIntegration for image: k
-        LOGGER.info("Sending simulated starIntegration")
+        LOGGER.info("Sending simulated startIntegration")
         kwInt = {'imageType': args.imageType,
                  'groupId': args.groupId,
                  'imagesInSequence': args.NSequence,
