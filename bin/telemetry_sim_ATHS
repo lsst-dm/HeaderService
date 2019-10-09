@@ -216,6 +216,11 @@ if __name__ == "__main__":
         cam.tel_wreb.set_put(**kwCCD)
         LOGGER.info("Sending simulated wreb")
 
+        # Send CCD temperature Setpoint telemetry using a random generator
+        kwCCD = {'tempCCDSetPoint': random.uniform(-50, -40)}
+        cam.tel_vacuum.set_put(**kwCCD)
+        LOGGER.info("Sending simulated vacuum")
+
         # The START telemetry for Airmass using ATPtg.prospectiveTargetStatus
         kwTA = {'timestamp': get_tai_time(),
                 'ha': args.ha,

@@ -157,6 +157,13 @@ telemetry:
   value: ccdTemp0
   collect_after_event: start_collection_event
 
+ TEMP_SET:
+  device: ATCamera
+  Stype: Telemetry
+  topic: vacuum
+  value: tempCCDSetPoint
+  collect_after_event: start_collection_event
+
 # --- Camera Sensor information
 
  CCD_MANU:
@@ -218,7 +225,7 @@ telemetry:
  IMAGETAG:
   device: ATCamera
   Stype: Event
-  topic: endReadout
+  topic: endOfImageTelemetry
   value: imageTag
   collect_after_event: end_collection_event
 
