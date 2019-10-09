@@ -60,11 +60,11 @@ DAYOBS  =                      / The observation day as defined by image name
 SEQNUM  =                      / The sequence number from the image name
 GROUPID =                      /
 
-        ---- Information from Camera
-CCD_MANU= 'ITL'                / CCD Manufacturer
-CCD_TYPE= '3800C'              / CCD Model Number
-CCD_SERN= '20304'              / Manufacturers? CCD Serial Number
-LSST_NUM= 'ITL-3800C-098'      / LSST Assigned CCD Number
+        ---- Information from Camera ----
+CCD_MANU=                      / CCD Manufacturer
+CCD_TYPE=                      / CCD Model Number
+CCD_SERN=                      / Manufacturers CCD Serial Number
+LSST_NUM=                      / LSST Assigned CCD Number
 SEQCKSUM=                      / Checksum of Sequencer
 SEQNAME =                      / SequenceName from Camera StartIntergration
 REBNAME =                      / Name of the REB

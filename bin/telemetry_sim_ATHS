@@ -29,8 +29,10 @@ def cmdline():
                         help="Name of the filter")
     parser.add_argument("--grating", action="store", default='R400',
                         help="Name of the grating")
-    parser.add_argument("--imageSequenceName", action="store", default='LSSTTEST',
-                        help="ImageSequenceName")
+    parser.add_argument("--groupId", action="store", default='LSSTTEST',
+                        help="groupId")
+    parser.add_argument("--imageType", action="store", default='OBJECT',
+                        help="imageType")
     # Control imageName
     parser.add_argument("--telcode", action="store", default='AT',
                         help="The code for the telecope")
@@ -95,6 +97,19 @@ if __name__ == "__main__":
     hexa = salobj.Controller(name="ATHexapod", index=0)
 
     LOGGER = hutils.create_logger()
+
+    # Camera confguration from wrebSettingsApplied
+    kwWREB = {'ccdManufacturer': 'ITL',
+              'ccdType': '3800C',
+              'ccdSerialNumber': '20304',
+              'ccdName': 'ITL-3800C-098',
+              # Made up values just for testing
+              'sequencerChecksum': 1234567890,
+              'sequencerKey': 'SEQNAME_TEST',
+              'rebName': 'REBNAME_TEST',
+              'rebSerialNumber': 'REBSER_TEST'}
+    cam.evt_wrebSettingsApplied.set_put(**kwWREB)
+    LOGGER.info("Sending simulated wrebSettingsApplied")
 
     # Camera Geometry
     # Send sub-set of imageReadoutParameters, we populate only a few fields
@@ -201,6 +216,11 @@ if __name__ == "__main__":
         cam.tel_wreb.set_put(**kwCCD)
         LOGGER.info("Sending simulated wreb")
 
+        # Send CCD temperature Setpoint telemetry using a random generator
+        kwCCD = {'tempCCDSetPoint': random.uniform(-50, -40)}
+        cam.tel_vacuum.set_put(**kwCCD)
+        LOGGER.info("Sending simulated vacuum")
+
         # The START telemetry for Airmass using ATPtg.prospectiveTargetStatus
         kwTA = {'timestamp': get_tai_time(),
                 'ha': args.ha,
@@ -215,9 +235,12 @@ if __name__ == "__main__":
         LOGGER.info("Sending simulated mount_AzEl_Encoders")
 
         # Send the startIntegration for image: k
-        LOGGER.info("Sending simulated starIntegration")
-        kwInt = {'imageSequenceName': args.imageSequenceName,
+        LOGGER.info("Sending simulated startIntegration")
+        kwInt = {'imageType': args.imageType,
+                 'groupId': args.groupId,
+                 'imagesInSequence': args.NSequence,
                  'imageName': imageName,
+                 'imageIndex': k,
                  'imageNumber': seqN,
                  'imageSource': 'AT',
                  'imageController': 'O',
@@ -237,7 +260,8 @@ if __name__ == "__main__":
 
         # Send Measured exptime event
         LOGGER.info("Sending simulated Measured Exptime")
-        cam.evt_shutterMotionProfile.set_put(measuredExposureTime=args.exptime+0.35)
+        shuttime = args.exptime + random.uniform(0, 0.5)
+        cam.evt_shutterMotionProfile.set_put(measuredExposureTime=shuttime)
 
         # The END telemetry for Airmass using ATPtg.prospectiveTargetStatus
         kwTA = {'timestamp': get_tai_time(),
@@ -257,7 +281,24 @@ if __name__ == "__main__":
         cam.evt_endReadout.set_put(**kwInt)
 
         # send endOfImageTelemetry event
+        kwEND = {'imageType': args.imageType,
+                 'groupId': args.groupId,
+                 'imagesInSequence': args.NSequence,
+                 'imageName': imageName,
+                 'imageIndex': k,
+                 'imageNumber': seqN,
+                 'imageSource': 'AT',
+                 'imageController': 'O',
+                 'imageDate': DAYOBS,
+                 'timeStampAcquisitionStart': timeStamp,
+                 'timestampDateObs': timeStamp,
+                 'timestampDateEnd': get_tai_time(),
+                 'exposureTime': args.exptime,
+                 'darkTime': shuttime + args.sleeptime,
+                 'imageTag': 'imageTag_TEST',
+                 'priority': 1,
+                 'force_output': True}
         LOGGER.info("Sending simulated endOfImageTelemetry")
-        cam.evt_endOfImageTelemetry.set_put(**kwInt)
+        cam.evt_endOfImageTelemetry.set_put(**kwEND)
         LOGGER.info(f"---Sleeping for {args.sleeptime} s ---")
         time.sleep(args.sleeptime)

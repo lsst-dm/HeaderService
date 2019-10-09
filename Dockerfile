@@ -25,7 +25,7 @@ ARG INSTALL_PATH=/opt/lsst
 ARG REPOS_TMP=/tmp/repos
 ARG HSUSER=headerservice
 
-RUN pip3 install fitsio==$FITSIO_VERSION
+RUN pip3 install fitsio==1.0.4
 
 # --- Install HeaderService and salpytools ----
 ARG PRODUCT=HeaderService

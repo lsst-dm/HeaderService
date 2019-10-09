@@ -7,7 +7,6 @@ import argparse
 import yaml
 import datetime
 import asyncio
-import lsst.ts.salobj as salobj
 
 
 def cmdline():
@@ -73,7 +72,7 @@ def cmdline():
                         help="HeaderService name")
     parser.add_argument("--hs_index", action="store", default=0, type=int,
                         help="BaseCsC index [default=0]")
-    parser.add_argument("--hs_initial_state", action="store", default=salobj.State.STANDBY,
+    parser.add_argument("--hs_initial_state", action="store", default='STANDBY',
                         help="Initial start State of device")
 
     # args = parser.parse_args()

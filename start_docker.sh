@@ -1,6 +1,7 @@
-TAGNAME=sal_3.10.0-4.2.0_salobj_4.5.0
 HSUSER=headerservice
-DOCKER_IMA=at_headerservice:$TAGNAME
+TAGNAME=3.10.0-4.3.0-salobj_4.5.0
+DOCKER_IMA=lsstdm/atheaderservice:$TAGNAME
+
 hostname="`hostname -s`-docker"
 ip=$(ifconfig en0 | grep inet | awk '$1=="inet" {print $2}')
 xhost + $ip
