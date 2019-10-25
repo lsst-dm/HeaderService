@@ -1,6 +1,7 @@
 HSUSER=headerservice
-TAGNAME=3.10.0-4.3.0-salobj_4.5.0
+TAGNAME=3.10.0-4.4.0-salobj_4.5.0-aths_1.1.0
 DOCKER_IMA=lsstdm/atheaderservice:$TAGNAME
+NAME=aths
 
 hostname="`hostname -s`-docker"
 ip=$(ifconfig en0 | grep inet | awk '$1=="inet" {print $2}')
