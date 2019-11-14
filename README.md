@@ -13,8 +13,9 @@ client to write header files.
 Requirements
 ------------
 + numpy
++ astropy
 + fitsio (https://github.com/esheldon/fitsio)
-+ Python DDS/SAL libraries 
++ salobj
 + OpenSplice compiled binaries for centOS7
 + A CentOS7 VM or docker container
 
@@ -23,14 +24,11 @@ Examples
 
 ```bash
 # Setup the path for the HeaderService
-source HeaderService/setpath.sh  ~/HeaderService 
+source HeaderService/setpath.sh  ~/HeaderService
 
 # Initialize header client (Terminal 1)
-header_client_threaded
+ATHS_salobj -c $HEADERSERVICE_DIR/etc/conf/atTelemetry.yaml --send_efd_message   
 
 # Send telemetry to trigger header writing (Terminal 2)
-telemetry_sim_single --ra 21.723 --dec -45.127 --band g --visitID 1
-telemetry_sim_single --ra 22.127 --dec -46.890 --band r --visitID 2
-telemetry_sim_single --ra 22.127 --dec -46.890 --band i --visitID 3
-
+telemetry_sim_ATHS --ra 10 --dec -20.0 --exptime 10 --airmass 1.1 --ha 87 --el 45 --az 15  --NSequence 1  --rotpa 90  --seqnum 1
 ```
