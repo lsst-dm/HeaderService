@@ -318,7 +318,7 @@ telemetry:
  INSTPORT:
   device: ATSpectrograph
   Stype: Event
-  topic: settingsApplied
+  topic: settingsAppliedValues
   value: instrumentPort
   collect_after_event: start_collection_event
 
