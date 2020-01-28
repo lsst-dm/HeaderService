@@ -423,6 +423,9 @@ class HSWorker(salobj.BaseCsc):
                     self.metadata[k] = payload[0]
                 else:
                     self.metadata[k] = payload
+                # Scale by `scale` if it was defined
+                if 'scale' in self.config.telemetry[k]:
+                    self.metadata[k] = self.metadata[k]*self.config.telemetry[k]['scale']
                 self.log.debug(f"Extacted {k}={self.metadata[k]} from topic: {name}")
 
     def collect_from_HeaderService(self):
@@ -509,6 +512,9 @@ def extract_telemetry_channels(telem, start_collection_event=None,
         c = {'device': telem[key]['device'],
              'topic': telem[key]['topic'],
              'Stype': telem[key]['Stype']}
+        # Add scale if present in the definition -- although not used elsewhere
+        if 'scale' in telem[key]:
+            c['scale'] = telem[key]['scale']
         name = get_channel_name(c)
         # Make sure we don't crate extra channels
         if name not in channels.keys():

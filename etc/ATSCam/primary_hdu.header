@@ -52,6 +52,7 @@ ATM3PORT=                      / The port the M3 is directing light into
 TRACKSYS=                      / Tracking coordinate system from ATMCS
 RADESYS =                      / Equatorial coordinate system
 FOCUSZ  =                      / Focus Z position from ATAOS/ATHexapod (mm)
+OBJECT  =                      / Name of the observed object
 
         ---- Image-identifying used to build OBS-ID ----
 TELCODE =                      / The code for the telecope (AT/CC/MC)

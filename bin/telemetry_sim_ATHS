@@ -66,6 +66,8 @@ def cmdline():
                         help="The tracking coordinate system [Local, Sidereal, or non-sidereal].")
     parser.add_argument("--radesys", action="store", default="Fk5", type=str,
                         help="The ra/dec track system value.")
+    parser.add_argument("--object", action="store", default="ElGrodo", type=str,
+                        help="The name of the object observed.")
 
     parser.add_argument("--sleeptime", action="store", default=1, type=float,
                         help="Sleep Time between step, in seconds")
@@ -130,6 +132,7 @@ if __name__ == "__main__":
             'declination': args.dec,
             'rotPA': args.rotpa,
             'priority': 1,
+            'targetName': args.object,
             'force_output': True}
     ptg.evt_currentTarget.set_put(**kwTA)
     LOGGER.info("Sending simulated Ptg currentTarget")
