@@ -15,7 +15,7 @@ weblogfile: 'www/webserver.log'
 vendor: ITL
 
 # The ts_xml version we are using -- for now this is just curated and need to be changed manually when we change version
-ts_xml: "4.3.0"
+ts_xml: "4.6.0"
 
 # port_number for webserver
 port_number: 8000
@@ -327,7 +327,7 @@ telemetry:
  INSTPORT:
   device: ATSpectrograph
   Stype: Event
-  topic: settingsApplied
+  topic: settingsAppliedValues
   value: instrumentPort
   collect_after_event: start_collection_event
 

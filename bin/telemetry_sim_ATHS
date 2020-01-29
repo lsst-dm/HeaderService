@@ -141,7 +141,7 @@ if __name__ == "__main__":
     kwSA = {'instrumentPort': args.instport,
             'priority': 1,
             'force_output': True}
-    spec.evt_settingsApplied.set_put(**kwSA)
+    spec.evt_settingsAppliedValues.set_put(**kwSA)
     LOGGER.info("Sending simulated ATSpectrograph settingsApplied")
 
     # Filter information for ATSpectrograph
