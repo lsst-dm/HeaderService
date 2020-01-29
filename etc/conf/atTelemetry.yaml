@@ -231,12 +231,20 @@ telemetry:
 
 # --- Pointing Information ---------------
 
+ OBJECT:
+  device: ATPtg
+  Stype: Event
+  topic: currentTarget
+  value: targetName
+  collect_after_event: start_collection_event
+
  RA:
   device: ATPtg
   Stype: Event
   topic: currentTarget
   value: ra
   collect_after_event: start_collection_event
+  scale: 57.29577951308232
 
  DEC:
   device: ATPtg
@@ -244,6 +252,7 @@ telemetry:
   topic: currentTarget
   value: declination
   collect_after_event: start_collection_event
+  scale: 57.29577951308232
 
  ROTPA:
   device: ATPtg
