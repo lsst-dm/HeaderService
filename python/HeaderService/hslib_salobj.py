@@ -453,7 +453,7 @@ class HSWorker(salobj.BaseCsc):
         self.metadata['FILENAME'] = self.filename_FITS
 
         # The EL/AZ at start
-        if 'ELSTART' and 'AZSTART' in self.metadata:
+        if set(('ELSTART', 'AZSTART')).issubset(self.metadata):
             self.log.info("Computing RA/DEC from ELSTART/AZSTART")
             ra, dec = hscalc.get_radec_from_altaz(alt=self.metadata['ELSTART'],
                                                   az=self.metadata['AZSTART'],
@@ -464,10 +464,13 @@ class HSWorker(salobj.BaseCsc):
             self.metadata['RASTART'] = ra
             self.metadata['DECSTART'] = dec
         else:
-            self.log.info("No 'ELSTART' and 'AZSTART'")
+            if 'ELSTART' not in self.metadata:
+                self.log.info("No 'ELSTART' needed to compute RA/DEC START")
+            if 'AZSTART' not in self.metadata:
+                self.log.info("No 'AZSTART' needed to compute RA/DEC START")
 
         # The EL/AZ at end
-        if 'ELEND' and 'AZEND' in self.metadata:
+        if set(('ELEND', 'AZEND')).issubset(self.metadata):
             self.log.info("Computing RA/DEC from ELEND/AZEND")
             ra, dec = hscalc.get_radec_from_altaz(alt=self.metadata['ELEND'],
                                                   az=self.metadata['AZEND'],
@@ -478,7 +481,28 @@ class HSWorker(salobj.BaseCsc):
             self.metadata['RAEND'] = ra
             self.metadata['DECEND'] = dec
         else:
-            self.log.info("No 'ELEND' and 'AZEND'")
+            if 'ELEND' not in self.metadata:
+                self.log.info("No 'ELEND' needed to compute RA/DEC END")
+            if 'AZEND' not in self.metadata:
+                self.log.info("No 'AZEND' needed to compute RA/DEC END")
+
+        if set(('RA', 'DEC', 'ROTPA', 'RADESYS')).issubset(self.metadata):
+            self.log.info("Computing WCS-TAN from RA/DEC/ROTPA")
+            wcs_TAN = self.HDR.CCDGEOM.wcs_TAN(self.metadata['RA'],
+                                               self.metadata['DEC'],
+                                               self.metadata['ROTPA'],
+                                               self.metadata['RADESYS'])
+            # Update the metadata
+            self.metadata.update(wcs_TAN)
+        else:
+            if 'RA' not in self.metadata:
+                self.log.info("No 'RA' needed to compute WCS")
+            if 'DEC' not in self.metadata:
+                self.log.info("No 'DEC' needed to compute WCS")
+            if 'ROTPA' not in self.metadata:
+                self.log.info("No 'ROTPA' needed to compute WCS")
+            if 'RADESYS' not in self.metadata:
+                self.log.info("No 'RADESYS' needed to compute WCS")
 
 
 def get_channel_name(c):

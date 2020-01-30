@@ -57,13 +57,17 @@ SCAN_GEOM['ITL'] = {'dimv': 2000,
                     'dimh': 509,
                     'preh': 3,
                     'overh': 32,
-                    'overv': 48}
+                    'overv': 48,
+                    'ccdax': 4000,
+                    'ccday': 4072}
 
 SCAN_GEOM['E2V'] = {'dimv': 2002,
                     'dimh': 512,
                     'preh': 10,
                     'overh': 54,
-                    'overv': 46}
+                    'overv': 46,
+                    'ccdax': 4004,
+                    'ccday': 4096}
 
 # Mapping for the CHANNEL (Output number or HDU) keyword to the segments
 CHANNEL = {}
@@ -138,11 +142,11 @@ class CCDGeom:
                  overv=None,
                  xpixelscale=0.105,
                  ypixelscale=0.105,
+                 crpix1=None,
+                 crpix2=None,
                  ):
         self.vendor = vendor
         self.segname = segname
-        self.xpixelscale = xpixelscale
-        self.ypixelscale = ypixelscale
 
         # Load default unless defined
         if preh:
@@ -162,14 +166,25 @@ class CCDGeom:
 
         self.dimh = SCAN_GEOM[vendor]['dimh']
         self.dimv = SCAN_GEOM[vendor]['dimv']
+        self.ccdax = SCAN_GEOM[vendor]['ccdax']
+        self.ccday = SCAN_GEOM[vendor]['ccday']
 
         # Make this info available as part of the class
         self.CHANNEL = CHANNEL[vendor]
         self.SEGNAME = SEGNAME[vendor]
 
+        # values needed for WCS
+        self.CDELT1 = xpixelscale
+        self.CDELT2 = ypixelscale
+        # if undefined, we assume reference position is in the center
+        # of the sensor.
+        if crpix1 is None:
+            self.CRPIX1 = self.ccdax/2.
+        if crpix2 is None:
+            self.CRPIX2 = self.ccday/2.
+
         # Update the primary, we do this only once at __init__ unless we change
         # overh/overv/dimh/dimv
-
         self.primary()
 
     def get_extension(self, extname):
@@ -202,6 +217,7 @@ class CCDGeom:
         Sx = int(Segment[0])
         Sy = int(Segment[1])
 
+        # Get the mosaic/iraf wcs
         if self.vendor == 'ITL':
             EXTENSION_DATA = self.mosaic_ITL(Sx, Sy)
         elif self.vendor == 'E2V':
@@ -209,9 +225,11 @@ class CCDGeom:
         else:
             raise ValueError('Vendor: {} not in list '.format(self.vendor))
 
+        # Populate DETSIZE and DATASEC
         EXTENSION_DATA['DETSIZE'] = self.DETSIZE
         EXTENSION_DATA['DATASEC'] = self.DATASEC
         EXTENSION_DATA['EXTNAME'] = '{}{}'.format(self.segname, Segment)
+
         return EXTENSION_DATA
 
     def mosaic_E2V(self, Sx, Sy):
@@ -253,62 +271,28 @@ class CCDGeom:
     def get_channel(self, Segment):
         return CHANNEL[self.vendor][Segment]
 
-    def wcs_tan_matrix(self, ra, dec, rot_angle=0):
+    def wcs_TAN(self, ra, dec, rot_angle, radesys):
 
         '''
         Compute the common section of the WCS Tangential projection matrix
         See for a definition http://danmoser.github.io/notes/gai_fits-imgs.html
         '''
 
-        CDELT1 = self.xpixelscale
-        CDELT2 = self.ypixelscale,
-        CROTA2 = rot_angle
         wcs = {'CTYPE1': 'RA---TAN',
                'CTYPE2': 'DEC--TAN',
                'CUNIT1': 'deg',
                'CUNIT2': 'deg',
                'CRVAL1': ra,
                'CRVAL2': dec,
-               # ------------------------------------------
-               # We will use a function for these later on
-               # 'CRPIX1' : 5,
-               # 'CRPIX2' : 10,
-               # ------------------------------------------
-               'CROTA2': rot_angle,
-               'CDELT1': self.xpixelscale,
-               'CDELT2': self.ypixelscale,
-               'CD1_1': CDELT1*math.cos(CROTA2),
-               'CD1_2': -CDELT2*math.sin(CROTA2),
-               'CD2_1': CDELT1*math.sin(CROTA2),
-               'CD2_2': CDELT2*math.cos(CROTA2),
+               'CRPIX1': self.CRPIX1,
+               'CRPIX2': self.CRPIX2,
+               'CD1_1': self.CDELT1*math.cos(rot_angle),
+               'CD1_2': -self.CDELT2*math.sin(rot_angle),
+               'CD2_1': self.CDELT1*math.sin(rot_angle),
+               'CD2_2': self.CDELT2*math.cos(rot_angle),
+               'RADESYS': radesys,
                }
         return wcs
-
-    def wcs_CCD(self, Sx, Sy):
-
-        if self.vendor == 'E2V':
-            PC1_1 = 0
-            PC1_2 = 1 - 2*Sx
-            PC2_1 = 1 - 2*Sx
-            PC2_2 = 0
-            CDELT1 = 1
-            CDELT2 = 1
-            CRPIX1 = 0
-            CRPIX2 = 0
-            CRVAL1 = Sx*(2*self.dimv + 1)
-            CRVAL2 = Sx*(self.dimh + 1) + Sy*self.dimh+(2*Sx - 1)*self.preh
-        elif self.vendor == 'ITL':
-            PC1_1 = 0
-            PC1_2 = 1 - 2*Sx
-            PC2_1 = -1
-            PC2_2 = 0
-            CDELT1 = 1
-            CDELT2 = 1
-            CRPIX1 = 0
-            CRPIX2 = 0
-            CRVAL1 = Sx*(2*self.dimv+1)
-            CRVAL2 = self.dimh + 1 + Sy*self.dimh - self.preh
-        return PC1_1, PC1_2, PC2_1, PC2_2, CDELT1, CDELT2, CRPIX1, CRPIX2, CRVAL1, CRVAL2
 
 
 if __name__ == "__main__":
@@ -325,52 +309,3 @@ if __name__ == "__main__":
     ext02 = ccd_E2V.extension('02')
     print(ext01)
     print(ext02)
-
-
-# Adding WCS TAN proojection
-'''
-# http://danmoser.github.io/notes/gai_fits-imgs.html
-
-WCSAXES =                    2 / WCS Dimensionality
-CTYPE1  = 'RA---TAN'           / Coordinate type
-CTYPE2  = 'DEC--TAN'           / Coordinate type
-CUNIT1  = 'deg     '
-CUNIT2  = 'deg     '
-CRVAL1  =              202.473 / [deg] WCS Reference Coordinate (RA)
-CRVAL2  =              47.1967 / [deg] WCS Reference Coordinate (DEC)
-CRPIX1  =              150.500 / Reference pixel axis 1
-CRPIX2  =              150.500 / Reference pixel axis 2
-CD1_1   =        4.2365384E-01 / DL/DX World coordinate transformation matrix
-CD1_2   =       -9.0582417E-01 / DL/DY World coordinate transformation matrix
-CD2_1   =        9.0582417E-01 / DM/DX World coordinate transformation matrix
-CD2_2   =        4.2365384E-01 / DM/DY World coordinate transformation matrix
-EQUINOX =              2000.00 / Equinox of coordinates
-RADESYS = 'FK5     '           / Telescope coordinate system
-
-#
-# In addition we could add  CDELT1/CDEL2 and
-# CROTA2  =              0.00000 / Rotation in degrees.
-# CDELT1  =       0.00166667 /Coordinate increment per pixel in DEGREES/PIXEL
-# CDELT2  =      -0.00166667 /Coordinate increment per pixel in DEGREES/PIXEL
-#
-# CD1_1 = CDELT1*cos(CROTA2)
-# CD1_2 = -CDELT2*sin(CROTA2)
-# CD2_1 = CDELT1*sin(CROTA2)
-# CD2_2 = CDELT2*cos(CROTA2)
-
-header  = { 'NAXIS'  : 2,
-            'NAXIS1' : 5,
-            'CTYPE1' : 'RA---TAN',
-            'CRVAL1' : 45,
-            'CRPIX1' : 5,
-            'CUNIT1' : 'deg',
-            'CDELT1' : -0.01,
-            'NAXIS2' : 10,
-            'CTYPE2' : 'DEC--TAN',
-            'CRVAL2' : 30,
-            'CRPIX2' : 10,
-            'CUNIT2' : 'deg',
-            'CDELT2' : +0.01,
-         }
-
-'''
