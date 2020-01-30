@@ -26,8 +26,9 @@ url_format: "http://{ip_address}:{port_number}/{filename_HDR}"
 # Default write_mode (fits or string)
 write_mode: fits
 
-# Timeout for waiting for end of Telemetry event (in seconds)
-timeout_endTelem: 120
+# Timeout beyond the requested exposure time to wait for an end of Telemetry event (in seconds)
+timeout_exptime: 30
+timeout_keyword: 'EXPTIME'
 
 # Default string delimeter (string mode only)
 hdu_delimiter: END

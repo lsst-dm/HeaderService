@@ -109,10 +109,17 @@ class HSWorker(salobj.BaseCsc):
         sys.stdout.flush()
         self.log.info(f"Received: {self.name_start} Event")
 
+        # Get the requested exposure time to estimate the timeout
+        exptime_key = self.config.timeout_keyword
+        self.log.info("Collecting key to set timeout as key %s + %s" %
+                      (exptime_key, self.config.timeout_exptime))
+        self.collect([exptime_key])
+        timeout = self.metadata[exptime_key] + self.config.timeout_exptime
+        self.log.info(f"Using timeout: %s [s]" % timeout)
+
         # For safety cancel the timeout task before we start it
         self.end_evt_timeout_task.cancel()
-        self.end_evt_timeout_task = asyncio.ensure_future(
-            self.end_evt_timeout(timeout=self.config.timeout_endTelem))
+        self.end_evt_timeout_task = asyncio.ensure_future(self.end_evt_timeout(timeout=timeout))
 
         # Get the filenames from the start event payload.
         self.get_filenames()
