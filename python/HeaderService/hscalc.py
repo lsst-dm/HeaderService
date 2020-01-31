@@ -94,7 +94,7 @@ def get_radec_from_altaz(alt, az, obstime, lat=-30.244639, lon=-70.749417, heigh
     """
 
     # Get an astropy location object, using the appropiate astropy units
-    location = EarthLocation.from_geodetic(lat*u.deg, lon*u.deg, height*u.m)
+    location = EarthLocation.from_geodetic(lon*u.deg, lat*u.deg, height*u.m)
     # Get an astropy coordinate of frame in the Altitude-Azimuth system
     elaz = AltAz(alt=alt*u.deg, az=az*u.deg, obstime=obstime, location=location)
     coords = elaz.transform_to(ICRS)
