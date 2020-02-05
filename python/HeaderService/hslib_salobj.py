@@ -60,28 +60,29 @@ class HSWorker(salobj.BaseCsc):
         # Define the callbacks for start/end
         self.define_evt_callbacks()
 
-        # Initialize the timeout task
-        self.end_evt_timeout_task = salobj.make_done_future()
-
     async def close_tasks(self):
         """Close tasks on super and evt timeout"""
         await super().close_tasks()
-        self.end_evt_timeout_task.cancel()
+        # Loop over all task and cancel all of them
+        for imageName in self.end_evt_timeout_task:
+            self.end_evt_timeout_task[imageName].cancel()
 
-    async def end_evt_timeout(self, timeout):
+    async def end_evt_timeout(self, imageName, timeout):
         """Timeout timer for end event telemetry callback"""
         await asyncio.sleep(timeout)
         self.log.info(f"{self.name_end} not seen in {timeout} seconds; giving up")
         # Send the timeout warning using the salobj log
-        self.log.warning(f"Timeout while waiting for {self.name_end} Event")
-        self.clean()
+        self.log.warning(f"Timeout while waiting for {imageName} {self.name_end} Event")
+        self.clean(imageName)
 
     def report_summary_state(self):
         """Call to report_summary_state and LOGGER"""
         super().report_summary_state()
         self.log.info(f"Current state is: {self.summary_state.name}")
         if self.summary_state != salobj.State.ENABLED:
-            self.end_evt_timeout_task.cancel()
+            # Loop over all task and cancel all of them
+            for imageName in self.end_evt_timeout_task:
+                self.end_evt_timeout_task[imageName].cancel()
 
     def define_evt_callbacks(self):
         """Set the callback functions based on configuration"""
@@ -96,7 +97,7 @@ class HSWorker(salobj.BaseCsc):
         topic = self.config.end_collection_event['topic']
         getattr(self.Remote[devname], f"evt_{topic}").callback = self.end_collection_event_callback
 
-    def start_collection_event_callback(self, data):
+    def start_collection_event_callback(self, myData):
         """ The callback function for the START collection event"""
 
         # If not in ENABLED mode we do nothing
@@ -104,35 +105,46 @@ class HSWorker(salobj.BaseCsc):
             self.log.info(f"Current State is {self.summary_state.name}")
             return
 
-        # Clean/purge all metadata
-        self.clean()
         sys.stdout.flush()
         self.log.info(f"Received: {self.name_start} Event")
 
-        # Get the requested exposure time to estimate the timeout
+        # Extract the key to match start/end events
+        imageName = self.get_imageName(myData)
+        self.log.info(f"Starting callback for imageName: {imageName}")
+
+        # Get the requested exposure time to estimate the total timeout
         exptime_key = self.config.timeout_keyword
         self.log.info("Collecting key to set timeout as key %s + %s" %
                       (exptime_key, self.config.timeout_exptime))
-        self.collect([exptime_key])
-        timeout = self.metadata[exptime_key] + self.config.timeout_exptime
+        metadata_tmp = self.collect([exptime_key])
+        timeout = metadata_tmp[exptime_key] + self.config.timeout_exptime
         self.log.info(f"Using timeout: %s [s]" % timeout)
 
-        # For safety cancel the timeout task before we start it
-        self.end_evt_timeout_task.cancel()
-        self.end_evt_timeout_task = asyncio.ensure_future(self.end_evt_timeout(timeout=timeout))
+        # Get the filenames and imageName from the start event payload.
+        self.log.info(f"Defining filenames for: {imageName}")
+        self.get_filenames(imageName)
 
-        # Get the filenames from the start event payload.
-        self.get_filenames()
-        self.log.info(f"Extracted value for imageName: {self.imageName}")
+        # Create timeout_task per imageName
+        self.end_evt_timeout_task[imageName] = asyncio.ensure_future(self.end_evt_timeout(imageName, timeout))
 
-        # Collect metadata at start of integration
+        # Collect metadata at start of integration and
+        # load it on the self.metadata dictionary
         self.log.info(f"Collecting Metadata START : {self.name_start} Event")
-        self.collect(self.keywords_start)
+        self.metadata[imageName] = self.collect(self.keywords_start)
+
+        # Create the HDR object to be populated with the collected metadata,
+        # when loading the templates we get a HDR.header object
+        self.log.info(f"Creating header object for : {imageName}")
+        self.HDR[imageName] = hutils.HDRTEMPL_ATSCam(logger=self.log,
+                                                     vendor=self.config.vendor,
+                                                     write_mode=self.config.write_mode,
+                                                     hdu_delimiter=self.config.hdu_delimiter)
+        self.HDR[imageName].load_templates()
 
         # Now we wait for end event
-        self.log.info(f"Waiting for {self.name_end} Event")
+        self.log.info(f"Waiting for {self.name_end} Event for: {imageName}")
 
-    def end_collection_event_callback(self, data):
+    def end_collection_event_callback(self, myData):
         """ The callback function for the END collection event"""
 
         # If not in ENABLED mode we do nothing
@@ -140,33 +152,42 @@ class HSWorker(salobj.BaseCsc):
             self.log.info(f"Current State is {self.summary_state.name}")
             return
 
+        # Extract the key to match start/end events
+        imageName = self.get_imageName(myData)
+
+        # Check for rogue end collection events
+        if imageName not in self.end_evt_timeout_task:
+            self.log.warning(f"Received rogue: {self.name_end} Event without a timeout task")
+            return
+
         self.log.info(f"Received: {self.name_end} Event")
-        if self.end_evt_timeout_task.done():
+        if self.end_evt_timeout_task[imageName].done():
             self.log.info(f"Not collecting end data because not expecting {self.name_end}")
             self.log.warning(f"{self.name_end} seen when not expected; ignored")
             self.log.info(f"Current State is {self.summary_state.name}")
             return
 
         # Cancel/stop the timeout task because we got the END callback
-        self.end_evt_timeout_task.cancel()
+        self.end_evt_timeout_task[imageName].cancel()
         # Store the creation date of the header file -- i.e. now!!
-        self.metadata['DATE'] = time.time()
+        self.metadata[imageName]['DATE'] = time.time()
         # Collect metadata at end of integration
         self.log.info(f"Collecting Metadata END: {self.name_end} Event")
-        self.collect(self.keywords_end)
+        self.metadata[imageName].update(self.collect(self.keywords_end))
         # Collect metadata created by the HeaderService
         self.log.info("Collecting Metadata from HeaderService")
-        self.collect_from_HeaderService()
+        self.collect_from_HeaderService(imageName)
+
         # First we update the header using the information
         # from the camera geometry
-        self.update_header_geometry()
-        self.update_header()
+        self.update_header_geometry(imageName)
+        self.update_header(imageName)
         # Write the header
-        self.write()
+        self.write(imageName)
         # Announce creation event
-        self.announce()
-        self.log.info(f"-------- Done: {self.imageName} -------------------")
-        self.log.info(f"-------- Ready for next {self.name_start} -----")
+        self.announce(imageName)
+        self.log.info(f"-------- Done: {imageName} -------------------")
+        self.log.info(f"-------- Ready for next image -----")
         # Report and print the state
         self.report_summary_state()
 
@@ -312,14 +333,11 @@ class HSWorker(salobj.BaseCsc):
 
         # Start the web server
         self.start_web_server(self.config.weblogfile)
-        # Load up the header templates
-        self.HDR = hutils.HDRTEMPL_ATSCam(logger=self.log,
-                                          vendor=self.config.vendor,
-                                          write_mode=self.config.write_mode,
-                                          hdu_delimiter=self.config.hdu_delimiter)
-        self.HDR.load_templates()
 
-    def update_header_geometry(self):
+        # Create dictionaries keyed to imageName
+        self.create_dicts()
+
+    def update_header_geometry(self, imageName):
         """ Update the image geometry Camera Event """
         # Image paramters
         self.log.info("Extracting Image Parameters")
@@ -333,58 +351,63 @@ class HSWorker(salobj.BaseCsc):
 
         # in case we want to get NAXIS1/NAXIS2, etc.
         geom = hutils.get_image_size_from_imageReadoutParameters(myData)
-        # We update the headers and reload them
-        self.HDR.CCDGEOM.overh = geom['overh']
-        self.HDR.CCDGEOM.overv = geom['overv']
-        self.HDR.CCDGEOM.preh = geom['preh']
-        self.log.info("Reloadling templates")
-        self.HDR.load_templates()
+        # We update the headers and reload them to update geometry
+        self.HDR[imageName].CCDGEOM.overh = geom['overh']
+        self.HDR[imageName].CCDGEOM.overv = geom['overv']
+        self.HDR[imageName].CCDGEOM.preh = geom['preh']
+        self.HDR[imageName].load_templates()
+        self.log.info("Templates reloaded")
         self.log.info("For reference: NAXIS1={}".format(geom['NAXIS1']))
         self.log.info("For reference: NAXIS2={}".format(geom['NAXIS2']))
         self.log.info("Received: overv={}, overh={}, preh={}".format(geom['overv'],
                                                                      geom['overh'],
                                                                      geom['preh']))
 
-    def update_header(self):
+    def update_header(self, imageName):
 
         """Update FITSIO header object using the captured metadata"""
-        for k, v in self.metadata.items():
+        for k, v in self.metadata[imageName].items():
             self.log.info("Updating header with {:8s} = {}".format(k, v))
-            self.HDR.update_record(k, v, 'PRIMARY')
+            self.HDR[imageName].update_record(k, v, 'PRIMARY')
 
-    def get_filenames(self):
+    def get_imageName(self, myData):
+        """
+        Method to extract the key to match start/end events
+        (i.e: imageName) uniformly across the class
+        """
+        imageName = getattr(myData, self.config.imageName_event['value'])
+        return imageName
+
+    def get_filenames(self, imageName):
         """
         Figure out the section of the telemetry from which we will extract
         'imageName' and define the output names based on that ID
         """
-        # Extract from telemetry and identify the channel
-        name = get_channel_name(self.config.imageName_event)
-        myData = self.Remote_get[name]()
-        self.imageName = getattr(myData, self.config.imageName_event['value'])
-
         # Construct the hdr and fits filename
-        self.filename_HDR = os.path.join(self.config.filepath, self.config.format_HDR.format(self.imageName))
-        self.filename_FITS = self.config.format_FITS.format(self.imageName)
+        self.filename_FITS[imageName] = self.config.format_FITS.format(imageName)
+        self.filename_HDR[imageName] = os.path.join(self.config.filepath,
+                                                    self.config.format_HDR.format(imageName))
 
-    def announce(self):
+    def announce(self, imageName):
         """
         Broadcast the LFO Event for the HeaderService and optionally
         emulate it for the EFD
         """
         # Get the md5 for the header file
-        md5value = hutils.md5Checksum(self.filename_HDR)
-        bytesize = os.path.getsize(self.filename_HDR)
+        md5value = hutils.md5Checksum(self.filename_HDR[imageName])
+        bytesize = os.path.getsize(self.filename_HDR[imageName])
         self.log.info("Got MD5SUM: {}".format(md5value))
+        url = self.config.url_format.format(ip_address=self.ip_address,
+                                            port_number=self.config.port_number,
+                                            filename_HDR=os.path.basename(self.filename_HDR[imageName]))
         # Now we publish filename and MD5
         # Build the kwargs
         kw = {'byteSize': bytesize,
               'checkSum': md5value,
               'generator': self.config.hs_name,
               'mimeType': self.config.write_mode.upper(),
-              'url': self.config.url_format.format(ip_address=self.ip_address,
-                                                   port_number=self.config.port_number,
-                                                   filename_HDR=os.path.basename(self.filename_HDR)),
-              'id': self.imageName,
+              'url': url,
+              'id': imageName,
               'version': 1,
               'priority': 1,
               }
@@ -395,121 +418,146 @@ class HSWorker(salobj.BaseCsc):
             self.efd_controller.evt_largeFileObjectAvailable.set_put(**kw)
             self.log.info(f"Sent EFD largeFileObjectAvailable: {kw}")
 
-    def write(self):
+    def write(self, imageName):
         """ Function to call to write the header"""
-        self.HDR.write_header(self.filename_HDR)
-        self.log.info("Wrote header to: {}".format(self.filename_HDR))
+        self.HDR[imageName].write_header(self.filename_HDR[imageName])
+        self.log.info("Wrote header to: {}".format(self.filename_HDR[imageName]))
 
-    def clean(self):
-        """ Clean up metadata and myData dicts"""
-        self.myData = {}
+    def clean(self, imageName):
+        """ Clean up imageName data structures"""
+        self.log.info(f"Cleaning data for: {imageName}")
+        self.end_evt_timeout_task[imageName] = None
+        self.metadata[imageName] = None
+        self.HDR[imageName] = None
+        self.filename_HDR[imageName] = None
+        self.filename_FITS[imageName] = None
+
+    def create_dicts(self):
+        """
+        Create the dictionaries holding per image information, such as:
+        timeout tasks, metadata and headers
+        """
+        self.log.info(f"Creating per imageName dictionaries")
+        self.end_evt_timeout_task = {}
         self.metadata = {}
+        self.HDR = {}
+        self.filename_FITS = {}
+        self.filename_HDR = {}
 
     def collect(self, keys):
         """ Collect meta-data from the telemetry-connected channels
         and store it in the 'metadata' dictionary"""
 
-        # Make sure the myData payload is reset before collection
-        # to clean up data from previous events/telemetry
-        self.myData = {}
+        # Define myData and metadata dictionaries
+        # myData: holds the payload from Telem/Events
+        # metadata: holds the metadata to be inserted into the Header object
+        myData = {}
+        metadata = {}
         for k in keys:
             name = get_channel_name(self.config.telemetry[k])
             param = self.config.telemetry[k]['value']
             # Access data payload only once
-            if name not in self.myData:
-                self.myData[name] = self.Remote_get[name]()
-                # Only update metadata if self.myData is defined (not None)
-            if self.myData[name] is None:
+            if name not in myData:
+                myData[name] = self.Remote_get[name]()
+            # Only update metadata if myData is defined (not None)
+            if myData[name] is None:
                 self.log.warning(f"Cannot get keyword: {k} from topic: {name}")
             else:
                 # In case of a long telemetry array we take the first element
                 # TODO : if we happen to have many cases like this, we should
                 # state which element of the array in the configuration file.
-                payload = getattr(self.myData[name], param)
+                payload = getattr(myData[name], param)
                 if hasattr(payload, "__len__") and not isinstance(payload, str):
-                    self.metadata[k] = payload[0]
+                    metadata[k] = payload[0]
                 else:
-                    self.metadata[k] = payload
+                    metadata[k] = payload
                 # Scale by `scale` if it was defined
                 if 'scale' in self.config.telemetry[k]:
-                    self.metadata[k] = self.metadata[k]*self.config.telemetry[k]['scale']
-                self.log.debug(f"Extacted {k}={self.metadata[k]} from topic: {name}")
+                    metadata[k] = metadata[k]*self.config.telemetry[k]['scale']
+                self.log.debug(f"Extacted {k}={metadata[k]} from topic: {name}")
+        return metadata
 
-    def collect_from_HeaderService(self):
+    def collect_from_HeaderService(self, imageName):
 
         """
         Collect and update custom meta-data generated or transformed by
         the HeaderService
         """
+        # Simplify code with shortcuts for imageName
+        header = self.HDR[imageName].header
+        metadata = self.metadata[imageName]
 
         # Reformat and calculate dates based on different timeStamps
         # NOTE: For now the timestamp are coming in UTC from Camera and are
         # transformed to TAI by the function hscalc.get_date()
-        self.DATE = hscalc.get_date(self.metadata['DATE'])
-        self.DATE_OBS = hscalc.get_date(self.metadata['DATE-OBS'])
-        self.DATE_BEG = hscalc.get_date(self.metadata['DATE-BEG'])
-        self.DATE_END = hscalc.get_date(self.metadata['DATE-END'])
-        self.metadata['DATE'] = self.DATE.isot
-        self.metadata['DATE-OBS'] = self.DATE_OBS.isot
-        self.metadata['DATE-BEG'] = self.DATE_BEG.isot
-        self.metadata['DATE-END'] = self.DATE_END.isot
-        self.metadata['MJD'] = self.DATE.mjd
-        self.metadata['MJD-OBS'] = self.DATE_OBS.mjd
-        self.metadata['MJD-BEG'] = self.DATE_BEG.mjd
-        self.metadata['MJD-END'] = self.DATE_END.mjd
-        self.metadata['FILENAME'] = self.filename_FITS
+        DATE = hscalc.get_date(metadata['DATE'])
+        DATE_OBS = hscalc.get_date(metadata['DATE-OBS'])
+        DATE_BEG = hscalc.get_date(metadata['DATE-BEG'])
+        DATE_END = hscalc.get_date(metadata['DATE-END'])
+        metadata['DATE'] = DATE.isot
+        metadata['DATE-OBS'] = DATE_OBS.isot
+        metadata['DATE-BEG'] = DATE_BEG.isot
+        metadata['DATE-END'] = DATE_END.isot
+        metadata['MJD'] = DATE.mjd
+        metadata['MJD-OBS'] = DATE_OBS.mjd
+        metadata['MJD-BEG'] = DATE_BEG.mjd
+        metadata['MJD-END'] = DATE_END.mjd
+        metadata['FILENAME'] = self.filename_FITS[imageName]
 
         # The EL/AZ at start
-        if set(('ELSTART', 'AZSTART')).issubset(self.metadata):
+        if set(('ELSTART', 'AZSTART')).issubset(metadata):
             self.log.info("Computing RA/DEC from ELSTART/AZSTART")
-            ra, dec = hscalc.get_radec_from_altaz(alt=self.metadata['ELSTART'],
-                                                  az=self.metadata['AZSTART'],
-                                                  obstime=self.DATE_BEG,
-                                                  lat=self.HDR.header['PRIMARY']['OBS-LAT'],
-                                                  lon=self.HDR.header['PRIMARY']['OBS-LONG'],
-                                                  height=self.HDR.header['PRIMARY']['OBS-ELEV'])
-            self.metadata['RASTART'] = ra
-            self.metadata['DECSTART'] = dec
+            ra, dec = hscalc.get_radec_from_altaz(alt=metadata['ELSTART'],
+                                                  az=metadata['AZSTART'],
+                                                  obstime=DATE_BEG,
+                                                  lat=header['PRIMARY']['OBS-LAT'],
+                                                  lon=header['PRIMARY']['OBS-LONG'],
+                                                  height=header['PRIMARY']['OBS-ELEV'])
+            metadata['RASTART'] = ra
+            metadata['DECSTART'] = dec
         else:
-            if 'ELSTART' not in self.metadata:
+            if 'ELSTART' not in metadata:
                 self.log.info("No 'ELSTART' needed to compute RA/DEC START")
-            if 'AZSTART' not in self.metadata:
+            if 'AZSTART' not in metadata:
                 self.log.info("No 'AZSTART' needed to compute RA/DEC START")
 
         # The EL/AZ at end
-        if set(('ELEND', 'AZEND')).issubset(self.metadata):
+        if set(('ELEND', 'AZEND')).issubset(metadata):
             self.log.info("Computing RA/DEC from ELEND/AZEND")
-            ra, dec = hscalc.get_radec_from_altaz(alt=self.metadata['ELEND'],
-                                                  az=self.metadata['AZEND'],
-                                                  obstime=self.DATE_END,
-                                                  lat=self.HDR.header['PRIMARY']['OBS-LAT'],
-                                                  lon=self.HDR.header['PRIMARY']['OBS-LONG'],
-                                                  height=self.HDR.header['PRIMARY']['OBS-ELEV'])
-            self.metadata['RAEND'] = ra
-            self.metadata['DECEND'] = dec
+            ra, dec = hscalc.get_radec_from_altaz(alt=metadata['ELEND'],
+                                                  az=metadata['AZEND'],
+                                                  obstime=DATE_END,
+                                                  lat=header['PRIMARY']['OBS-LAT'],
+                                                  lon=header['PRIMARY']['OBS-LONG'],
+                                                  height=header['PRIMARY']['OBS-ELEV'])
+            metadata['RAEND'] = ra
+            metadata['DECEND'] = dec
         else:
-            if 'ELEND' not in self.metadata:
+            if 'ELEND' not in metadata:
                 self.log.info("No 'ELEND' needed to compute RA/DEC END")
-            if 'AZEND' not in self.metadata:
+            if 'AZEND' not in metadata:
                 self.log.info("No 'AZEND' needed to compute RA/DEC END")
 
-        if set(('RA', 'DEC', 'ROTPA', 'RADESYS')).issubset(self.metadata):
+        if set(('RA', 'DEC', 'ROTPA', 'RADESYS')).issubset(metadata):
             self.log.info("Computing WCS-TAN from RA/DEC/ROTPA")
-            wcs_TAN = self.HDR.CCDGEOM.wcs_TAN(self.metadata['RA'],
-                                               self.metadata['DEC'],
-                                               self.metadata['ROTPA'],
-                                               self.metadata['RADESYS'])
+            wcs_TAN = self.HDR[imageName].CCDGEOM.wcs_TAN(metadata['RA'],
+                                                          metadata['DEC'],
+                                                          metadata['ROTPA'],
+                                                          metadata['RADESYS'])
             # Update the metadata
-            self.metadata.update(wcs_TAN)
+            metadata.update(wcs_TAN)
         else:
-            if 'RA' not in self.metadata:
+            if 'RA' not in metadata:
                 self.log.info("No 'RA' needed to compute WCS")
-            if 'DEC' not in self.metadata:
+            if 'DEC' not in metadata:
                 self.log.info("No 'DEC' needed to compute WCS")
-            if 'ROTPA' not in self.metadata:
+            if 'ROTPA' not in metadata:
                 self.log.info("No 'ROTPA' needed to compute WCS")
-            if 'RADESYS' not in self.metadata:
+            if 'RADESYS' not in metadata:
                 self.log.info("No 'RADESYS' needed to compute WCS")
+
+        # Update the imageName metadata with new dict
+        self.metadata[imageName].update(metadata)
 
 
 def get_channel_name(c):

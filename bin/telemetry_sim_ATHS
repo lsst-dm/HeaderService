@@ -66,8 +66,10 @@ def cmdline():
                         help="The tracking coordinate system [Local, Sidereal, or non-sidereal].")
     parser.add_argument("--radesys", action="store", default="ICRS", type=str,
                         help="The ra/dec track system value.")
-    parser.add_argument("--object", action="store", default="ElGrodo", type=str,
+    parser.add_argument("--object", action="store", default="ElGordo", type=str,
                         help="The name of the object observed.")
+    parser.add_argument("--imagetag", action="store", default="ElGrodo", type=str,
+                        help="The imagetag of the observation.")
 
     parser.add_argument("--sleeptime", action="store", default=1, type=float,
                         help="Sleep Time between step, in seconds")
@@ -298,7 +300,7 @@ if __name__ == "__main__":
                  'timestampDateEnd': get_tai_time(),
                  'exposureTime': args.exptime,
                  'darkTime': shuttime + args.sleeptime,
-                 'imageTag': 'imageTag_TEST',
+                 'imageTag': args.imagetag,
                  'priority': 1,
                  'force_output': True}
         LOGGER.info("Sending simulated endOfImageTelemetry")
