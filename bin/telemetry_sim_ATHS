@@ -68,11 +68,13 @@ def cmdline():
                         help="The ra/dec track system value.")
     parser.add_argument("--object", action="store", default="ElGordo", type=str,
                         help="The name of the object observed.")
-    parser.add_argument("--imagetag", action="store", default="ElGrodo", type=str,
+    parser.add_argument("--imagetag", action="store", default="ElGordo", type=str,
                         help="The imagetag of the observation.")
 
     parser.add_argument("--sleeptime", action="store", default=1, type=float,
                         help="Sleep Time between step, in seconds")
+    parser.add_argument("--delaytime", action="store", default=0, type=float,
+                        help="Extra delay time before endOfImageTelemetry in seconds")
     parser.add_argument("--preh", action="store", default=CCDGEOM.preh, type=int,
                         help="prescan horizontal")
     parser.add_argument("--overh", action="store", default=CCDGEOM.overh, type=int,
@@ -303,6 +305,9 @@ if __name__ == "__main__":
                  'imageTag': args.imagetag,
                  'priority': 1,
                  'force_output': True}
+        if args.delaytime > 0:
+            LOGGER.info(f"Delaying endOfImageTelemetry {args.delaytime}[s]")
+            time.sleep(args.delaytime)
         LOGGER.info("Sending simulated endOfImageTelemetry")
         cam.evt_endOfImageTelemetry.set_put(**kwEND)
         LOGGER.info(f"---Sleeping for {args.sleeptime} s ---")

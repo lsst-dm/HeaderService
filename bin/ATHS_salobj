@@ -33,7 +33,7 @@ def cmdline():
     parser.add_argument("--url_format", action="store",
                         default="http://{ip_address}:{port_number}/{filename_HDR}",
                         help="The URL format to be used")
-    parser.add_argument("--timeout_endTelem", action="store", type=float, default=120,
+    parser.add_argument("--timeout_exptime", action="store", type=float, default=120,
                         help="Timeout for end Telemetry event in seconds")
     parser.add_argument("--port_number", action="store", default='8000', type=str,
                         help="Port number for webserver")

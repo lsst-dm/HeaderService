@@ -60,6 +60,9 @@ class HSWorker(salobj.BaseCsc):
         # Define the callbacks for start/end
         self.define_evt_callbacks()
 
+        # Define global lock to update dictionaries
+        self.dlock = asyncio.Lock()
+
     async def close_tasks(self):
         """Close tasks on super and evt timeout"""
         await super().close_tasks()
@@ -70,10 +73,11 @@ class HSWorker(salobj.BaseCsc):
     async def end_evt_timeout(self, imageName, timeout):
         """Timeout timer for end event telemetry callback"""
         await asyncio.sleep(timeout)
-        self.log.info(f"{self.name_end} not seen in {timeout} seconds; giving up")
+        self.log.info(f"{self.name_end} for {imageName} not seen in {timeout} [s]; giving up")
         # Send the timeout warning using the salobj log
-        self.log.warning(f"Timeout while waiting for {imageName} {self.name_end} Event")
-        self.clean(imageName)
+        self.log.warning(f"Timeout while waiting for {self.name_end} Event from {imageName}")
+        async with self.dlock:
+            self.clean(imageName)
 
     def report_summary_state(self):
         """Call to report_summary_state and LOGGER"""
@@ -106,43 +110,14 @@ class HSWorker(salobj.BaseCsc):
             return
 
         sys.stdout.flush()
-        self.log.info(f"Received: {self.name_start} Event")
+        self.log.info(f"---------- Received: {self.name_start} Event -----------------")
 
         # Extract the key to match start/end events
         imageName = self.get_imageName(myData)
         self.log.info(f"Starting callback for imageName: {imageName}")
 
-        # Get the requested exposure time to estimate the total timeout
-        exptime_key = self.config.timeout_keyword
-        self.log.info("Collecting key to set timeout as key %s + %s" %
-                      (exptime_key, self.config.timeout_exptime))
-        metadata_tmp = self.collect([exptime_key])
-        timeout = metadata_tmp[exptime_key] + self.config.timeout_exptime
-        self.log.info(f"Using timeout: %s [s]" % timeout)
-
-        # Get the filenames and imageName from the start event payload.
-        self.log.info(f"Defining filenames for: {imageName}")
-        self.get_filenames(imageName)
-
-        # Create timeout_task per imageName
-        self.end_evt_timeout_task[imageName] = asyncio.ensure_future(self.end_evt_timeout(imageName, timeout))
-
-        # Collect metadata at start of integration and
-        # load it on the self.metadata dictionary
-        self.log.info(f"Collecting Metadata START : {self.name_start} Event")
-        self.metadata[imageName] = self.collect(self.keywords_start)
-
-        # Create the HDR object to be populated with the collected metadata,
-        # when loading the templates we get a HDR.header object
-        self.log.info(f"Creating header object for : {imageName}")
-        self.HDR[imageName] = hutils.HDRTEMPL_ATSCam(logger=self.log,
-                                                     vendor=self.config.vendor,
-                                                     write_mode=self.config.write_mode,
-                                                     hdu_delimiter=self.config.hdu_delimiter)
-        self.HDR[imageName].load_templates()
-
-        # Now we wait for end event
-        self.log.info(f"Waiting for {self.name_end} Event for: {imageName}")
+        # Update header object and metadata dictionaries with lock and wait
+        asyncio.ensure_future(self.complete_tasks_START(imageName))
 
     def end_collection_event_callback(self, myData):
         """ The callback function for the END collection event"""
@@ -156,40 +131,19 @@ class HSWorker(salobj.BaseCsc):
         imageName = self.get_imageName(myData)
 
         # Check for rogue end collection events
+        self.log.info(f"Received: {self.name_end} Event for {imageName}")
         if imageName not in self.end_evt_timeout_task:
-            self.log.warning(f"Received rogue: {self.name_end} Event without a timeout task")
-            return
-
-        self.log.info(f"Received: {self.name_end} Event")
-        if self.end_evt_timeout_task[imageName].done():
-            self.log.info(f"Not collecting end data because not expecting {self.name_end}")
-            self.log.warning(f"{self.name_end} seen when not expected; ignored")
+            self.log.warning(f"Received orphan {self.name_end} Event without a timeout task")
+            self.log.warning(f"{self.name_end} will be ignored for: {imageName}")
             self.log.info(f"Current State is {self.summary_state.name}")
             return
 
         # Cancel/stop the timeout task because we got the END callback
         self.end_evt_timeout_task[imageName].cancel()
-        # Store the creation date of the header file -- i.e. now!!
-        self.metadata[imageName]['DATE'] = time.time()
-        # Collect metadata at end of integration
-        self.log.info(f"Collecting Metadata END: {self.name_end} Event")
-        self.metadata[imageName].update(self.collect(self.keywords_end))
-        # Collect metadata created by the HeaderService
-        self.log.info("Collecting Metadata from HeaderService")
-        self.collect_from_HeaderService(imageName)
 
-        # First we update the header using the information
-        # from the camera geometry
-        self.update_header_geometry(imageName)
-        self.update_header(imageName)
-        # Write the header
-        self.write(imageName)
-        # Announce creation event
-        self.announce(imageName)
-        self.log.info(f"-------- Done: {imageName} -------------------")
-        self.log.info(f"-------- Ready for next image -----")
-        # Report and print the state
-        self.report_summary_state()
+        # Final collection using asyncio lock, will call functions that
+        # take care of updating data structures. We also write the header file.
+        asyncio.ensure_future(self.complete_tasks_END(imageName))
 
     def get_ip(self):
         """Figure out the IP we will be using to broadcast"""
@@ -337,6 +291,76 @@ class HSWorker(salobj.BaseCsc):
         # Create dictionaries keyed to imageName
         self.create_dicts()
 
+    async def complete_tasks_START(self, imageName):
+        """
+        Update data objects at START with asyncio lock
+        and complete all tasks started with START event.
+        """
+        async with self.dlock:
+
+            # Collect metadata at start of integration and
+            # load it on the self.metadata dictionary
+            self.log.info(f"Collecting Metadata START : {self.name_start} Event")
+            self.metadata[imageName] = self.collect(self.keywords_start)
+
+            # Create the HDR object to be populated with the collected metadata
+            # when loading the templates we get a HDR.header object
+            self.log.info(f"Creating header object for : {imageName}")
+            self.HDR[imageName] = hutils.HDRTEMPL_ATSCam(logger=self.log,
+                                                         vendor=self.config.vendor,
+                                                         write_mode=self.config.write_mode,
+                                                         hdu_delimiter=self.config.hdu_delimiter)
+            self.HDR[imageName].load_templates()
+            # Get the filenames and imageName from the start event payload.
+            self.log.info(f"Defining filenames for: {imageName}")
+            self.get_filenames(imageName)
+
+            # Get the requested exposure time to estimate the total timeout
+            exptime_key = self.config.timeout_keyword
+            self.log.info("Collecting key to set timeout as key %s + %s" %
+                          (exptime_key, self.config.timeout_exptime))
+            metadata_tmp = self.collect([exptime_key])
+            timeout = metadata_tmp[exptime_key] + self.config.timeout_exptime
+            self.log.info(f"Using timeout: %s [s]" % timeout)
+
+            # Create timeout_task per imageName
+            self.end_evt_timeout_task[imageName] = asyncio.ensure_future(self.end_evt_timeout(imageName,
+                                                                                              timeout))
+            self.log.info(f"Waiting {timeout} [s] for {self.name_end} Event for: {imageName}")
+
+    async def complete_tasks_END(self, imageName):
+        """
+        Update data objects at END with asyncio lock
+        and complete all tasks started with END event
+        """
+        async with self.dlock:
+
+            # Collect metadata at end of integration
+            self.log.info(f"Collecting Metadata END: {self.name_end} Event")
+            self.metadata[imageName].update(self.collect(self.keywords_end))
+
+            # Collect metadata created by the HeaderService
+            self.log.info("Collecting Metadata from HeaderService")
+            # Update header with information from HS
+            self.collect_from_HeaderService(imageName)
+
+            # Update header using the information from the camera geometry
+            self.log.info("Updating Header with Camera information")
+            self.update_header_geometry(imageName)
+            # Update header object with metadata dictionary
+            self.update_header(imageName)
+            # Write the header
+            self.write(imageName)
+            # Announce creation event
+            self.announce(imageName)
+            # Clean up
+            self.clean(imageName)
+
+        self.log.info(f"-------- Done: {imageName} -------------------")
+        self.log.info(f"-------- Ready for next image -----")
+        # Report and print the state
+        self.report_summary_state()
+
     def update_header_geometry(self, imageName):
         """ Update the image geometry Camera Event """
         # Image paramters
@@ -426,11 +450,11 @@ class HSWorker(salobj.BaseCsc):
     def clean(self, imageName):
         """ Clean up imageName data structures"""
         self.log.info(f"Cleaning data for: {imageName}")
-        self.end_evt_timeout_task[imageName] = None
-        self.metadata[imageName] = None
-        self.HDR[imageName] = None
-        self.filename_HDR[imageName] = None
-        self.filename_FITS[imageName] = None
+        del self.end_evt_timeout_task[imageName]
+        del self.metadata[imageName]
+        del self.HDR[imageName]
+        del self.filename_HDR[imageName]
+        del self.filename_FITS[imageName]
 
     def create_dicts(self):
         """
@@ -490,7 +514,8 @@ class HSWorker(salobj.BaseCsc):
         # Reformat and calculate dates based on different timeStamps
         # NOTE: For now the timestamp are coming in UTC from Camera and are
         # transformed to TAI by the function hscalc.get_date()
-        DATE = hscalc.get_date(metadata['DATE'])
+        # Store the creation date of the header file -- i.e. now!!
+        DATE = hscalc.get_date(time.time())
         DATE_OBS = hscalc.get_date(metadata['DATE-OBS'])
         DATE_BEG = hscalc.get_date(metadata['DATE-BEG'])
         DATE_END = hscalc.get_date(metadata['DATE-END'])
