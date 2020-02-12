@@ -20,6 +20,7 @@ IMGTYPE =                      / BIAS, DARK, FLAT, OBJECT
 BUNIT   = 'adu     '           / Brightness units for pixel array
 
         ---- Telescope info, location, observer ----
+FACILITY= 'Vera C. Rubin Observatory' / Facility name
 TELESCOP= 'LSST AuxTelescope'  / Telescope name
 INSTRUME= 'LATISS'             / Instrument used to obtain these data
 OBSERVER= 'LSST'               / Observer name(s)
