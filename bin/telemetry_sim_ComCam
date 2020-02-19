@@ -1,0 +1,192 @@
+#!/usr/bin/env python3
+
+import time
+import argparse
+import HeaderService.hutils as hutils
+import HeaderService.hscalc as hscalc
+import HeaderService.camera_coords as camera_coords
+import random
+import lsst.ts.salobj as salobj
+
+
+# Get the info from the camera_coords library for and ITL sensor
+CCDGEOM = camera_coords.CCDInfo('ITL')
+CCDGEOM.load_vendor_defaults()
+
+
+def cmdline():
+
+    # Make conf_parser that hold values from a config.ini file
+    parser = argparse.ArgumentParser(description="Send telemetry to Header Client")
+
+    # The command-line arguments
+    parser.add_argument("--ra", action="store", default=None, type=float,
+                        help="The RA of the visit")
+    parser.add_argument("--dec", action="store", default=None, type=float,
+                        help="The DEC of the visit")
+    parser.add_argument("--rotpa", action="store", default=0.0, type=float,
+                        help="The ROTPA for the visit")
+    parser.add_argument("--filter", action="store", default='r',
+                        help="Name of the filter")
+    parser.add_argument("--grating", action="store", default='R400',
+                        help="Name of the grating")
+    parser.add_argument("--groupId", action="store", default='LSSTTEST',
+                        help="groupId")
+    parser.add_argument("--imageType", action="store", default='OBJECT',
+                        help="imageType")
+    # Control imageName
+    parser.add_argument("--telcode", action="store", default='CC',
+                        help="The code for the telecope")
+    parser.add_argument("--controller", action="store", default='O',
+                        help="The controller (O for OCS, C for CCS)")
+    parser.add_argument("--dayobs", action="store", default=None,
+                        help="The observation day as defined by image name")
+    parser.add_argument("--seqnum", action="store", default=1, type=int,
+                        help="The sequence number from the image name")
+    parser.add_argument("--NSequence", action="store", default=3, type=int,
+                        help="Number of exposure in sequence")
+
+    parser.add_argument("--exptime", action="store", default=15, type=float,
+                        help="Exposure time in seconds")
+    parser.add_argument("--airmass", action="store", default=1.237, type=float,
+                        help="Airmass")
+    parser.add_argument("--ha", action="store", default='30.0', type=str,
+                        help="The HA")
+    parser.add_argument("--el", action="store", default=75.0, type=float,
+                        help="The elevation angle")
+    parser.add_argument("--az", action="store", default=45.0, type=float,
+                        help="The azimuth angle")
+    parser.add_argument("--focusz", action="store", default=13, type=float,
+                        help="ATHexapod/ATAOS FocusZ position (mm)")
+
+    parser.add_argument("--instport", action="store", default=1, type=int,
+                        help="The instrument port where LATISS is installed")
+    parser.add_argument("--m3port", action="store", default=1, type=int,
+                        help="Port the M3 is directing light into")
+    parser.add_argument("--tracksys", action="store", default="Local", type=str,
+                        help="The tracking coordinate system [Local, Sidereal, or non-sidereal].")
+    parser.add_argument("--radesys", action="store", default="ICRS", type=str,
+                        help="The ra/dec track system value.")
+    parser.add_argument("--object", action="store", default="ElGordo", type=str,
+                        help="The name of the object observed.")
+    parser.add_argument("--imagetag", action="store", default="ElGordo", type=str,
+                        help="The imagetag of the observation.")
+    parser.add_argument("--imageName", action="store", default=None, type=str,
+                        help="Optional imageName")
+
+    parser.add_argument("--sleeptime", action="store", default=1, type=float,
+                        help="Sleep Time between step, in seconds")
+    parser.add_argument("--delaytime", action="store", default=0, type=float,
+                        help="Extra delay time before endOfImageTelemetry in seconds")
+    parser.add_argument("--preh", action="store", default=CCDGEOM.preh, type=int,
+                        help="prescan horizontal")
+    parser.add_argument("--overh", action="store", default=CCDGEOM.overh, type=int,
+                        help="overscal horizontal")
+    parser.add_argument("--overv", action="store", default=CCDGEOM.overv, type=int,
+                        help="overscal vertical")
+    args = parser.parse_args()
+    return args
+
+
+def get_tai_time():
+    """ Shortcut to get tai time now"""
+    return salobj.tai_from_utc(time.time())
+
+
+if __name__ == "__main__":
+
+    # Get the command line arguments
+    args = cmdline()
+
+    shuttime = args.exptime + random.uniform(0, 0.5)
+
+    # Create handlers for the CSCs we want to simulate messages
+    cam = salobj.Controller(name="CCCamera", index=0)
+    LOGGER = hutils.create_logger()
+
+    # Camera Geometry
+    # Send sub-set of imageReadoutParameters, we populate only a few fields
+    kwRO = {'overRows': [args.overv]*9,
+            'overCols': [args.overh]*9,
+            'preCols': [args.preh]*9,
+            'readCols': [CCDGEOM.dimh]*9,
+            'readCols2': [0]*9,
+            'readRows': [CCDGEOM.dimv]*9,
+            'ccdNames': ':'.join(hutils.build_sensor_list('ComCam', sep='')),
+            'force_output': True}
+    cam.evt_imageReadoutParameters.set_put(**kwRO)
+    LOGGER.info("Sending simulated imageReadoutParameters")
+
+    # Loop over NSequence
+    for k in range(args.NSequence):
+
+        timeStamp = get_tai_time()
+        seqN = args.seqnum + k
+        LOGGER.info("----Starting Integration {}".format(seqN))
+
+        # We need to emulate this format from camera:
+        # AT_O_20190409_000008.header
+        if args.dayobs:
+            DAYOBS = args.dayobs
+        else:
+            DATE_OBS = hscalc.get_date(timeStamp)
+            DAYOBS = DATE_OBS.datetime.strftime('%Y%m%d')
+
+        if args.imageName:
+            imageName = args.imageName
+        else:
+            imageName = "{}_{}_{}_{:06d}".format(args.telcode, args.controller, DAYOBS, seqN)
+
+        # Send the startIntegration for image: k
+        LOGGER.info("Sending simulated startIntegration")
+        kwInt = {'imageType': args.imageType,
+                 'groupId': args.groupId,
+                 'imagesInSequence': args.NSequence,
+                 'imageName': imageName,
+                 'imageIndex': k,
+                 'imageNumber': seqN,
+                 'imageSource': 'AT',
+                 'imageController': 'O',
+                 'imageDate': DAYOBS,
+                 'timeStampAcquisitionStart': timeStamp,
+                 'exposureTime': args.exptime,
+                 'priority': 1,
+                 'force_output': True}
+        cam.evt_startIntegration.set_put(**kwInt)
+        LOGGER.info("Sending simulated startIntergration: {}".format(kwInt))
+        LOGGER.info(f"Waiting for {args.exptime} sec")
+        time.sleep(args.exptime)
+
+        # Send startReadout Event after integration is finished
+        LOGGER.info("Sending simulated startReadout")
+        cam.evt_startReadout.set_put(**kwInt)
+
+        # Send endReadout Event after startReadout is finished
+        LOGGER.info("Sending simulated endReadout")
+        cam.evt_endReadout.set_put(**kwInt)
+
+        # send endOfImageTelemetry event
+        kwEND = {'imageType': args.imageType,
+                 'groupId': args.groupId,
+                 'imagesInSequence': args.NSequence,
+                 'imageName': imageName,
+                 'imageIndex': k,
+                 'imageNumber': seqN,
+                 'imageSource': 'CC',
+                 'imageController': 'O',
+                 'imageDate': DAYOBS,
+                 'timeStampAcquisitionStart': timeStamp,
+                 'timestampDateObs': timeStamp,
+                 'timestampDateEnd': get_tai_time(),
+                 'exposureTime': args.exptime,
+                 'darkTime': shuttime + args.sleeptime,
+                 'imageTag': args.imagetag,
+                 'priority': 1,
+                 'force_output': True}
+        if args.delaytime > 0:
+            LOGGER.info(f"Delaying endOfImageTelemetry {args.delaytime}[s]")
+            time.sleep(args.delaytime)
+        LOGGER.info("Sending simulated endOfImageTelemetry")
+        cam.evt_endOfImageTelemetry.set_put(**kwEND)
+        LOGGER.info(f"---Sleeping for {args.sleeptime} s ---")
+        time.sleep(args.sleeptime)

@@ -106,7 +106,8 @@ class HSWorker(salobj.BaseCsc):
 
         # If not in ENABLED mode we do nothing
         if self.summary_state != salobj.State.ENABLED:
-            self.log.info(f"Current State is {self.summary_state.name}")
+            self.log.info(f"Received: {self.name_start} Event")
+            self.log.info(f"Ignoring as current state is {self.summary_state.name}")
             return
 
         sys.stdout.flush()
@@ -124,7 +125,8 @@ class HSWorker(salobj.BaseCsc):
 
         # If not in ENABLED mode we do nothing
         if self.summary_state != salobj.State.ENABLED:
-            self.log.info(f"Current State is {self.summary_state.name}")
+            self.log.info(f"Received: {self.name_end} Event")
+            self.log.info(f"Ignoring as current state is {self.summary_state.name}")
             return
 
         # Extract the key to match start/end events
@@ -306,10 +308,15 @@ class HSWorker(salobj.BaseCsc):
             # Create the HDR object to be populated with the collected metadata
             # when loading the templates we get a HDR.header object
             self.log.info(f"Creating header object for : {imageName}")
-            self.HDR[imageName] = hutils.HDRTEMPL_ATSCam(logger=self.log,
-                                                         vendor=self.config.vendor,
-                                                         write_mode=self.config.write_mode,
-                                                         hdu_delimiter=self.config.hdu_delimiter)
+            # In the absense of a message from camera with the list of sensors
+            # we build the list using a function in hutils
+            self.sensors = hutils.build_sensor_list(self.config.instrument)
+            self.HDR[imageName] = hutils.HDRTEMPL(logger=self.log,
+                                                  section=self.config.section,
+                                                  instrument=self.config.instrument,
+                                                  vendor_names=self.config.vendor_names,
+                                                  sensor_names=self.sensors,
+                                                  write_mode=self.config.write_mode)
             self.HDR[imageName].load_templates()
             # Get the filenames and imageName from the start event payload.
             self.log.info(f"Defining filenames for: {imageName}")
@@ -338,7 +345,6 @@ class HSWorker(salobj.BaseCsc):
             # Collect metadata at end of integration
             self.log.info(f"Collecting Metadata END: {self.name_end} Event")
             self.metadata[imageName].update(self.collect(self.keywords_end))
-
             # Collect metadata created by the HeaderService
             self.log.info("Collecting Metadata from HeaderService")
             # Update header with information from HS
@@ -364,7 +370,7 @@ class HSWorker(salobj.BaseCsc):
     def update_header_geometry(self, imageName):
         """ Update the image geometry Camera Event """
         # Image paramters
-        self.log.info("Extracting Image Parameters")
+        self.log.info("Extracting CCD/Sensor Image Parameters")
         # Extract from telemetry and identify the channel
         name = get_channel_name(self.config.imageParam_event)
         myData = self.Remote_get[name]()
@@ -375,24 +381,28 @@ class HSWorker(salobj.BaseCsc):
 
         # in case we want to get NAXIS1/NAXIS2, etc.
         geom = hutils.get_image_size_from_imageReadoutParameters(myData)
-        # We update the headers and reload them to update geometry
-        self.HDR[imageName].CCDGEOM.overh = geom['overh']
-        self.HDR[imageName].CCDGEOM.overv = geom['overv']
-        self.HDR[imageName].CCDGEOM.preh = geom['preh']
-        self.HDR[imageName].load_templates()
-        self.log.info("Templates reloaded")
-        self.log.info("For reference: NAXIS1={}".format(geom['NAXIS1']))
-        self.log.info("For reference: NAXIS2={}".format(geom['NAXIS2']))
-        self.log.info("Received: overv={}, overh={}, preh={}".format(geom['overv'],
-                                                                     geom['overh'],
-                                                                     geom['preh']))
+
+        # Update the geometry for the HDR object
+        self.log.info(f"Updating header CCD geom for {imageName}")
+        self.HDR[imageName].load_geometry(geom)
+        self.log.info("Templates Updated")
 
     def update_header(self, imageName):
 
         """Update FITSIO header object using the captured metadata"""
-        for k, v in self.metadata[imageName].items():
-            self.log.info("Updating header with {:8s} = {}".format(k, v))
-            self.HDR[imageName].update_record(k, v, 'PRIMARY')
+        for keyword, value in self.metadata[imageName].items():
+
+            # Check if dictionary with per-sensor values
+            if isinstance(value, dict):
+                for sensor in value.keys():
+                    extname = self.HDR[imageName].get_primary_extname(sensor)
+                    self.HDR[imageName].update_record(keyword, value[sensor], extname)
+                    self.log.info(f"Updating header[{extname}] with {keyword:8s} = {value[sensor]}")
+            # Otherwise we put it into the PRIMARY
+            else:
+                extname = 'PRIMARY'
+                self.HDR[imageName].update_record(keyword, value, extname)
+                self.log.info(f"Updating header[{extname}] with {keyword:8s} = {value}")
 
     def get_imageName(self, myData):
         """
@@ -468,7 +478,7 @@ class HSWorker(salobj.BaseCsc):
         self.filename_FITS = {}
         self.filename_HDR = {}
 
-    def collect(self, keys):
+    def collect_old(self, keys):
         """ Collect meta-data from the telemetry-connected channels
         and store it in the 'metadata' dictionary"""
 
@@ -501,6 +511,68 @@ class HSWorker(salobj.BaseCsc):
                 self.log.debug(f"Extacted {k}={metadata[k]} from topic: {name}")
         return metadata
 
+    def collect(self, keys):
+        """ Collect meta-data from the telemetry-connected channels
+        and store it in the 'metadata' dictionary"""
+
+        # Define myData and metadata dictionaries
+        # myData: holds the payload from Telem/Events
+        # metadata: holds the metadata to be inserted into the Header object
+        myData = {}
+        metadata = {}
+        for keyword in keys:
+            name = get_channel_name(self.config.telemetry[keyword])
+            # Access data payload only once
+            if name not in myData:
+                myData[name] = self.Remote_get[name]()
+            # Only update metadata if myData is defined (not None)
+            if myData[name] is None:
+                self.log.warning(f"Cannot get keyword: {keyword} from topic: {name}")
+            else:
+                metadata[keyword] = self.extract_from_myData(keyword, myData[name])
+        return metadata
+
+    def extract_from_myData(self, keyword, myData):
+
+        param = self.config.telemetry[keyword]['value']
+        payload = getattr(myData, param)
+
+        # Case 1 -- we want just one value per key (scalar)
+        if 'array' not in self.config.telemetry[keyword]:
+            self.log.debug(f"{keyword} is a scalar")
+            extracted_payload = payload
+        # Case 2 -- array of values per sensor
+        elif self.config.telemetry[keyword]['array'] == 'CCD_array':
+            self.log.debug(f"{keyword} is an array")
+            ccdnames = self.get_CCD_keywords(keyword, myData)
+            self.log.info(f"For {keyword} extracted ccdnames: {ccdnames}")
+            extracted_payload = dict(zip(ccdnames, payload))
+        # If some kind of array, take first element
+        elif hasattr(payload, "__len__") and not isinstance(payload, str):
+            extracted_payload = payload[0]
+        else:
+            self.log.debug(f"Undefined type for {keyword}")
+            extracted_payload = None
+        return extracted_payload
+
+    def get_CCD_keywords(self, keyword, myData, sep=":"):
+        """
+        Function to extract a list of CCDs/Sensors for the ':'
+        separated string published by Camera
+        """
+        array_key = self.config.telemetry[keyword]['array_key']
+        payload = getattr(myData, array_key)
+        # Make sure we get back something
+        if payload is None:
+            self.log.warning(f"Cannot get list of CCD keys for {keyword}")
+            ccd_keywords = None
+        else:
+            # we extract them using separator
+            ccd_keywords = payload.split(sep)
+            if len(ccd_keywords) <= 1:
+                self.log.warning(f"List CCD keys for {keyword} is <= 1")
+        return ccd_keywords
+
     def collect_from_HeaderService(self, imageName):
 
         """
@@ -523,12 +595,21 @@ class HSWorker(salobj.BaseCsc):
         metadata['DATE-OBS'] = DATE_OBS.isot
         metadata['DATE-BEG'] = DATE_BEG.isot
         metadata['DATE-END'] = DATE_END.isot
-        metadata['MJD'] = DATE.mjd
-        metadata['MJD-OBS'] = DATE_OBS.mjd
-        metadata['MJD-BEG'] = DATE_BEG.mjd
-        metadata['MJD-END'] = DATE_END.mjd
+        # Need to force MJD dates to floats for yaml header
+        metadata['MJD'] = float(DATE.mjd)
+        metadata['MJD-OBS'] = float(DATE_OBS.mjd)
+        metadata['MJD-BEG'] = float(DATE_BEG.mjd)
+        metadata['MJD-END'] = float(DATE_END.mjd)
         metadata['FILENAME'] = self.filename_FITS[imageName]
 
+        # If not LATISS stop here
+        if self.config.instrument != 'LATISS':
+            # Update the imageName metadata with new dict
+            self.metadata[imageName].update(metadata)
+            return
+
+        # ---------------------------------------------------------------------
+        # This functions will only be usef for LATISS
         # The EL/AZ at start
         if set(('ELSTART', 'AZSTART')).issubset(metadata):
             self.log.info("Computing RA/DEC from ELSTART/AZSTART")
@@ -564,11 +645,12 @@ class HSWorker(salobj.BaseCsc):
                 self.log.info("No 'AZEND' needed to compute RA/DEC END")
 
         if set(('RA', 'DEC', 'ROTPA', 'RADESYS')).issubset(metadata):
-            self.log.info("Computing WCS-TAN from RA/DEC/ROTPA")
-            wcs_TAN = self.HDR[imageName].CCDGEOM.wcs_TAN(metadata['RA'],
-                                                          metadata['DEC'],
-                                                          metadata['ROTPA'],
-                                                          metadata['RADESYS'])
+            sensor = self.sensors[0]
+            self.log.info(f"Computing WCS-TAN from RA/DEC/ROTPA for {sensor}")
+            wcs_TAN = self.HDR[imageName].CCDInfo[sensor].wcs_TAN(metadata['RA'],
+                                                                  metadata['DEC'],
+                                                                  metadata['ROTPA'],
+                                                                  metadata['RADESYS'])
             # Update the metadata
             metadata.update(wcs_TAN)
         else:
@@ -580,6 +662,7 @@ class HSWorker(salobj.BaseCsc):
                 self.log.info("No 'ROTPA' needed to compute WCS")
             if 'RADESYS' not in metadata:
                 self.log.info("No 'RADESYS' needed to compute WCS")
+        # ---------------------------------------------------------------------
 
         # Update the imageName metadata with new dict
         self.metadata[imageName].update(metadata)
@@ -619,6 +702,12 @@ def extract_telemetry_channels(telem, start_collection_event=None,
         # Add scale if present in the definition -- although not used elsewhere
         if 'scale' in telem[key]:
             c['scale'] = telem[key]['scale']
+        # Add array qualifier
+        if 'type' in telem[key]:
+            c['type'] = telem[key]['type']
+        else:
+            c['type'] = 'scalar'
+
         name = get_channel_name(c)
         # Make sure we don't crate extra channels
         if name not in channels.keys():

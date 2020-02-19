@@ -1,0 +1,429 @@
+# Configuration file for the ComCam
+
+# The name of the HeaderService
+hs_name: CCHeaderService
+instrument: ComCam
+# Vendor names should come from an CCCamera Event in the future
+vendor_names: ['ITL','ITL','ITL','ITL','ITL','ITL','ITL','ITL','ITL','ITL']
+section: ComCam
+
+# Default logging level
+loglevel: 'INFO'
+
+# Path to the log location and other log definitions
+logfile: 'www/HeaderService.log'
+log_format: '[%(asctime)s.%(msecs)03d][%(levelname)s][%(name)s][%(funcName)s] %(message)s'
+log_format_date: '%Y-%m-%d %H:%M:%S'
+
+# path to the web server logfile
+weblogfile: 'www/webserver.log'
+
+# The ts_xml version we are using -- for now this is just curated and need to be changed manually when we change version
+ts_xml: "4.7.0"
+
+# port_number for webserver
+port_number: 8000
+
+# The URL format to be used
+url_format: "http://{ip_address}:{port_number}/{filename_HDR}"
+
+# Default write_mode (fits or string)
+write_mode: yaml
+
+# Timeout beyond the requested exposure time to wait for an end of Telemetry event (in seconds)
+timeout_exptime: 30
+timeout_keyword: 'EXPTIME'
+
+# The file naming event source and definitions
+filepath: 'www/DMHS_filerepo'
+format_HDR: "{}.header"
+format_FITS: "{}.fits"
+imageName_event:
+    device: CCCamera
+    topic: startIntegration
+    value: imageName
+
+# The Events that we use to define where we collect
+start_collection_event:
+    device: CCCamera
+    topic: startIntegration
+
+end_collection_event:
+    device: CCCamera
+    topic: endOfImageTelemetry
+
+# The event for the image readout paramters
+imageParam_event:
+    device: CCCamera
+    topic: imageReadoutParameters
+
+# Telemetry values for images meta-data
+# https://confluence.lsstcorp.org/display/SYSENG/ComCam+Header+Information+Topic+Mapping
+telemetry:
+
+ DATE-OBS:
+  device: CCCamera
+  Stype: Event
+  topic: endOfImageTelemetry
+  value: timestampDateObs
+  collect_after_event: end_collection_event
+
+ DATE-BEG:
+  device: CCCamera
+  Stype: Event
+  topic: endOfImageTelemetry
+  value: timestampDateObs
+  collect_after_event: end_collection_event
+
+ DATE-END:
+  device: CCCamera
+  Stype: Event
+  topic: endOfImageTelemetry
+  value: timestampDateEnd
+  collect_after_event: end_collection_event
+
+ OBSID:
+  device: CCCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageName
+  collect_after_event: start_collection_event
+
+ TELCODE:
+  device: CCCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageSource
+  collect_after_event: start_collection_event
+
+ CONTRLLR:
+  device: CCCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageController
+  collect_after_event: start_collection_event
+
+ DAYOBS:
+  device: CCCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageDate
+  collect_after_event: start_collection_event
+
+ SEQNUM:
+  device: CCCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageNumber
+  collect_after_event: start_collection_event
+
+ GROUPID:
+  device: CCCamera
+  Stype: Event
+  topic: startIntegration
+  value: groupId
+  collect_after_event: start_collection_event
+
+ IMGTYPE:
+   device: CCCamera
+   Stype: Event
+   topic: startIntegration
+   value: imageType
+   collect_after_event: start_collection_event
+
+ EXPTIME:
+  device: CCCamera
+  Stype: Event
+  topic: startIntegration
+  value: exposureTime
+  collect_after_event: start_collection_event
+
+# ---- Comment until xml is ready --------
+#
+# DARKTIME:
+#  device: CCCamera
+#  Stype: Event
+#  topic: endOfImageTelemetry
+#  value: darkTime
+#  collect_after_event: end_collection_event
+#
+# SHUTTIME:
+#  device: CCCamera
+#  Stype: Event
+#  topic: shutterMotionProfile
+#  collect_after_event: end_collection_event
+#
+# CCDTEMP:
+#  device: CCCamera
+#  Stype: Telemetry
+#  topic: wreb
+#  value: ccdTemp0
+#  array_per_CCD: True
+#
+# TEMP_SET:
+#  device: CCCamera
+#  Stype: Telemetry
+#  topic: vacuum
+#  value: tempCCDSetPoint
+#  collect_after_event: start_collection_event
+
+# --- Comment until xml is ready
+# --- Camera Sensor information
+
+# CCD_MANU:
+#  device: CCCamera
+#  Stype: Event
+#  topic: focalPlaneSettingsApplied
+#  value: ccdManufacturer
+#  collect_after_event: start_collection_event
+#  array_per_CCD: True
+#
+# CCD_TYPE:
+#  device: CCCamera
+#  Stype: Event
+#  topic: focalPlaneSettingsApplied
+#  value: ccdType
+#  array_per_CCD: True
+#
+# CCD_SERN:
+#  device: CCCamera
+#  Stype: Event
+#  topic: focalPlaneSettingsApplied
+#  value: ccdSerialNumber
+#  collect_after_event: start_collection_event
+#  array_per_CCD: True
+#
+# LSST_NUM:
+#  device: CCCamera
+#  Stype: Event
+#  topic: focalPlaneSettingsApplied
+#  value: ccdName
+#  collect_after_event: start_collection_event
+#  array_per_CCD: True
+#
+# SEQCKSUM:
+#  device: CCCamera
+#  Stype: Event
+#  topic: focalPlaneSettingsApplied
+#  value: sequencerChecksum
+#  collect_after_event: start_collection_event
+#
+# SEQNAME:
+#  device: CCCamera
+#  Stype: Event
+#  topic: focalPlaneSettingsApplied
+#  value: sequencerKey
+#  collect_after_event: start_collection_event
+#
+# REBNAME:
+#  device: CCCamera
+#  Stype: Event
+#  topic: focalPlaneSettingsApplied
+#  value: rebName
+#  collect_after_event: start_collection_event
+#  array_per_CCD: True
+#
+# CONTNUM:
+#  device: CCCamera
+#  Stype: Event
+#  topic: focalPlaneSettingsApplied
+#  value: rebSerialNumber
+#  collect_after_event: start_collection_event
+#  array_per_CCD: True
+#
+# IMAGETAG:
+#  device: CCCamera
+#  Stype: Event
+#  topic: focalPlaneSettingsApplied
+#  value: imageTag
+#  collect_after_event: end_collection_event
+
+# --------------------------------------------------------------
+ OVERH:
+  device: CCCamera
+  Stype: Event
+  topic: imageReadoutParameters
+  value: overCols
+  collect_after_event: end_collection_event
+  array: CCD_array
+  array_key: ccdNames
+
+ OVERV:
+  device: CCCamera
+  Stype: Event
+  topic: imageReadoutParameters
+  value: overRows
+  collect_after_event: end_collection_event
+  array: CCD_array
+  array_key: ccdNames
+
+ PREH:
+  device: CCCamera
+  Stype: Event
+  topic: imageReadoutParameters
+  value: preCols
+  collect_after_event: end_collection_event
+  array: CCD_array
+  array_key: ccdNames
+
+#
+# Comment until xml is ready
+# # --- Pointing Information ---------------
+#  OBJECT:
+#   device: ATPtg
+#   Stype: Event
+#   topic: currentTarget
+#   value: targetName
+#   collect_after_event: start_collection_event
+#
+#  RA:
+#   device: ATPtg
+#   Stype: Event
+#   topic: currentTarget
+#   value: ra
+#   collect_after_event: start_collection_event
+#   scale: 57.29577951308232
+#
+#  DEC:
+#   device: ATPtg
+#   Stype: Event
+#   topic: currentTarget
+#   value: declination
+#   collect_after_event: start_collection_event
+#   scale: 57.29577951308232
+#
+#  ROTPA:
+#   device: ATPtg
+#   Stype: Event
+#   topic: currentTarget
+#   value: rotPA
+#   collect_after_event: start_collection_event
+#
+#  HASTART:
+#   device: ATPtg
+#   Stype: Telemetry
+#   topic: prospectiveTargetStatus
+#   value: ha
+#   collect_after_event: start_collection_event
+#
+#  AMSTART:
+#   device: ATPtg
+#   Stype: Telemetry
+#   topic: prospectiveTargetStatus
+#   value: airmass
+#   collect_after_event: start_collection_event
+#
+#  ELSTART:
+#   device: ATMCS
+#   Stype: Telemetry
+#   topic: mount_AzEl_Encoders
+#   value: elevationCalculatedAngle
+#   collect_after_event: start_collection_event
+
+#  AZSTART:
+#   device: ATMCS
+#   Stype: Telemetry
+#   topic: mount_AzEl_Encoders
+#   value: azimuthCalculatedAngle
+#   collect_after_event: start_collection_event
+
+#  HAEND:
+#   device: ATPtg
+#   Stype: Telemetry
+#   topic: prospectiveTargetStatus
+#   value: ha
+#   collect_after_event: end_collection_event
+
+#  AMEND:
+#   device: ATPtg
+#   Stype: Telemetry
+#   topic: prospectiveTargetStatus
+#   value: airmass
+#   collect_after_event: end_collection_event
+
+#  ELEND:
+#   device: ATMCS
+#   Stype: Telemetry
+#   topic: mount_AzEl_Encoders
+#   value: elevationCalculatedAngle
+#   collect_after_event: end_collection_event
+
+#  AZEND:
+#   device: ATMCS
+#   Stype: Telemetry
+#   topic: mount_AzEl_Encoders
+#   value: azimuthCalculatedAngle
+#   collect_after_event: end_collection_event
+
+#  FOCUSZ:
+#   device: ATHexapod
+#   Stype: Event
+#   topic: positionUpdate
+#   value: positionZ
+#   collect_after_event: end_collection_event
+
+#  INSTPORT:
+#   device: ATSpectrograph
+#   Stype: Event
+#   topic: settingsAppliedValues
+#   value: instrumentPort
+#   collect_after_event: start_collection_event
+
+#  ATM3PORT:
+#   device: ATMCS
+#   Stype: Event
+#   topic: m3PortSelected
+#   value: selected
+#   collect_after_event: start_collection_event
+
+#  TRACKSYS:
+#   device: ATMCS
+#   Stype: Event
+#   topic: target
+#   value: tracksys
+#   collect_after_event: start_collection_event
+
+#  RADESYS:
+#   device: ATMCS
+#   Stype: Event
+#   topic: target
+#   value: radesys
+#   collect_after_event: start_collection_event
+
+# # --------------------------------------------------------------
+# # ----- Filter/Grating information from ATSpectrograph ---------
+
+#  FILTER:
+#   device: ATSpectrograph
+#   Stype: Event
+#   topic: reportedFilterPosition
+#   value: name
+#   collect_after_event: start_collection_event
+
+#  FILTPOS:
+#   device: ATSpectrograph
+#   Stype: Event
+#   topic: reportedFilterPosition
+#   value: position
+#   collect_after_event: start_collection_event
+
+#  GRATING:
+#   device: ATSpectrograph
+#   Stype: Event
+#   topic: reportedDisperserPosition
+#   value: name
+#   collect_after_event: start_collection_event
+
+#  GRATPOS:
+#   device: ATSpectrograph
+#   Stype: Event
+#   topic: reportedDisperserPosition
+#   value: position
+#   collect_after_event: start_collection_event
+
+#  LINSPOS:
+#   device: ATSpectrograph
+#   Stype: Event
+#   topic: reportedLinearStagePosition
+#   value: position
+#   collect_after_event: start_collection_event

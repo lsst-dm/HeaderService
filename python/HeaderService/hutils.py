@@ -32,8 +32,10 @@ from logging.handlers import RotatingFileHandler
 import hashlib
 import itertools
 import copy
-from .camera_coords import CCDGeom
+from .camera_coords import CCDInfo
+from . import camera_coords
 import datetime
+# import HeaderService.camera_coords as camera_coords
 
 spinner = itertools.cycle(['-', '/', '|', '\\'])
 
@@ -41,8 +43,6 @@ try:
     HEADERSERVICE_DIR = os.environ['HEADERSERVICE_DIR']
 except KeyError:
     HEADERSERVICE_DIR = __file__.split('python')[0]
-
-HDRLIST = ['camera', 'observatory', 'primary_hdu', 'telescope']
 
 
 def configure_logger(logger, logfile=None, level=logging.NOTSET, log_format=None, log_format_date=None):
@@ -188,7 +188,18 @@ def get_obsnite(date=None, thresh_hour=14, format='{year}{month:02d}{day:02d}'):
     return obsnite
 
 
-def get_image_size_from_imageReadoutParameters(myData):
+def repack_dict_list(mydict, masterkey):
+    # Repack dictionary with list, keys to a give key
+    newdict = dict()
+    for newkey in mydict[masterkey]:
+        newdict[newkey] = dict()
+        indx = mydict[masterkey].index(newkey)
+        for key in mydict.keys():
+            newdict[newkey][key] = mydict[key][indx]
+    return newdict
+
+
+def get_image_size_from_imageReadoutParameters(myData, array_key='ccdNames', sep=":"):
 
     ''' The stucture of the myData object for the imageReadoutParameters is:
      imageName    # string
@@ -206,8 +217,8 @@ def get_image_size_from_imageReadoutParameters(myData):
      '''
 
     geom = {
-        # 'dimh': myData.readCols  -- not in myData, in case want to fudge it
-        # 'dimv': myData.readRows  -- not in myData, in case want to fudge it
+        'dimh': myData.readCols,
+        'dimv': myData.readRows,
         'NAXIS1': myData.readCols + myData.readCols2 + myData.overCols + myData.preCols,
         'NAXIS2': myData.readRows + myData.overRows,
         'overv': myData.overRows,
@@ -216,30 +227,71 @@ def get_image_size_from_imageReadoutParameters(myData):
 
     geom['naxis1'] = geom['NAXIS1']
     geom['naxis2'] = geom['NAXIS2']
-    return geom
+    # Split and store array keys
+    payload = getattr(myData, array_key)
+    geom[array_key] = payload.split(sep)
+    # ONLY REPACK as as dictionary keyed to sensors,
+    # if more than one sensor is present in the ccdNames payload.
+    # This is the case for ComCam and LSSTCam
+    if len(geom[array_key]) > 1:
+        geom_sensor = repack_dict_list(geom, array_key)
+    # If just one element (i.e. LATIIS), return a dictionary
+    # with one key/sensor
+    else:
+        geom_sensor = {geom[array_key][0]: geom}
+    return geom_sensor
 
 
-class HDRTEMPL_ATSCam:
+def build_sensor_list(instrument, sep=""):
+    """
+    For testing in the absense of a message from camera
+    utility function to create the names and keys for sensors.
+    It takes an optional 'sep' depending on how Camera sends the
+    information for the telemetry.
+    """
+    raft_names = camera_coords.RAFTS[instrument]
+    sensor_names = []
+    if instrument == 'LATISS':
+        raft = raft_names[0]
+        i = 1
+        j = 1
+        sensor_names = [f"R{raft}{sep}S{i}{j}"]
+        return sensor_names
+
+    for raft in raft_names:
+        for i in range(3):
+            for j in range(3):
+                sensor_name = f"R{raft}{sep}S{i}{j}"
+                sensor_names.append(sensor_name)
+    return sensor_names
+
+
+# Generic class for LATISS/ComCam/LSSTCam
+class HDRTEMPL:
 
     def __init__(self,
+                 sensor_names,
+                 vendor_names,
                  logger=None,
-                 section='ATSCam',
-                 vendor='E2V',
+                 section=None,
+                 instrument=None,
                  segname='Segment',
-                 write_mode='fits',
-                 hdu_delimiter='END',
+                 write_mode='yaml',
                  templ_path=None,
                  templ_primary_name='primary_hdu.header',
+                 templ_primary_sensor_name='primary_sensor_hdu.header',
                  templ_segment_name='segment_hdu.header'):
 
+        self.sensor_names = sensor_names
+        self.vendor_names = vendor_names
         self.section = section
-        self.vendor = vendor
+        self.instrument = instrument
         self.segname = segname
         self.templ_path = templ_path
         self.templ_primary_name = templ_primary_name
+        self.templ_primary_sensor_name = templ_primary_sensor_name
         self.templ_segment_name = templ_segment_name
         self.write_mode = write_mode
-        self.hdu_delimiter = hdu_delimiter
 
         # Figure out logging
         if logger:
@@ -249,71 +301,158 @@ class HDRTEMPL_ATSCam:
             self.log = create_logger()
             self.log.info("Logger created")
 
-        # Init the class with geometry for a vendor
-        self.CCDGEOM = CCDGeom(self.vendor, segname=self.segname)
-
-        # Build the segments names
-        self.build_segment_list()
-
-        # Build the HDRLIST (PRIMARY,Segment01,...,Segment17)
-        self.build_hdrlist()
-
         # Set template file names
         self.set_template_filenames()
 
+        # Build the HDRLIST (PRIMARY, PRIMARY_COMMON, Segment01,...,Segment17)
+        self.build_hdrlist()
+
+        # Load/Create CCDGEOM object per sensor
+        self.load_CCDInfo()
+
         # Set the mimeType
         self.set_mimeType()
-        # Load them up
-        # self.load_templates()
 
     def set_template_filenames(self):
         """Set the filenames of the primary and segment header templates"""
         # The path for the templates
         if not self.templ_path:
             self.templ_path = os.path.join(HEADERSERVICE_DIR, 'etc', self.section)
-        self.templ_primary_file = os.path.join(self.templ_path, self.templ_primary_name)
-        self.templ_segment_file = os.path.join(self.templ_path, self.templ_segment_name)
 
-    def build_segment_list(self, n=16):
-        """ Function to create the names and keys for Segments"""
-        self.segment_names = []
-        for k in range(n):
-            channel = k+1
-            segment_name = self.CCDGEOM.SEGNAME[channel]
-            self.segment_names.append(segment_name)
+        # Templates present in LATIIS and ComCam/LSSTCam
+        self.templ_file = {}
+        self.templ_file['PRIMARY'] = os.path.join(self.templ_path, self.templ_primary_name)
+        self.templ_file['SEGMENT'] = os.path.join(self.templ_path, self.templ_segment_name)
+        # For ComCam and LSSTCam we use PRIMARY_SENSOR_NAME template
+        if self.instrument == 'ComCam' or self.instrument == 'LSSTCam':
+            self.is_primary_sensor = True
+            self.templ_file['SENSOR'] = os.path.join(self.templ_path, self.templ_primary_sensor_name)
+        else:
+            self.is_primary_sensor = False
 
-    def build_hdrlist(self):
+    def build_hdrlist(self, n=16):
+        """
+        Function to build the list of HDUs into the headers. For LATISS each of
+        the Segments is simply called SegmentNN, while for ComCam and LSSTCam
+        these have the preffix of the sensor name (i.e.: R22S02_Segment01)
+        """
+
+        self.log.info(f"Building HDRlist for {self.instrument}")
         self.HDRLIST = ['PRIMARY']
-        for seg in self.segment_names:
+        # Loop over list of sensors
+        # Here we need to add the PRIMARY_SENSOR_NAME
+        self.segment_names = {}
+        # Put the vendor names in a dictionary keyed to sensor names
+        self.vendor = {}
+        for sensor, vendor in zip(self.sensor_names, self.vendor_names):
+            self.segment_names[sensor] = []
+            self.vendor[sensor] = vendor
+            if 'SENSOR' in self.templ_file:
+                self.HDRLIST.append(f"{sensor}_PRIMARY")
+            for hdu in range(1, n+1):
+                segment_name = camera_coords.SEGNAME[hdu]
+                self.segment_names[sensor].append(segment_name)
+                # Account for different formating for EXTNAME for LATISS
+                if self.instrument == 'LATISS':
+                    extname = f"{self.segname}{segment_name}"
+                else:
+                    extname = f"{sensor}_{self.segname}{segment_name}"
+                self.HDRLIST.append(extname)
+
+        self.log.debug("Build HDRLIST:")
+        self.log.debug('\n\t'.join(self.HDRLIST))
+
+    def load_CCDInfo(self):
+        """ Load the CCDGEOM object for each sensor"""
+        self.CCDInfo = {}
+        for sensor in self.sensor_names:
+            self.CCDInfo[sensor] = CCDInfo(self.vendor[sensor],
+                                           segname=self.segname,
+                                           logger=self.log)
+
+    def get_primary_extname(self, sensor):
+        """Get the PRIMARY extension name used for a sensor/CCD"""
+        if self.is_primary_sensor:
+            extname = f"{sensor}_PRIMARY"
+        else:
+            extname = 'PRIMARY'
+        return extname
+
+    def get_segment_extname(self, sensor, seg):
+        """Get the right SEGMENT extension name used for a sensor/CCD"""
+        if self.is_primary_sensor:
+            extname = f"{sensor}_{self.segname}{seg}"
+        else:
             extname = f"{self.segname}{seg}"
-            self.HDRLIST.append(extname)
+        return extname
 
     def load_templates(self):
 
-        self.header = {}
         # Read in the primary and segment templates with fitsio
-        self.header_segment = read_head_template(self.templ_segment_file)
-        self.header_primary = read_head_template(self.templ_primary_file)
+        self.header_primary = read_head_template(self.templ_file['PRIMARY'])
+        self.header_segment = read_head_template(self.templ_file['SEGMENT'])
+        # if per sensor PRIMARY template, we will read it
+        if self.is_primary_sensor:
+            self.header_primary_sensor = read_head_template(self.templ_file['SENSOR'])
 
-        # Load up the template for the PRIMARY header
-        self.log.info("Loading template for: PRIMARY")
+        # Start loadin templates into the self.header object
+        # 1. Load up the template for the PRIMARY header
+        # The main structure that will host the header object
+        self.header = {}
         self.header['PRIMARY'] = self.header_primary
-
-        # Update PRIMARY with new value in self.CCDGEOM
-        self.log.debug("Updating GEOM in template for: PRIMARY")
-        PRIMARY_DATA = self.CCDGEOM.get_extension('PRIMARY')
+        PRIMARY_DATA = camera_coords.setup_primary()
         self.update_records(PRIMARY_DATA, 'PRIMARY')
+        self.log.info(f"Loading template for: PRIMARY")
 
-        # For the Segments, we load it once and then copy and
-        # modify each segment
-        for seg in self.segment_names:
-            extname = f"{self.segname}{seg}"
-            self.log.info(f"Loading template for: {extname}")
-            self.header[extname] = copy.deepcopy(self.header_segment)
-            # Now get the new value for the SEGMENT
-            self.log.debug(f"Updating GEOM in template for: {extname}")
-            EXTENSION_DATA = self.CCDGEOM.get_extension(seg)
-            self.update_records(EXTENSION_DATA, extname)
+        # 2. Load up segments (and PRIMARY_SENSOR if needed)
+        for sensor in self.sensor_names:
+            # Get the extname for the primary/sensor combo
+            extname = self.get_primary_extname(sensor)
+            # if per sensor PRIMARY template, we will read it
+            if self.is_primary_sensor:
+                self.header[extname] = copy.deepcopy(self.header_primary_sensor)
+                PRIMARY_DATA_SENSOR = self.CCDInfo[sensor].setup_primary_sensor()
+                self.log.info(f"Loading template for: {extname}")
+                self.update_records(PRIMARY_DATA_SENSOR, extname)
+            else:
+                self.log.info(f"No per sensor info for: {sensor}")
+            # Loop over all segment in Sensor/CCD
+            for seg in self.segment_names[sensor]:
+                # Get the right extnamme for sensor/segment combination
+                extname = self.get_segment_extname(sensor, seg)
+                self.log.info(f"Loading template for: {extname}")
+                self.header[extname] = copy.deepcopy(self.header_segment)
+                # Now get the new values for the SEGMENT
+                self.log.debug(f"Updating DATA in template for: {extname}")
+                SEGMENT_DATA = self.CCDInfo[sensor].setup_segment(seg)
+                self.update_records(SEGMENT_DATA, extname)
+
+    def load_geometry(self, geom):
+        """
+        Function to update geometry information once the parameters are known
+        because they were received from a camera event. This is a lighter task
+        than uploading the header templates again
+        """
+
+        self.log.info("Loading geometry for header")
+        # Load up the template for the PRIMARY header
+        for sensor in self.sensor_names:
+            # Get the extname for the primary/sensor combo
+            extname = self.get_primary_extname(sensor)
+            # Get the updated primary data
+            self.CCDInfo[sensor].update_geom_params(geom[sensor])
+            PRIMARY_DATA = self.CCDInfo[sensor].setup_primary_geom()
+            # Load up the new PRIMARY_DATA, here we either update PRIMARY
+            # or PRIMARY_SENSOR which is defined by {extname}
+            self.log.info(f"Updating records for: {extname}")
+            self.update_records(PRIMARY_DATA, extname)
+            # Loop over all segment in Sensor/CCD
+            for seg in self.segment_names[sensor]:
+                # Get the right extnamme for sensor/segment combination
+                extname = self.get_segment_extname(sensor, seg)
+                self.log.debug(f"Updating geom for: {extname}")
+                SEGMENT_DATA = self.CCDInfo[sensor].setup_segment_geom(seg)
+                self.update_records(SEGMENT_DATA, extname)
 
     def get_record(self, keyword, extname):
         return get_record(self.header[extname], keyword)
@@ -323,34 +462,28 @@ class HDRTEMPL_ATSCam:
 
     def update_record(self, keyword, value, extname):
         """ Update record for key with value """
-        rec = self.get_record(keyword, extname)
-        rec['value'] = value
-        rec['card_string'] = self.header[extname]._record2card(rec)
+        # Only update if keyword is already in the template
+        # otherwise ignore
+        if keyword not in self.header[extname]._index_map:
+            self.log.info(f"Ignoring {keyword} not in {extname} template")
+        else:
+            self.log.debug(f"Updating {keyword} for {extname}")
+            rec = self.get_record(keyword, extname)
+            rec['value'] = value
+            rec['card_string'] = self.header[extname]._record2card(rec)
 
     def update_records(self, newdict, extname):
         """
         Update all records in a new dictionary, it calls self.update_record()
         """
         for keyword, value in newdict.items():
-            try:
-                self.update_record(keyword, value, extname)
-                self.log.debug(f"Updating {keyword}")
-            except Exception:
-                self.log.debug(f"WARNING: Could not update {keyword}")
-
-    def calculate_string_header(self):
-        """ Format a header as a string """
-        hstring = ''
-        for extname in self.HDRLIST:
-            hstring = hstring + str(self.header[extname]) + '\n' + self.hdu_delimiter
-        return hstring
+            self.update_record(keyword, value, extname)
 
     def write_header_yaml(self, filename):
         """Write a header file in yaml format"""
 
         # The dict where we will store the header contents
         yaml_header = {}
-
         # Loop over all of the image extensions to build
         # the dictionary that will hold the metadata
         for extname in self.HDRLIST:
@@ -386,12 +519,6 @@ class HDRTEMPL_ATSCam:
         -- use for testing only
         """
 
-        # Figure out the dimensions following the camera geometry
-        if not naxis1:
-            naxis1 = self.CCDGEOM.dimh + self.CCDGEOM.overh + self.CCDGEOM.preh
-        if not naxis2:
-            naxis2 = self.CCDGEOM.dimv + self.CCDGEOM.overv
-
         t0 = time.time()
         with fitsio.FITS(filename, 'rw', clobber=True, ignore_empty=True) as fits:
 
@@ -418,8 +545,7 @@ class HDRTEMPL_ATSCam:
     def write_header(self, filename):
         """
         Writes single header file using the strict FITS format (i.e. empty
-        HDUs, write_mode='fits') or more human readable (write_mode='string')
-        with a delimiter for multiple HDU's
+        HDUs, write_mode='fits') or YAML (write_mode='yaml')
         """
         t0 = time.time()
         if self.write_mode == 'fits':

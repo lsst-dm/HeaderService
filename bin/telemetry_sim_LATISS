@@ -10,7 +10,8 @@ import lsst.ts.salobj as salobj
 
 
 # Get the info from the camera_coords library for and E2V sensor
-CCDGEOM = camera_coords.CCDGeom('E2V')
+CCDGEOM = camera_coords.CCDInfo('E2V')
+CCDGEOM.load_vendor_defaults()
 
 
 def cmdline():
@@ -148,6 +149,7 @@ if __name__ == "__main__":
             'readCols': CCDGEOM.dimh,
             'readCols2': 0,
             'readRows': CCDGEOM.dimv,
+            'ccdNames': ':'.join(hutils.build_sensor_list('LATISS', sep='')),
             'force_output': True}
     cam.evt_imageReadoutParameters.set_put(**kwRO)
     LOGGER.info("Sending simulated imageReadoutParameters")

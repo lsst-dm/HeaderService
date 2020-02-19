@@ -1,4 +1,4 @@
-TAGNAME=4.0.0-4.6.0-salobj_5.0.0-aths_1.4.0
+TAGNAME=4.0.0-4.7.0-salobj_5.4.0-aths_1.4.0
 DOCKER_IMA=lsstdm/atheaderservice:$TAGNAME
 NAME=aths
 
@@ -15,6 +15,9 @@ fi
 
 echo "starting docker with image: $DOCKER_IMA"
 docker run --network host --name $NAME -td $DOCKER_IMA
+
+# To clean up
+# docker rm $(docker ps -a -f status=exited -q)
 
 # To re-enter from another terminal
 # docker exec -ti $NAME bash

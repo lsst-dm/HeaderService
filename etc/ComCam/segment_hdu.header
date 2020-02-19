@@ -1,0 +1,15 @@
+XTENSION= 'IMAGE   '           / marks beginning of new HDU
+BITPIX  =                   32 / bits per data value
+INHERIT =                    T / Inherits global header
+PCOUNT  =                    0 / Required value
+GCOUNT  =                    1 / Required value
+EXTNAME =
+DATASEC =
+DETSEC  =
+DETSIZE =
+DTV1    =                      / detector transformation vector
+DTV2    =                      / detector transformation vector
+DTM1_1  =                      / detector transformation matrix
+DTM2_2  =                      / detector transformation matrix
+DTM1_2  =                      / detector transformation matrix
+DTM2_1  =                      / detector transformation matrix
