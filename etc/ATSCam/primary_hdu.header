@@ -54,6 +54,10 @@ TRACKSYS=                      / Tracking coordinate system from ATMCS
 RADESYS =                      / Equatorial coordinate system
 FOCUSZ  =                      / Focus Z position from ATAOS/ATHexapod (mm)
 OBJECT  =                      / Name of the observed object
+DOMEAZ  =                      / [deg] Dome Azimuth Position
+SHUTLOWR=                      / Dome Dropout Door Opening Percentage
+SHUTUPPR=                      / Dome Main Door Opening Percentage
+SEEING  =                      / [arcsec] Seeing from FWHM DIMM measurement
 
         ---- TAN Projection ----
 WCSAXES =                    2 / WCS Dimensionality

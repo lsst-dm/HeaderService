@@ -353,6 +353,34 @@ telemetry:
   value: radesys
   collect_after_event: start_collection_event
 
+ DOMEAZ:
+  device: ATDome
+  Stype: Telemetry
+  topic: position
+  value: azimuthPosition
+  collect_after_event: start_collection_event
+
+ SHUTLOWR:
+  device: ATDome
+  Stype: Telemetry
+  topic: position
+  value: dropoutDoorOpeningPercentage
+  collect_after_event: start_collection_event
+
+ SHUTUPPR:
+  device: ATDome
+  Stype: Telemetry
+  topic: position
+  value: mainDoorOpeningPercentage
+  collect_after_event: start_collection_event
+
+ SEEING:
+  device: DIMM
+  Stype: Event
+  topic: dimmMeasurement
+  value: fwhm
+  collect_after_event: start_collection_event
+
 # --------------------------------------------------------------
 # ----- Filter/Grating information from ATSpectrograph ---------
 
