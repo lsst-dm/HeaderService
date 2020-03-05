@@ -75,7 +75,7 @@ def cmdline():
                         help="The Seeing from the DIMM monitor (arcsec).")
     parser.add_argument("--domeaz", action="store", default=45, type=float,
                         help="The Dome AZ position (deg).")
-    parser.add_argument("--shutterlow", action="store", default=100, type=float,
+    parser.add_argument("--shutterlow", action="store", default=0, type=float,
                         help="Dome Dropout Door Opening Percertage.")
     parser.add_argument("--shutterupp", action="store", default=100, type=float,
                         help="Dome Main Door Opening Percentage.")
