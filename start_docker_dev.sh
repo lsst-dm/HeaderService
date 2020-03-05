@@ -1,5 +1,5 @@
 HSUSER=headerservice
-TAGNAME=4.0.0-4.6.0-salobj_5.0.0-aths_1.4.0
+TAGNAME=4.0.0-4.7.0-salobj_5.4.0-aths_1.4.0
 DOCKER_IMA=lsstdm/atheaderservice:$TAGNAME
 NAME=aths
 
@@ -17,3 +17,6 @@ docker run -ti -e DISPLAY=$ip:0 \
 
 # To re-enter from another terminal
 # docker exec -ti $NAME bash
+
+# To clean up
+# docker rm $(docker ps -a -f status=exited -q)

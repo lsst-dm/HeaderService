@@ -71,6 +71,15 @@ def cmdline():
     parser.add_argument("--imagetag", action="store", default="ElGordo", type=str,
                         help="The imagetag of the observation.")
 
+    parser.add_argument("--seeing", action="store", default=1.2, type=float,
+                        help="The Seeing from the DIMM monitor (arcsec).")
+    parser.add_argument("--domeaz", action="store", default=45, type=float,
+                        help="The Dome AZ position (deg).")
+    parser.add_argument("--shutterlow", action="store", default=100, type=float,
+                        help="Dome Dropout Door Opening Percertage.")
+    parser.add_argument("--shutterupp", action="store", default=100, type=float,
+                        help="Dome Main Door Opening Percentage.")
+
     parser.add_argument("--sleeptime", action="store", default=1, type=float,
                         help="Sleep Time between step, in seconds")
     parser.add_argument("--delaytime", action="store", default=0, type=float,
@@ -101,6 +110,8 @@ if __name__ == "__main__":
     mcs = salobj.Controller(name="ATMCS", index=0)
     spec = salobj.Controller(name="ATSpectrograph", index=0)
     hexa = salobj.Controller(name="ATHexapod", index=0)
+    dome = salobj.Controller(name="ATDome", index=0)
+    dimm = salobj.Controller(name="DIMM", index=0)
 
     LOGGER = hutils.create_logger()
 
@@ -201,6 +212,16 @@ if __name__ == "__main__":
                 'force_output': True}
     mcs.evt_target.set_put(**kwTarget)
     LOGGER.info("Sending simulated ATMCS Target")
+
+    # Seeing
+    kwSeeing = {'fwhm': args.seeing}
+    dimm.evt_dimmMeasurement.set_put(**kwSeeing)
+
+    # Sending Dome information
+    kwDome = {'azimuthPosition': args.domeaz,
+              'dropoutDoorOpeningPercentage': args.shutterlow,
+              'mainDoorOpeningPercentage': args.shutterupp}
+    dome.tel_position.set_put(**kwDome)
 
     # Loop over NSequence
     for k in range(args.NSequence):
