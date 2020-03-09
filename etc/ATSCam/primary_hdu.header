@@ -57,7 +57,6 @@ OBJECT  =                      / Name of the observed object
 DOMEAZ  =                      / [deg] Dome Azimuth Position
 SHUTLOWR=                      / Dome Dropout Door Opening Percentage
 SHUTUPPR=                      / Dome Main Door Opening Percentage
-SEEING  =                      / [arcsec] Seeing from FWHM DIMM measurement
 
         ---- TAN Projection ----
 WCSAXES =                    2 / WCS Dimensionality
@@ -113,6 +112,14 @@ LINSPOS =                      / Linear Stage
 EXPTIME =                      / Exposure time in seconds
 SHUTTIME=                      / Shutter exposure time in seconds
 DARKTIME=                      / Dark time in seconds
+
+        ---- Weather information ----
+AIRTEMP =                      / [degC] Air Temperature
+PRESSURE=                      / [Pascals] Atmospheric Pressure
+HUMIDITY=                      / Percentage of Relative Humidity
+WINDSPD =                      / [m/s] Wind Speed
+WINDDIR =                      / [deg] Wind Direction
+SEEING  =                      / [arcsec] Seeing from FWHM DIMM measurement
 
         ---- Header information ----
 FILENAME=                      / Original file name
