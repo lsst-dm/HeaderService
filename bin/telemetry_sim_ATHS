@@ -80,6 +80,17 @@ def cmdline():
     parser.add_argument("--shutterupp", action="store", default=100, type=float,
                         help="Dome Main Door Opening Percentage.")
 
+    parser.add_argument("--ambient_temp", action="store", default=12.5, type=float,
+                        help="The Ambient Temperature in degC.")
+    parser.add_argument("--pressure", action="store", default=101325, type=float,
+                        help="Atmospheric Pressure in Pascals.")
+    parser.add_argument("--humidity", action="store", default=20.5, type=float,
+                        help="Percentage of Relative Humidity.")
+    parser.add_argument("--windSpeed", action="store", default=8.5, type=float,
+                        help="Wind Speed in m/s.")
+    parser.add_argument("--windDirection", action="store", default=32.5, type=float,
+                        help="Wind Direction in degrees.")
+
     parser.add_argument("--sleeptime", action="store", default=1, type=float,
                         help="Sleep Time between step, in seconds")
     parser.add_argument("--delaytime", action="store", default=0, type=float,
@@ -112,6 +123,7 @@ if __name__ == "__main__":
     hexa = salobj.Controller(name="ATHexapod", index=0)
     dome = salobj.Controller(name="ATDome", index=0)
     dimm = salobj.Controller(name="DIMM", index=0)
+    env = salobj.Controller(name="Environment", index=0)
 
     LOGGER = hutils.create_logger()
 
@@ -222,6 +234,24 @@ if __name__ == "__main__":
               'dropoutDoorOpeningPercentage': args.shutterlow,
               'mainDoorOpeningPercentage': args.shutterupp}
     dome.tel_position.set_put(**kwDome)
+    LOGGER.info("Sending simulated Dome Information")
+
+    # Weather/Env Information
+    kwWeather = {'ambient_temp': args.ambient_temp,
+                 'pressure': args.pressure,
+                 'humidity': args.humidity}
+    env.tel_weather.set_put(**kwWeather)
+    LOGGER.info("Sending simulated Temp/pressure/humidity")
+
+    # Wind Speed
+    kwWindSpeed = {'value': args.windSpeed}
+    env.tel_windSpeed.set_put(**kwWindSpeed)
+    LOGGER.info("Sending simulated Wind Speed")
+
+    # Wind Direction
+    kwWindDir = {'value': args.windDirection}
+    env.tel_windDirection.set_put(**kwWindDir)
+    LOGGER.info("Sending simulated Wind Direction")
 
     # Loop over NSequence
     for k in range(args.NSequence):
