@@ -478,39 +478,6 @@ class HSWorker(salobj.BaseCsc):
         self.filename_FITS = {}
         self.filename_HDR = {}
 
-    def collect_old(self, keys):
-        """ Collect meta-data from the telemetry-connected channels
-        and store it in the 'metadata' dictionary"""
-
-        # Define myData and metadata dictionaries
-        # myData: holds the payload from Telem/Events
-        # metadata: holds the metadata to be inserted into the Header object
-        myData = {}
-        metadata = {}
-        for k in keys:
-            name = get_channel_name(self.config.telemetry[k])
-            param = self.config.telemetry[k]['value']
-            # Access data payload only once
-            if name not in myData:
-                myData[name] = self.Remote_get[name]()
-            # Only update metadata if myData is defined (not None)
-            if myData[name] is None:
-                self.log.warning(f"Cannot get keyword: {k} from topic: {name}")
-            else:
-                # In case of a long telemetry array we take the first element
-                # TODO : if we happen to have many cases like this, we should
-                # state which element of the array in the configuration file.
-                payload = getattr(myData[name], param)
-                if hasattr(payload, "__len__") and not isinstance(payload, str):
-                    metadata[k] = payload[0]
-                else:
-                    metadata[k] = payload
-                # Scale by `scale` if it was defined
-                if 'scale' in self.config.telemetry[k]:
-                    metadata[k] = metadata[k]*self.config.telemetry[k]['scale']
-                self.log.debug(f"Extacted {k}={metadata[k]} from topic: {name}")
-        return metadata
-
     def collect(self, keys):
         """ Collect meta-data from the telemetry-connected channels
         and store it in the 'metadata' dictionary"""
