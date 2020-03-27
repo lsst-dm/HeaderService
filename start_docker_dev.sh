@@ -1,6 +1,6 @@
 HSUSER=headerservice
-TAGNAME=4.0.0-4.7.0-salobj_5.4.0-aths_1.4.0
-DOCKER_IMA=lsstdm/atheaderservice:$TAGNAME
+TAGNAME=4.0.0-4.7.0-salobj_5.4.0-aths_1.4.1
+DOCKER_IMA=lsstdm/headerservice:$TAGNAME
 NAME=aths
 
 hostname="`hostname -s`-docker"

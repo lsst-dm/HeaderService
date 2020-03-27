@@ -1,4 +1,10 @@
-# Configuration file for the AuxTelescope
+# Configuration file for LATISS
+
+# The name of the HeaderService
+hs_name: ATHeaderService
+instrument: LATISS
+vendor_names: ['ITL']
+section: LATISS
 
 # Default logging level
 loglevel: 'INFO'
@@ -10,9 +16,6 @@ log_format_date: '%Y-%m-%d %H:%M:%S'
 
 # path to the web server logfile
 weblogfile: 'www/webserver.log'
-
-# The camera vendor
-vendor: ITL
 
 # The ts_xml version we are using -- for now this is just curated and need to be changed manually when we change version
 ts_xml: "4.7.0"
@@ -29,9 +32,6 @@ write_mode: fits
 # Timeout beyond the requested exposure time to wait for an end of Telemetry event (in seconds)
 timeout_exptime: 30
 timeout_keyword: 'EXPTIME'
-
-# Default string delimeter (string mode only)
-hdu_delimiter: END
 
 # The file naming event source and definitions
 filepath: 'www/DMHS_filerepo'
@@ -282,6 +282,7 @@ telemetry:
   topic: mount_AzEl_Encoders
   value: elevationCalculatedAngle
   collect_after_event: start_collection_event
+  array: timestamp_start
 
  AZSTART:
   device: ATMCS
@@ -289,6 +290,7 @@ telemetry:
   topic: mount_AzEl_Encoders
   value: azimuthCalculatedAngle
   collect_after_event: start_collection_event
+  array: timestamp_start
 
  HAEND:
   device: ATPtg
@@ -310,6 +312,7 @@ telemetry:
   topic: mount_AzEl_Encoders
   value: elevationCalculatedAngle
   collect_after_event: end_collection_event
+  array: timestamp_start
 
  AZEND:
   device: ATMCS
@@ -317,6 +320,7 @@ telemetry:
   topic: mount_AzEl_Encoders
   value: azimuthCalculatedAngle
   collect_after_event: end_collection_event
+  array: timestamp_start
 
  FOCUSZ:
   device: ATHexapod

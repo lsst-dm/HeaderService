@@ -26,9 +26,20 @@ Examples
 # Setup the path for the HeaderService
 source HeaderService/setpath.sh  ~/HeaderService
 
+# Example 1, run HeaderService for LATISS
 # Initialize header client (Terminal 1)
-ATHS_salobj -c $HEADERSERVICE_DIR/etc/conf/atTelemetry.yaml --send_efd_message   
+headerservice -c $HEADERSERVICE_DIR/etc/conf/atTelemetry.yaml --send_efd_message
 
 # Send telemetry to trigger header writing (Terminal 2)
-telemetry_sim_ATHS --ra 10 --dec -20.0 --exptime 10 --airmass 1.1 --ha 87 --el 45 --az 15  --NSequence 1  --rotpa 90  --seqnum 1
+telemetry_sim_LATISS --ra 10 --dec -20.0 --exptime 10 --airmass 1.1 --ha 87 --el 45 --az 15  --NSequence 1  --rotpa 90  --seqnum 1
+
+
+# Example 2, run HeaderService for ComCam
+# Initialize header client (Terminal 1)
+headerservice -c $HEADERSERVICE_DIR/etc/conf/ccTelemetry.yaml --send_efd_message
+
+# Send telemetry to trigger header writing (Terminal 2)
+telemetry_sim_ComCam  --ra 10 --dec 20 --exptime 10 --airmass 1.1 --ha 87 --el 45 --az 15 --NSequence 1  --rotpa 90  --seqnum 1
+```
+
 ```

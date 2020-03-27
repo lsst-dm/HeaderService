@@ -11,7 +11,7 @@ import asyncio
 
 def cmdline():
 
-    # 1. We make a proto-parse use to read in the default yaml configuration
+    # Make a proto-parse use to read in the default yaml configuration
     # file, Turn off help, so we print all options in response to -h
     conf_parser = argparse.ArgumentParser(add_help=False)
     conf_parser.add_argument("-c", "--configfile", help="HeaderService config file")
@@ -23,11 +23,9 @@ def cmdline():
         conf_defaults = {}
 
     # 2. This is the main parser
-    parser = argparse.ArgumentParser(description="ATHeaderService",
+    parser = argparse.ArgumentParser(description="HeaderService",
                                      # Inherit options from config_parser
                                      parents=[conf_parser])
-    parser.add_argument("--vendor", action="store", default='E2V',
-                        help="CCD Vendor Name")
     parser.add_argument("--filepath", action="store", default=os.path.join(os.getcwd(), 'www/DMHS_filerepo'),
                         help="Filepath where we write the headers")
     parser.add_argument("--url_format", action="store",
