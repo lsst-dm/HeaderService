@@ -21,7 +21,7 @@ BUNIT   = 'adu     '           / Brightness units for pixel array
 
         ---- Telescope info, location, observer ----
 FACILITY= 'Vera C. Rubin Observatory' / Facility name
-TELESCOP= 'LSST AuxTelescope'  / Telescope name
+TELESCOP= 'Simonyi Survey Telescope'  / Telescope name
 INSTRUME= 'ComCam'             / Instrument used to obtain these data
 OBSERVER= 'LSST'               / Observer name(s)
 OBS-LONG=           -70.749417 / [deg] Observatory east longitude

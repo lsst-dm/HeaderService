@@ -115,7 +115,7 @@ if __name__ == "__main__":
             'ccdNames': ':'.join(hutils.build_sensor_list('ComCam', sep='')),
             'force_output': True}
     cam.evt_imageReadoutParameters.set_put(**kwRO)
-    LOGGER.info("Sending simulated imageReadoutParameters")
+    LOGGER.info("Sending simulated imageReadoutParameters {}".format(kwRO))
 
     # Loop over NSequence
     for k in range(args.NSequence):
