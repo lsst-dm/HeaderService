@@ -35,8 +35,6 @@ def cmdline():
                         help="Timeout for end Telemetry event in seconds")
     parser.add_argument("--port_number", action="store", default='8000', type=str,
                         help="Port number for webserver")
-    parser.add_argument("--send_efd_message", action="store_true", default=False,
-                        help="Send and EDF message as well?")
 
     # Logging options (loglevel/loggile/log_format/log_format_date)
     parser.add_argument("--loglevel", action="store", default='INFO', type=str.upper,
