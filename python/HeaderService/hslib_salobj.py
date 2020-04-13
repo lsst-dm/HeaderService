@@ -443,9 +443,6 @@ class HSWorker(salobj.BaseCsc):
 
         self.evt_largeFileObjectAvailable.set_put(**kw)
         self.log.info(f"Sent {self.config.hs_name} largeFileObjectAvailable: {kw}")
-        if self.config.send_efd_message:
-            self.efd_controller.evt_largeFileObjectAvailable.set_put(**kw)
-            self.log.info(f"Sent EFD largeFileObjectAvailable: {kw}")
 
     def write(self, imageName):
         """ Function to call to write the header"""
