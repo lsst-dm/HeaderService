@@ -419,8 +419,7 @@ class HSWorker(salobj.BaseCsc):
 
     def announce(self, imageName):
         """
-        Broadcast the LFO Event for the HeaderService and optionally
-        emulate it for the EFD
+        Broadcast the LFO Event for the HeaderService
         """
         # Get the md5 for the header file
         md5value = hutils.md5Checksum(self.filename_HDR[imageName])
