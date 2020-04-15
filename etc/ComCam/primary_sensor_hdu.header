@@ -8,6 +8,8 @@ REBNAME =                      / Name of the REB
 CONTNUM =                      / CCD Controller (WREB) Serial Number
 TEMP_SET=                      / Temperature set point (deg C)
 CCDTEMP =                      / Measured temperature (deg C)
+CCDSLOT =                      / Name of the CCD Slot (SXx)
+RAFTBAY =                      / Name of the RAFT Bay (Rnn)
 
         ---- Geometry from Camera ----
 DETSIZE =                      / Size of sensor

@@ -106,16 +106,21 @@ if __name__ == "__main__":
 
     # Camera Geometry
     # Send sub-set of imageReadoutParameters, we populate only a few fields
+    ccdNames = hutils.build_sensor_list('ComCam', sep='')
+    ccdSlots = [s[3:] for s in ccdNames]
+    raftBays = [s[0:3] for s in ccdNames]
     kwRO = {'overRows': [args.overv]*9,
             'overCols': [args.overh]*9,
             'preCols': [args.preh]*9,
             'readCols': [CCDGEOM.dimh]*9,
             'readCols2': [0]*9,
             'readRows': [CCDGEOM.dimv]*9,
-            'ccdNames': ':'.join(hutils.build_sensor_list('ComCam', sep='')),
+            'ccdNames': ':'.join(ccdNames),
+            'ccdSlot': ':'.join(ccdSlots),
+            'raftBay': ':'.join(raftBays),
             'force_output': True}
     cam.evt_imageReadoutParameters.set_put(**kwRO)
-    LOGGER.info("Sending simulated imageReadoutParameters")
+    LOGGER.info("Sending simulated imageReadoutParameters {}".format(kwRO))
 
     # Loop over NSequence
     for k in range(args.NSequence):

@@ -52,11 +52,6 @@ class HSWorker(salobj.BaseCsc):
         # Make the connections using saloj.Remote
         self.create_Remotes()
 
-        # Make an optional Controller in case we want to emulate the EFD
-        if self.config.send_efd_message:
-            self.efd_controller = salobj.Controller(name='EFD', index=0)
-            self.log.info(f"Created Controller for EFD")
-
         # Define the callbacks for start/end
         self.define_evt_callbacks()
 
@@ -424,8 +419,7 @@ class HSWorker(salobj.BaseCsc):
 
     def announce(self, imageName):
         """
-        Broadcast the LFO Event for the HeaderService and optionally
-        emulate it for the EFD
+        Broadcast the LFO Event for the HeaderService
         """
         # Get the md5 for the header file
         md5value = hutils.md5Checksum(self.filename_HDR[imageName])
@@ -448,9 +442,6 @@ class HSWorker(salobj.BaseCsc):
 
         self.evt_largeFileObjectAvailable.set_put(**kw)
         self.log.info(f"Sent {self.config.hs_name} largeFileObjectAvailable: {kw}")
-        if self.config.send_efd_message:
-            self.efd_controller.evt_largeFileObjectAvailable.set_put(**kw)
-            self.log.info(f"Sent EFD largeFileObjectAvailable: {kw}")
 
     def write(self, imageName):
         """ Function to call to write the header"""
@@ -499,7 +490,7 @@ class HSWorker(salobj.BaseCsc):
                 metadata[keyword] = self.extract_from_myData(keyword, myData[name])
         return metadata
 
-    def extract_from_myData(self, keyword, myData):
+    def extract_from_myData(self, keyword, myData, sep=":"):
 
         param = self.config.telemetry[keyword]['value']
         payload = getattr(myData, param)
@@ -511,9 +502,15 @@ class HSWorker(salobj.BaseCsc):
         # Case 2 -- array of values per sensor
         elif self.config.telemetry[keyword]['array'] == 'CCD_array':
             self.log.debug(f"{keyword} is an array")
-            ccdnames = self.get_CCD_keywords(keyword, myData)
+            ccdnames = self.get_CCD_keywords(keyword, myData, sep)
             self.log.info(f"For {keyword} extracted ccdnames: {ccdnames}")
             extracted_payload = dict(zip(ccdnames, payload))
+        elif self.config.telemetry[keyword]['array'] == 'CCD_array_str':
+            self.log.debug(f"{keyword} is string an array")
+            ccdnames = self.get_CCD_keywords(keyword, myData, sep)
+            self.log.info(f"For {keyword} extracted ccdnames: {ccdnames}")
+            # Split the payload into an array of strings
+            extracted_payload = dict(zip(ccdnames, payload.split(sep)))
         # If some kind of array, take first element
         elif hasattr(payload, "__len__") and not isinstance(payload, str):
             extracted_payload = payload[0]

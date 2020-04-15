@@ -266,6 +266,24 @@ telemetry:
   array: CCD_array
   array_key: ccdNames
 
+ CCDSLOT:
+  device: CCCamera
+  Stype: Event
+  topic: imageReadoutParameters
+  value: ccdSlot
+  collect_after_event: end_collection_event
+  array: CCD_array_str
+  array_key: ccdNames
+
+ RAFTBAY:
+  device: CCCamera
+  Stype: Event
+  topic: imageReadoutParameters
+  value: raftBay
+  collect_after_event: end_collection_event
+  array: CCD_array_str
+  array_key: ccdNames
+
 #
 # Comment until xml is ready
 # # --- Pointing Information ---------------
