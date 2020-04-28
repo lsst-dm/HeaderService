@@ -281,18 +281,20 @@ if __name__ == "__main__":
         cam.tel_vacuum.set_put(**kwCCD)
         LOGGER.info("Sending simulated vacuum")
 
-        # The START telemetry for Airmass using ATPtg.prospectiveTargetStatus
+        # The START telemetry for Airmass using ATPtg.currentTargetStatus
         kwTA = {'timestamp': get_tai_time(),
                 'ha': args.ha,
                 'airmass': args.airmass}
-        ptg.tel_prospectiveTargetStatus.set_put(**kwTA)
-        LOGGER.info("Sending simulated prospectiveTargetStatus")
+        ptg.tel_currentTargetStatus.set_put(**kwTA)
+        LOGGER.info("Sending simulated currentTargetStatus HA/AIRMASS Start")
 
-        # The START telemetry for EL and AZ from the ATMCS.mount_AzEl_Encoders
-        kwMC = {'elevationCalculatedAngle': [args.el]*100,
+        # The START telemetry for RA/DEC, EL/AZ from the ATPtg.mount_positions
+        kwMP = {'ra': [args.ra]*100,
+                'declination': [args.dec]*100,
+                'elevationCalculatedAngle': [args.el]*100,
                 'azimuthCalculatedAngle': [args.az]*100}
-        mcs.tel_mount_AzEl_Encoders.set_put(**kwMC)
-        LOGGER.info("Sending simulated mount_AzEl_Encoders")
+        ptg.tel_mount_positions.set_put(**kwMP)
+        LOGGER.info("Sending simulated mount_positions for RA/DEC EL/AZ Start")
 
         # Send the startIntegration for image: k
         LOGGER.info("Sending simulated startIntegration")
@@ -323,18 +325,20 @@ if __name__ == "__main__":
         shuttime = args.exptime + random.uniform(0, 0.5)
         cam.evt_shutterMotionProfile.set_put(measuredExposureTime=shuttime)
 
-        # The END telemetry for Airmass using ATPtg.prospectiveTargetStatus
+        # The END telemetry for Airmass using ATPtg.currentTargetStatus
         kwTA = {'timestamp': get_tai_time(),
                 'ha': str(float(args.ha)*1.01),
                 'airmass': args.airmass*1.01}
-        ptg.tel_prospectiveTargetStatus.set_put(**kwTA)
-        LOGGER.info("Sending simulated prospectiveTargetStatus")
+        ptg.tel_currentTargetStatus.set_put(**kwTA)
+        LOGGER.info("Sending simulated currentTargetStatus HA/AIRMASS End")
 
-        # The END telemetry for EL and AZ from the ATMCS.mount_AzEl_Encoders
-        kwMC = {'elevationCalculatedAngle': [args.el*1.01]*100,
+        # The END telemetry for RA/DEC EL/AZ from the ATPtg.mount_positions
+        kwMP = {'ra': [args.ra*random.uniform(1, 1.01)]*100,
+                'declination': [args.dec*random.uniform(1, 1.01)]*100,
+                'elevationCalculatedAngle': [args.el*1.01]*100,
                 'azimuthCalculatedAngle': [args.az*1.01]*100}
-        mcs.tel_mount_AzEl_Encoders.set_put(**kwMC)
-        LOGGER.info("Sending simulated mount_AzEl_Encoders")
+        ptg.tel_mount_positions.set_put(**kwMP)
+        LOGGER.info("Sending simulated mount_positions for RA/DEC EL/AZ End")
 
         # Send endReadout event
         LOGGER.info("Sending simulated endReadout")

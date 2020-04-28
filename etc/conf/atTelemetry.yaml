@@ -262,62 +262,94 @@ telemetry:
   value: rotPA
   collect_after_event: start_collection_event
 
+ RASTART:
+  device: ATPtg
+  Stype: Telemetry
+  topic: mount_positions
+  value: ra
+  collect_after_event: start_collection_event
+  array: timestamp_start
+
+ DECSTART:
+  device: ATPtg
+  Stype: Telemetry
+  topic: mount_positions
+  value: declination
+  collect_after_event: start_collection_event
+  array: timestamp_start
+
  HASTART:
   device: ATPtg
   Stype: Telemetry
-  topic: prospectiveTargetStatus
+  topic: currentTargetStatus
   value: ha
   collect_after_event: start_collection_event
 
  AMSTART:
   device: ATPtg
   Stype: Telemetry
-  topic: prospectiveTargetStatus
+  topic: currentTargetStatus
   value: airmass
   collect_after_event: start_collection_event
 
  ELSTART:
-  device: ATMCS
+  device: ATPtg
   Stype: Telemetry
-  topic: mount_AzEl_Encoders
+  topic: mount_positions
   value: elevationCalculatedAngle
   collect_after_event: start_collection_event
   array: timestamp_start
 
  AZSTART:
-  device: ATMCS
+  device: ATPtg
   Stype: Telemetry
-  topic: mount_AzEl_Encoders
+  topic: mount_positions
   value: azimuthCalculatedAngle
   collect_after_event: start_collection_event
+  array: timestamp_start
+
+ RAEND:
+  device: ATPtg
+  Stype: Telemetry
+  topic: mount_positions
+  value: ra
+  collect_after_event: end_collection_event
+  array: timestamp_start
+
+ DECEND:
+  device: ATPtg
+  Stype: Telemetry
+  topic: mount_positions
+  value: declination
+  collect_after_event: end_collection_event
   array: timestamp_start
 
  HAEND:
   device: ATPtg
   Stype: Telemetry
-  topic: prospectiveTargetStatus
+  topic: currentTargetStatus
   value: ha
   collect_after_event: end_collection_event
 
  AMEND:
   device: ATPtg
   Stype: Telemetry
-  topic: prospectiveTargetStatus
+  topic: currentTargetStatus
   value: airmass
   collect_after_event: end_collection_event
 
  ELEND:
-  device: ATMCS
+  device: ATPtg
   Stype: Telemetry
-  topic: mount_AzEl_Encoders
+  topic: mount_positions
   value: elevationCalculatedAngle
   collect_after_event: end_collection_event
   array: timestamp_start
 
  AZEND:
-  device: ATMCS
+  device: ATPtg
   Stype: Telemetry
-  topic: mount_AzEl_Encoders
+  topic: mount_positions
   value: azimuthCalculatedAngle
   collect_after_event: end_collection_event
   array: timestamp_start

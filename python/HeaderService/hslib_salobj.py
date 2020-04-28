@@ -544,7 +544,6 @@ class HSWorker(salobj.BaseCsc):
         the HeaderService
         """
         # Simplify code with shortcuts for imageName
-        header = self.HDR[imageName].header
         metadata = self.metadata[imageName]
 
         # Reformat and calculate dates based on different timeStamps
@@ -574,39 +573,6 @@ class HSWorker(salobj.BaseCsc):
 
         # ---------------------------------------------------------------------
         # This functions will only be usef for LATISS
-        # The EL/AZ at start
-        if set(('ELSTART', 'AZSTART')).issubset(metadata):
-            self.log.info("Computing RA/DEC from ELSTART/AZSTART")
-            ra, dec = hscalc.get_radec_from_altaz(alt=metadata['ELSTART'],
-                                                  az=metadata['AZSTART'],
-                                                  obstime=DATE_BEG,
-                                                  lat=header['PRIMARY']['OBS-LAT'],
-                                                  lon=header['PRIMARY']['OBS-LONG'],
-                                                  height=header['PRIMARY']['OBS-ELEV'])
-            metadata['RASTART'] = ra
-            metadata['DECSTART'] = dec
-        else:
-            if 'ELSTART' not in metadata:
-                self.log.info("No 'ELSTART' needed to compute RA/DEC START")
-            if 'AZSTART' not in metadata:
-                self.log.info("No 'AZSTART' needed to compute RA/DEC START")
-
-        # The EL/AZ at end
-        if set(('ELEND', 'AZEND')).issubset(metadata):
-            self.log.info("Computing RA/DEC from ELEND/AZEND")
-            ra, dec = hscalc.get_radec_from_altaz(alt=metadata['ELEND'],
-                                                  az=metadata['AZEND'],
-                                                  obstime=DATE_END,
-                                                  lat=header['PRIMARY']['OBS-LAT'],
-                                                  lon=header['PRIMARY']['OBS-LONG'],
-                                                  height=header['PRIMARY']['OBS-ELEV'])
-            metadata['RAEND'] = ra
-            metadata['DECEND'] = dec
-        else:
-            if 'ELEND' not in metadata:
-                self.log.info("No 'ELEND' needed to compute RA/DEC END")
-            if 'AZEND' not in metadata:
-                self.log.info("No 'AZEND' needed to compute RA/DEC END")
 
         if set(('RA', 'DEC', 'ROTPA', 'RADESYS')).issubset(metadata):
             sensor = self.sensors[0]
