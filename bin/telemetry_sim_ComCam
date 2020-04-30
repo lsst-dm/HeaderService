@@ -103,6 +103,7 @@ if __name__ == "__main__":
     # Create handlers for the CSCs we want to simulate messages
     cam = salobj.Controller(name="CCCamera", index=0)
     ptg = salobj.Controller(name="MTPtg", index=0)
+    hexa = salobj.Controller(name="Hexapod", index=1)
 
     LOGGER = hutils.create_logger()
 
@@ -123,6 +124,11 @@ if __name__ == "__main__":
             'force_output': True}
     cam.evt_imageReadoutParameters.set_put(**kwRO)
     LOGGER.info("Sending simulated imageReadoutParameters {}".format(kwRO))
+
+    # FocusZ positionZ for ATHexapod
+    kwHexa = {'demand': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]}  # made up
+    hexa.tel_application.set_put(**kwHexa)
+    LOGGER.info("Sending simulated Hexapod application")
 
     # Pointing information
     # Send the pointing event -- here we populate only a few fields

@@ -408,14 +408,15 @@ telemetry:
   collect_after_event: end_collection_event
   array: timestamp_start
 
-# FOCUSZ:
-#  device: Hexapod
-#  Stype: Event
-#  topic: application
-#  value: positionZ
-#  index: 1
-#  array:
-#  collect_after_event: end_collection_event
+ FOCUSZ:
+  device: Hexapod
+  device_index: 1
+  Stype: Telemetry
+  topic: application
+  value: demand
+  collect_after_event: end_collection_event
+  array: list
+  array_index: 2
 
 #  TRACKSYS:
 #   device: ATMCS
