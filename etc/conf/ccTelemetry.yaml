@@ -415,7 +415,6 @@ telemetry:
   topic: application
   value: demand
   collect_after_event: end_collection_event
-  array: list
   array_index: 2
 
 #  TRACKSYS:
