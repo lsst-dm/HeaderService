@@ -284,115 +284,138 @@ telemetry:
   array: CCD_array_str
   array_key: ccdNames
 
-#
-# Comment until xml is ready
-# # --- Pointing Information ---------------
-#  OBJECT:
-#   device: ATPtg
-#   Stype: Event
-#   topic: currentTarget
-#   value: targetName
-#   collect_after_event: start_collection_event
-#
-#  RA:
-#   device: ATPtg
-#   Stype: Event
-#   topic: currentTarget
-#   value: ra
-#   collect_after_event: start_collection_event
-#   scale: 57.29577951308232
-#
-#  DEC:
-#   device: ATPtg
-#   Stype: Event
-#   topic: currentTarget
-#   value: declination
-#   collect_after_event: start_collection_event
-#   scale: 57.29577951308232
-#
-#  ROTPA:
-#   device: ATPtg
-#   Stype: Event
-#   topic: currentTarget
-#   value: rotPA
-#   collect_after_event: start_collection_event
-#
-#  HASTART:
-#   device: ATPtg
-#   Stype: Telemetry
-#   topic: prospectiveTargetStatus
-#   value: ha
-#   collect_after_event: start_collection_event
-#
-#  AMSTART:
-#   device: ATPtg
-#   Stype: Telemetry
-#   topic: prospectiveTargetStatus
-#   value: airmass
-#   collect_after_event: start_collection_event
-#
-#  ELSTART:
-#   device: ATMCS
-#   Stype: Telemetry
-#   topic: mount_AzEl_Encoders
-#   value: elevationCalculatedAngle
-#   collect_after_event: start_collection_event
 
-#  AZSTART:
-#   device: ATMCS
-#   Stype: Telemetry
-#   topic: mount_AzEl_Encoders
-#   value: azimuthCalculatedAngle
-#   collect_after_event: start_collection_event
+# --- Pointing Information ---------------
+ OBJECT:
+  device: MTPtg
+  Stype: Event
+  topic: currentTarget
+  value: targetName
+  collect_after_event: start_collection_event
 
-#  HAEND:
-#   device: ATPtg
-#   Stype: Telemetry
-#   topic: prospectiveTargetStatus
-#   value: ha
-#   collect_after_event: end_collection_event
+ RA:
+  device: MTPtg
+  Stype: Event
+  topic: currentTarget
+  value: ra
+  collect_after_event: start_collection_event
+  scale: 57.29577951308232
 
-#  AMEND:
-#   device: ATPtg
-#   Stype: Telemetry
-#   topic: prospectiveTargetStatus
-#   value: airmass
-#   collect_after_event: end_collection_event
+ DEC:
+  device: MTPtg
+  Stype: Event
+  topic: currentTarget
+  value: declination
+  collect_after_event: start_collection_event
+  scale: 57.29577951308232
 
-#  ELEND:
-#   device: ATMCS
-#   Stype: Telemetry
-#   topic: mount_AzEl_Encoders
-#   value: elevationCalculatedAngle
-#   collect_after_event: end_collection_event
+ ROTPA:
+  device: MTPtg
+  Stype: Event
+  topic: currentTarget
+  value: rotPA
+  collect_after_event: start_collection_event
 
-#  AZEND:
-#   device: ATMCS
-#   Stype: Telemetry
-#   topic: mount_AzEl_Encoders
-#   value: azimuthCalculatedAngle
-#   collect_after_event: end_collection_event
+ RASTART:
+  device: MTPtg
+  Stype: Telemetry
+  topic: mount_positions
+  value: ra
+  collect_after_event: start_collection_event
+  array: timestamp_start
 
-#  FOCUSZ:
-#   device: ATHexapod
-#   Stype: Event
-#   topic: positionUpdate
-#   value: positionZ
-#   collect_after_event: end_collection_event
+ DECSTART:
+  device: MTPtg
+  Stype: Telemetry
+  topic: mount_positions
+  value: declination
+  collect_after_event: start_collection_event
+  array: timestamp_start
 
-#  INSTPORT:
-#   device: ATSpectrograph
-#   Stype: Event
-#   topic: settingsAppliedValues
-#   value: instrumentPort
-#   collect_after_event: start_collection_event
+ HASTART:
+  device: MTPtg
+  Stype: Telemetry
+  topic: currentTargetStatus
+  value: ha
+  collect_after_event: start_collection_event
 
-#  ATM3PORT:
-#   device: ATMCS
-#   Stype: Event
-#   topic: m3PortSelected
-#   value: selected
-#   collect_after_event: start_collection_event
+ AMSTART:
+  device: MTPtg
+  Stype: Telemetry
+  topic: currentTargetStatus
+  value: airmass
+  collect_after_event: start_collection_event
+
+ ELSTART:
+  device: MTPtg
+  Stype: Telemetry
+  topic: mount_positions
+  value: elevationCalculatedAngle
+  collect_after_event: start_collection_event
+  array: timestamp_start
+
+ AZSTART:
+  device: MTPtg
+  Stype: Telemetry
+  topic: mount_positions
+  value: azimuthCalculatedAngle
+  collect_after_event: start_collection_event
+  array: timestamp_start
+
+ RAEND:
+  device: MTPtg
+  Stype: Telemetry
+  topic: mount_positions
+  value: ra
+  collect_after_event: end_collection_event
+  array: timestamp_start
+
+ DECEND:
+  device: MTPtg
+  Stype: Telemetry
+  topic: mount_positions
+  value: declination
+  collect_after_event: end_collection_event
+  array: timestamp_start
+
+ HAEND:
+  device: MTPtg
+  Stype: Telemetry
+  topic: currentTargetStatus
+  value: ha
+  collect_after_event: end_collection_event
+
+ AMEND:
+  device: MTPtg
+  Stype: Telemetry
+  topic: currentTargetStatus
+  value: airmass
+  collect_after_event: end_collection_event
+
+ ELEND:
+  device: MTPtg
+  Stype: Telemetry
+  topic: mount_positions
+  value: elevationCalculatedAngle
+  collect_after_event: end_collection_event
+  array: timestamp_start
+
+ AZEND:
+  device: MTPtg
+  Stype: Telemetry
+  topic: mount_positions
+  value: azimuthCalculatedAngle
+  collect_after_event: end_collection_event
+  array: timestamp_start
+
+ FOCUSZ:
+  device: Hexapod
+  device_index: 1
+  Stype: Telemetry
+  topic: application
+  value: demand
+  collect_after_event: end_collection_event
+  array_index: 2
 
 #  TRACKSYS:
 #   device: ATMCS
@@ -408,40 +431,19 @@ telemetry:
 #   value: radesys
 #   collect_after_event: start_collection_event
 
-# # --------------------------------------------------------------
-# # ----- Filter/Grating information from ATSpectrograph ---------
+# # -------------------------------------------------
+# # ----- Filter information from CCCamera ----------
 
 #  FILTER:
-#   device: ATSpectrograph
+#   device: CCCamera
 #   Stype: Event
-#   topic: reportedFilterPosition
+#   topic: startIntegration
 #   value: name
 #   collect_after_event: start_collection_event
 
 #  FILTPOS:
-#   device: ATSpectrograph
+#   device: CCCamera
 #   Stype: Event
-#   topic: reportedFilterPosition
-#   value: position
-#   collect_after_event: start_collection_event
-
-#  GRATING:
-#   device: ATSpectrograph
-#   Stype: Event
-#   topic: reportedDisperserPosition
-#   value: name
-#   collect_after_event: start_collection_event
-
-#  GRATPOS:
-#   device: ATSpectrograph
-#   Stype: Event
-#   topic: reportedDisperserPosition
-#   value: position
-#   collect_after_event: start_collection_event
-
-#  LINSPOS:
-#   device: ATSpectrograph
-#   Stype: Event
-#   topic: reportedLinearStagePosition
+#   topic: startIntegration
 #   value: position
 #   collect_after_event: start_collection_event

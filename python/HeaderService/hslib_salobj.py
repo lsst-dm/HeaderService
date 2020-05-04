@@ -87,14 +87,16 @@ class HSWorker(salobj.BaseCsc):
         """Set the callback functions based on configuration"""
 
         # Select the start_collection callback
-        devname = self.config.start_collection_event['device']
+        devname = get_channel_devname(self.config.start_collection_event)
         topic = self.config.start_collection_event['topic']
         getattr(self.Remote[devname], f"evt_{topic}").callback = self.start_collection_event_callback
+        self.log.info(f"Defining callback for {devname} {topic}")
 
         # Select the end_collection callback
-        devname = self.config.end_collection_event['device']
+        devname = get_channel_devname(self.config.end_collection_event)
         topic = self.config.end_collection_event['topic']
         getattr(self.Remote[devname], f"evt_{topic}").callback = self.end_collection_event_callback
+        self.log.info(f"Defining callback for {devname} {topic}")
 
     def start_collection_event_callback(self, myData):
         """ The callback function for the START collection event"""
@@ -227,20 +229,22 @@ class HSWorker(salobj.BaseCsc):
         # The dict containing all of the threads and connections
         self.Remote = {}
         self.Remote_get = {}
-        for name, c in self.channels.items():
-            devname = c['device']
+        for channel_name, c in self.channels.items():
+            devname = get_channel_devname(c)
             # Make sure we only create these once
             if devname not in self.devices:
                 self.devices.append(devname)
-                self.Remote[devname] = salobj.Remote(domain=self.domain, name=devname, index=0)
+                self.Remote[devname] = salobj.Remote(domain=self.domain,
+                                                     name=c['device'],
+                                                     index=c['device_index'])
                 self.log.info(f"Created Remote for {devname}")
             # capture the evt.get() function for the channel
             if c['Stype'] == 'Event':
-                self.Remote_get[name] = getattr(self.Remote[devname], f"evt_{c['topic']}").get
-                self.log.info(f"Storing Remote.evt_{c['topic']}.get() for {name}")
+                self.Remote_get[channel_name] = getattr(self.Remote[devname], f"evt_{c['topic']}").get
+                self.log.info(f"Storing Remote.evt_{c['topic']}.get() for {channel_name}")
             if c['Stype'] == 'Telemetry':
-                self.Remote_get[name] = getattr(self.Remote[devname], f"tel_{c['topic']}").get
-                self.log.info(f"Storing Remote.tel_{c['topic']}.get() for {name}")
+                self.Remote_get[channel_name] = getattr(self.Remote[devname], f"tel_{c['topic']}").get
+                self.log.info(f"Storing Remote.tel_{c['topic']}.get() for {channel_name}")
 
         # Select the start_collection channel
         self.name_start = get_channel_name(self.config.start_collection_event)
@@ -511,9 +515,15 @@ class HSWorker(salobj.BaseCsc):
             self.log.info(f"For {keyword} extracted ccdnames: {ccdnames}")
             # Split the payload into an array of strings
             extracted_payload = dict(zip(ccdnames, payload.split(sep)))
-        # If some kind of array, take first element
+        # If some kind of array
         elif hasattr(payload, "__len__") and not isinstance(payload, str):
-            extracted_payload = payload[0]
+            if 'array_index' in self.config.telemetry[keyword]:
+                index = self.config.telemetry[keyword]['array_index']
+                # Extract the requested index
+                extracted_payload = payload[index]
+            else:
+                # Otherwise take first element
+                extracted_payload = payload[0]
         else:
             self.log.debug(f"Undefined type for {keyword}")
             extracted_payload = None
@@ -600,12 +610,20 @@ class HSWorker(salobj.BaseCsc):
 
 def get_channel_name(c):
     """ Standard formatting for the name of a channel across modules"""
-    return '{}_{}'.format(c['device'], c['topic'])
+    # Assume index=0 if not defined
+    if 'device_index' not in c:
+        c['device_index'] = 0
+    return '{}_{}_{}'.format(c['device'], c['device_index'], c['topic'])
 
 
 def get_channel_device(c):
-    """ Standard formatting for the name of a channel across modules"""
+    """ Standard formatting for the device name of a channel across modules"""
     return c['device']
+
+
+def get_channel_devname(c):
+    """ Standard formatting for the 'devname' of a channel across modules"""
+    return "{}_{}".format(c['device'], c['device_index'])
 
 
 def extract_telemetry_channels(telem, start_collection_event=None,
@@ -624,36 +642,38 @@ def extract_telemetry_channels(telem, start_collection_event=None,
         # Make sure telemetry as a valid collection event definition
         if telem[key]['collect_after_event'] not in valid_collection_events:
             raise ValueError(f"Wrong collection_event in telemetry definition for keyword:{key}")
-
-        # Make the name of the channel unique by appending device
-        c = {'device': telem[key]['device'],
-             'topic': telem[key]['topic'],
-             'Stype': telem[key]['Stype']}
-        # Add scale if present in the definition -- although not used elsewhere
-        if 'scale' in telem[key]:
-            c['scale'] = telem[key]['scale']
-        # Add array qualifier
-        if 'type' in telem[key]:
-            c['type'] = telem[key]['type']
-        else:
-            c['type'] = 'scalar'
-
-        name = get_channel_name(c)
-        # Make sure we don't crate extra channels
+        # Add array qualifier -- REVISE or replace by array
+        if 'type' not in telem[key]:
+            telem[key]['type'] = 'scalar'
+        # Add default index=0 if undefined
+        if 'device_index' not in telem[key]:
+            telem[key]['device_index'] = 0
+        name = get_channel_name(telem[key])
+        # Make sure we don't create extra channels
         if name not in channels.keys():
-            channels[name] = c
+            channels[name] = telem[key]
 
     # We also need to make sure that we subscribe to the start/end
     # collection Events in case these were not contained by the
     if start_collection_event:
+        # Shortcut to variable c, note that when we update c
+        # we also update the end_collection_event dictionary
         c = start_collection_event
+        # Assume index=0 if not defined
+        if 'device_index' not in c:
+            c['device_index'] = 0
         name = get_channel_name(c)
         if name not in channels.keys():
             c['Stype'] = 'Event'
             channels[name] = c
 
     if end_collection_event:
+        # Shortcut to variable c, note that when we update c
+        # we also update the end_collection_event dictionary
         c = end_collection_event
+        # Assume index=0 if not defined
+        if 'device_index' not in c:
+            c['device_index'] = 0
         name = get_channel_name(c)
         if name not in list(channels.keys()):
             c['Stype'] = 'Event'
@@ -662,6 +682,9 @@ def extract_telemetry_channels(telem, start_collection_event=None,
     # The imageParam event
     if imageParam_event:
         c = imageParam_event
+        # Assume index=0 if not defined
+        if 'device_index' not in c:
+            c['device_index'] = 0
         name = get_channel_name(c)
         if name not in channels.keys():
             c['Stype'] = 'Event'
