@@ -125,7 +125,7 @@ if __name__ == "__main__":
     cam.evt_imageReadoutParameters.set_put(**kwRO)
     LOGGER.info("Sending simulated imageReadoutParameters {}".format(kwRO))
 
-    # FocusZ positionZ for ATHexapod
+    # FocusZ positionZ for Hexapod
     kwHexa = {'demand': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]}  # made up
     hexa.tel_application.set_put(**kwHexa)
     LOGGER.info("Sending simulated Hexapod application")
@@ -162,14 +162,14 @@ if __name__ == "__main__":
         else:
             imageName = "{}_{}_{}_{:06d}".format(args.telcode, args.controller, DAYOBS, seqN)
 
-        # The START telemetry for Airmass using ATPtg.currentTargetStatus
+        # The START telemetry for Airmass using the MTPtg.currentTargetStatus
         kwTA = {'timestamp': get_tai_time(),
                 'ha': args.ha,
                 'airmass': args.airmass}
         ptg.tel_currentTargetStatus.set_put(**kwTA)
         LOGGER.info("Sending simulated currentTargetStatus HA/AIRMASS Start")
 
-        # The START telemetry for RA/DEC, EL/AZ from the ATPtg.mount_positions
+        # The START telemetry for RA/DEC, EL/AZ from the MTPtg.mount_positions
         kwMP = {'ra': [args.ra]*100,
                 'declination': [args.dec]*100,
                 'elevationCalculatedAngle': [args.el]*100,

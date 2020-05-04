@@ -649,7 +649,7 @@ def extract_telemetry_channels(telem, start_collection_event=None,
         if 'device_index' not in telem[key]:
             telem[key]['device_index'] = 0
         name = get_channel_name(telem[key])
-        # Make sure we don't crate extra channels
+        # Make sure we don't create extra channels
         if name not in channels.keys():
             channels[name] = telem[key]
 
