@@ -246,7 +246,7 @@ telemetry:
   value: overCols
   collect_after_event: end_collection_event
   array: CCD_array
-  array_key: ccdNames
+  array_key: ccdLocation
 
  OVERV:
   device: CCCamera
@@ -255,7 +255,7 @@ telemetry:
   value: overRows
   collect_after_event: end_collection_event
   array: CCD_array
-  array_key: ccdNames
+  array_key: ccdLocation
 
  PREH:
   device: CCCamera
@@ -264,7 +264,7 @@ telemetry:
   value: preCols
   collect_after_event: end_collection_event
   array: CCD_array
-  array_key: ccdNames
+  array_key: ccdLocation
 
  CCDSLOT:
   device: CCCamera
@@ -273,7 +273,7 @@ telemetry:
   value: ccdSlot
   collect_after_event: end_collection_event
   array: CCD_array_str
-  array_key: ccdNames
+  array_key: ccdLocation
 
  RAFTBAY:
   device: CCCamera
@@ -282,7 +282,7 @@ telemetry:
   value: raftBay
   collect_after_event: end_collection_event
   array: CCD_array_str
-  array_key: ccdNames
+  array_key: ccdLocation
 
 
 # --- Pointing Information ---------------
