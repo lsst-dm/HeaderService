@@ -69,7 +69,7 @@ def cmdline():
                         help="The ra/dec track system value.")
     parser.add_argument("--object", action="store", default="ElGordo", type=str,
                         help="The name of the object observed.")
-    parser.add_argument("--imagetag", action="store", default="ElGordo", type=str,
+    parser.add_argument("--imagetag", action="store", default="TestTag", type=str,
                         help="The imagetag of the observation.")
     parser.add_argument("--imageName", action="store", default=None, type=str,
                         help="Optional imageName")
@@ -112,6 +112,24 @@ if __name__ == "__main__":
     ccdLocation = hutils.build_sensor_list('ComCam', sep='')
     ccdSlots = [s[3:] for s in ccdLocation]
     raftBays = [s[0:3] for s in ccdLocation]
+
+    # Camera confguration from focalPlaneSummaryInfo
+    kwfPl = {'ccdLocation': ':'.join(ccdLocation),
+             'ccdSlot': ':'.join(ccdSlots),
+             'raftBay': ':'.join(raftBays),
+             'rebSerialNumber': ':'.join(['REBSER_TEST', ]*9),
+             'ccdManSerNum': ':'.join(['12345', ]*9),
+             'ccdManufacturer': ':'.join(['ITL', ]*9),
+             'ccdType': [1, ]*9,
+             'ccdLSSTName': ':'.join(['ITL-YYYY-XXX', ]*9),
+             # Made up values just for testing
+             'sequencerChecksum': ':'.join(['1234567890', ]*9),
+             'sequencerKey': ':'.join(['SEQNAME_TEST', ]*9),
+             'rebLSSTName': ':'.join(['REBNAME_TEST', ]*9),
+             'ccdTempSetPoint': [random.uniform(-30, 0) for i in range(9)]}
+    cam.evt_focalPlaneSummaryInfo.set_put(**kwfPl)
+    LOGGER.info("Sending simulated focalPlaneSummaryInfo {}".format(kwfPl))
+
     kwRO = {'overRows': [args.overv]*9,
             'overCols': [args.overh]*9,
             'preCols': [args.preh]*9,

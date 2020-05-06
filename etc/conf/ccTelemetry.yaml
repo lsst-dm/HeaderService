@@ -160,83 +160,114 @@ telemetry:
 #  value: ccdTemp0
 #  array_per_CCD: True
 #
-# TEMP_SET:
-#  device: CCCamera
-#  Stype: Telemetry
-#  topic: vacuum
-#  value: tempCCDSetPoint
-#  collect_after_event: start_collection_event
 
-# --- Comment until xml is ready
 # --- Camera Sensor information
 
-# CCD_MANU:
-#  device: CCCamera
-#  Stype: Event
-#  topic: focalPlaneSettingsApplied
-#  value: ccdManufacturer
-#  collect_after_event: start_collection_event
-#  array_per_CCD: True
-#
-# CCD_TYPE:
-#  device: CCCamera
-#  Stype: Event
-#  topic: focalPlaneSettingsApplied
-#  value: ccdType
-#  array_per_CCD: True
-#
-# CCD_SERN:
-#  device: CCCamera
-#  Stype: Event
-#  topic: focalPlaneSettingsApplied
-#  value: ccdSerialNumber
-#  collect_after_event: start_collection_event
-#  array_per_CCD: True
-#
-# LSST_NUM:
-#  device: CCCamera
-#  Stype: Event
-#  topic: focalPlaneSettingsApplied
-#  value: ccdName
-#  collect_after_event: start_collection_event
-#  array_per_CCD: True
-#
-# SEQCKSUM:
-#  device: CCCamera
-#  Stype: Event
-#  topic: focalPlaneSettingsApplied
-#  value: sequencerChecksum
-#  collect_after_event: start_collection_event
-#
-# SEQNAME:
-#  device: CCCamera
-#  Stype: Event
-#  topic: focalPlaneSettingsApplied
-#  value: sequencerKey
-#  collect_after_event: start_collection_event
-#
-# REBNAME:
-#  device: CCCamera
-#  Stype: Event
-#  topic: focalPlaneSettingsApplied
-#  value: rebName
-#  collect_after_event: start_collection_event
-#  array_per_CCD: True
-#
-# CONTNUM:
-#  device: CCCamera
-#  Stype: Event
-#  topic: focalPlaneSettingsApplied
-#  value: rebSerialNumber
-#  collect_after_event: start_collection_event
-#  array_per_CCD: True
-#
-# IMAGETAG:
-#  device: CCCamera
-#  Stype: Event
-#  topic: focalPlaneSettingsApplied
-#  value: imageTag
-#  collect_after_event: end_collection_event
+ CCD_MANU:
+  device: CCCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: ccdManufacturer
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_key: ccdLocation
+
+ CCD_TYPE:
+  device: CCCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: ccdType
+  collect_after_event: start_collection_event
+  array: CCD_array
+  array_key: ccdLocation
+
+ CCD_SERN:
+  device: CCCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: ccdManSerNum
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_key: ccdLocation
+
+ LSST_NUM:
+  device: CCCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: ccdLSSTName
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_key: ccdLocation
+
+ CCDSLOT:
+  device: CCCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: ccdSlot
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_key: ccdLocation
+
+ RAFTBAY:
+  device: CCCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: raftBay
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_key: ccdLocation
+
+ SEQCKSUM:
+  device: CCCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: sequencerChecksum
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_key: ccdLocation
+
+ SEQNAME:
+  device: CCCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: sequencerKey
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_key: ccdLocation
+
+ REBNAME:
+  device: CCCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: rebLSSTName
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_key: ccdLocation
+
+ CONTNUM:
+  device: CCCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: rebSerialNumber
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_key: ccdLocation
+
+ TEMP_SET:
+  device: CCCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: ccdTempSetPoint
+  collect_after_event: start_collection_event
+  array: CCD_array
+  array_key: ccdLocation
+
+ IMAGETAG:
+  device: CCCamera
+  Stype: Event
+  topic: endOfImageTelemetry
+  value: imageTag
+  collect_after_event: end_collection_event
 
 # --------------------------------------------------------------
  OVERH:
@@ -265,25 +296,6 @@ telemetry:
   collect_after_event: end_collection_event
   array: CCD_array
   array_key: ccdLocation
-
- CCDSLOT:
-  device: CCCamera
-  Stype: Event
-  topic: imageReadoutParameters
-  value: ccdSlot
-  collect_after_event: end_collection_event
-  array: CCD_array_str
-  array_key: ccdLocation
-
- RAFTBAY:
-  device: CCCamera
-  Stype: Event
-  topic: imageReadoutParameters
-  value: raftBay
-  collect_after_event: end_collection_event
-  array: CCD_array_str
-  array_key: ccdLocation
-
 
 # --- Pointing Information ---------------
  OBJECT:
