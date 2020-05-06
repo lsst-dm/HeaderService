@@ -144,9 +144,12 @@ if __name__ == "__main__":
     LOGGER.info("Sending simulated imageReadoutParameters {}".format(kwRO))
 
     # FocusZ positionZ for Hexapod
-    kwHexa = {'demand': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]}  # made up
+    kwHexa = {'demand': [0.0, 0.1, 0.2, 0.3, 0.4, 0.5],
+              'position': [0, 1, 2, 3, 4, 5],
+              'error': [0.0, 0.01, 0.03, 0.03, 0.04, 0.05]
+              }
     hexa.tel_application.set_put(**kwHexa)
-    LOGGER.info("Sending simulated Hexapod application")
+    LOGGER.info("Sending simulated Hexapod application {}".format(kwHexa))
 
     # Pointing information
     # Send the pointing event -- here we populate only a few fields

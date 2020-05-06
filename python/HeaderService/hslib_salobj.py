@@ -505,25 +505,27 @@ class HSWorker(salobj.BaseCsc):
             extracted_payload = payload
         # Case 2 -- array of values per sensor
         elif self.config.telemetry[keyword]['array'] == 'CCD_array':
-            self.log.debug(f"{keyword} is an array")
+            self.log.debug(f"{keyword} is and array: CCD_array")
             ccdnames = self.get_CCD_keywords(keyword, myData, sep)
             self.log.info(f"For {keyword} extracted ccdnames: {ccdnames}")
             extracted_payload = dict(zip(ccdnames, payload))
         elif self.config.telemetry[keyword]['array'] == 'CCD_array_str':
-            self.log.debug(f"{keyword} is string an array")
+            self.log.debug(f"{keyword} is string array: CCD_array_str")
             ccdnames = self.get_CCD_keywords(keyword, myData, sep)
             self.log.info(f"For {keyword} extracted ccdnames: {ccdnames}")
             # Split the payload into an array of strings
             extracted_payload = dict(zip(ccdnames, payload.split(sep)))
+        elif self.config.telemetry[keyword]['array'] == 'indexed_array':
+            self.log.debug(f"{keyword} is and array: indexed_array")
+            index = self.config.telemetry[keyword]['array_index']
+            # Extract the requested index
+            extracted_payload = payload[index]
         # If some kind of array
         elif hasattr(payload, "__len__") and not isinstance(payload, str):
-            if 'array_index' in self.config.telemetry[keyword]:
-                index = self.config.telemetry[keyword]['array_index']
-                # Extract the requested index
-                extracted_payload = payload[index]
-            else:
-                # Otherwise take first element
-                extracted_payload = payload[0]
+            self.log.debug(f"{keyword} is just an array")
+            # Otherwise take first element
+            self.log.debug(f"{keyword} is a non-indexed array")
+            extracted_payload = payload[0]
         else:
             self.log.debug(f"Undefined type for {keyword}")
             extracted_payload = None
