@@ -122,11 +122,21 @@ telemetry:
   collect_after_event: start_collection_event
 
  IMGTYPE:
-   device: CCCamera
-   Stype: Event
-   topic: startIntegration
-   value: imageType
-   collect_after_event: start_collection_event
+  device: CCCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageType
+  collect_after_event: start_collection_event
+
+ TESTTYPE:
+  device: CCCamera
+  Stype: Event
+  topic: startIntegration
+  value: additionalValues
+  collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: testType
+  array: keyed_array
 
  EXPTIME:
   device: CCCamera
@@ -167,7 +177,7 @@ telemetry:
   value: ccdManufacturer
   collect_after_event: start_collection_event
   array: CCD_array_str
-  array_key: ccdLocation
+  array_keys: ccdLocation
 
  CCD_TYPE:
   device: CCCamera
@@ -176,7 +186,7 @@ telemetry:
   value: ccdType
   collect_after_event: start_collection_event
   array: CCD_array
-  array_key: ccdLocation
+  array_keys: ccdLocation
 
  CCD_SERN:
   device: CCCamera
@@ -185,7 +195,7 @@ telemetry:
   value: ccdManSerNum
   collect_after_event: start_collection_event
   array: CCD_array_str
-  array_key: ccdLocation
+  array_keys: ccdLocation
 
  LSST_NUM:
   device: CCCamera
@@ -194,7 +204,7 @@ telemetry:
   value: ccdLSSTName
   collect_after_event: start_collection_event
   array: CCD_array_str
-  array_key: ccdLocation
+  array_keys: ccdLocation
 
  CCDSLOT:
   device: CCCamera
@@ -203,7 +213,7 @@ telemetry:
   value: ccdSlot
   collect_after_event: start_collection_event
   array: CCD_array_str
-  array_key: ccdLocation
+  array_keys: ccdLocation
 
  RAFTBAY:
   device: CCCamera
@@ -212,7 +222,7 @@ telemetry:
   value: raftBay
   collect_after_event: start_collection_event
   array: CCD_array_str
-  array_key: ccdLocation
+  array_keys: ccdLocation
 
  SEQCKSUM:
   device: CCCamera
@@ -221,7 +231,7 @@ telemetry:
   value: sequencerChecksum
   collect_after_event: start_collection_event
   array: CCD_array_str
-  array_key: ccdLocation
+  array_keys: ccdLocation
 
  SEQNAME:
   device: CCCamera
@@ -230,7 +240,7 @@ telemetry:
   value: sequencerKey
   collect_after_event: start_collection_event
   array: CCD_array_str
-  array_key: ccdLocation
+  array_keys: ccdLocation
 
  REBNAME:
   device: CCCamera
@@ -239,7 +249,7 @@ telemetry:
   value: rebLSSTName
   collect_after_event: start_collection_event
   array: CCD_array_str
-  array_key: ccdLocation
+  array_keys: ccdLocation
 
  CONTNUM:
   device: CCCamera
@@ -248,7 +258,7 @@ telemetry:
   value: rebSerialNumber
   collect_after_event: start_collection_event
   array: CCD_array_str
-  array_key: ccdLocation
+  array_keys: ccdLocation
 
  TEMP_SET:
   device: CCCamera
@@ -257,7 +267,7 @@ telemetry:
   value: ccdTempSetPoint
   collect_after_event: start_collection_event
   array: CCD_array
-  array_key: ccdLocation
+  array_keys: ccdLocation
 
  IMAGETAG:
   device: CCCamera
@@ -274,7 +284,7 @@ telemetry:
   value: overCols
   collect_after_event: end_collection_event
   array: CCD_array
-  array_key: ccdLocation
+  array_keys: ccdLocation
 
  OVERV:
   device: CCCamera
@@ -283,7 +293,7 @@ telemetry:
   value: overRows
   collect_after_event: end_collection_event
   array: CCD_array
-  array_key: ccdLocation
+  array_keys: ccdLocation
 
  PREH:
   device: CCCamera
@@ -292,7 +302,7 @@ telemetry:
   value: preCols
   collect_after_event: end_collection_event
   array: CCD_array
-  array_key: ccdLocation
+  array_keys: ccdLocation
 
 # --- Pointing Information ---------------
  OBJECT:

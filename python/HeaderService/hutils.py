@@ -402,7 +402,7 @@ class HDRTEMPL:
         self.header['PRIMARY'] = self.header_primary
         PRIMARY_DATA = camera_coords.setup_primary()
         self.update_records(PRIMARY_DATA, 'PRIMARY')
-        self.log.info(f"Loading template for: PRIMARY")
+        self.log.info("Loading template for: PRIMARY")
 
         # 2. Load up segments (and PRIMARY_SENSOR if needed)
         for sensor in self.sensor_names:

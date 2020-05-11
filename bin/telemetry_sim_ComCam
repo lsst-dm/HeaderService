@@ -74,6 +74,11 @@ def cmdline():
     parser.add_argument("--imageName", action="store", default=None, type=str,
                         help="Optional imageName")
 
+    parser.add_argument("--additionalKeys", action="store", default='imageType:groupId:testType',
+                        type=str, help="Optional additionalKeys")
+    parser.add_argument("--additionalValues", action="store", default='BIAS:CALSET_XXXX_YYYY:SIMTEST_ABCD',
+                        type=str, help="Optional additionalKeys")
+
     parser.add_argument("--sleeptime", action="store", default=1, type=float,
                         help="Sleep Time between step, in seconds")
     parser.add_argument("--delaytime", action="store", default=0, type=float,
@@ -211,6 +216,8 @@ if __name__ == "__main__":
                  'imageDate': DAYOBS,
                  'timeStampAcquisitionStart': timeStamp,
                  'exposureTime': args.exptime,
+                 'additionalKeys': args.additionalKeys,
+                 'additionalValues': args.additionalValues,
                  'priority': 1,
                  'force_output': True}
         cam.evt_startIntegration.set_put(**kwInt)

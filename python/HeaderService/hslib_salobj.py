@@ -506,13 +506,11 @@ class HSWorker(salobj.BaseCsc):
         # Case 2 -- array of values per sensor
         elif self.config.telemetry[keyword]['array'] == 'CCD_array':
             self.log.debug(f"{keyword} is and array: CCD_array")
-            ccdnames = self.get_CCD_keywords(keyword, myData, sep)
-            self.log.info(f"For {keyword} extracted ccdnames: {ccdnames}")
+            ccdnames = self.get_array_keys(keyword, myData, sep)
             extracted_payload = dict(zip(ccdnames, payload))
         elif self.config.telemetry[keyword]['array'] == 'CCD_array_str':
             self.log.debug(f"{keyword} is string array: CCD_array_str")
-            ccdnames = self.get_CCD_keywords(keyword, myData, sep)
-            self.log.info(f"For {keyword} extracted ccdnames: {ccdnames}")
+            ccdnames = self.get_array_keys(keyword, myData, sep)
             # Split the payload into an array of strings
             extracted_payload = dict(zip(ccdnames, payload.split(sep)))
         elif self.config.telemetry[keyword]['array'] == 'indexed_array':
@@ -520,6 +518,12 @@ class HSWorker(salobj.BaseCsc):
             index = self.config.telemetry[keyword]['array_index']
             # Extract the requested index
             extracted_payload = payload[index]
+        elif self.config.telemetry[keyword]['array'] == 'keyed_array':
+            self.log.debug(f"{keyword} is and array: keyed_array")
+            keywords = self.get_array_keys(keyword, myData, sep)
+            key = self.config.telemetry[keyword]['array_keyname']
+            # Extract only the requested key from the dictionary
+            extracted_payload = dict(zip(keywords, payload.split(sep)))[key]
         # If some kind of array
         elif hasattr(payload, "__len__") and not isinstance(payload, str):
             self.log.debug(f"{keyword} is just an array")
@@ -531,23 +535,24 @@ class HSWorker(salobj.BaseCsc):
             extracted_payload = None
         return extracted_payload
 
-    def get_CCD_keywords(self, keyword, myData, sep=":"):
+    def get_array_keys(self, keyword, myData, sep=":"):
         """
-        Function to extract a list of CCDs/Sensors for the ':'
-        separated string published by Camera
+        Function to extract a list of keywords for the ':'-separated string
+        published by Camera
         """
-        array_key = self.config.telemetry[keyword]['array_key']
-        payload = getattr(myData, array_key)
+        array_keys = self.config.telemetry[keyword]['array_keys']
+        payload = getattr(myData, array_keys)
         # Make sure we get back something
         if payload is None:
-            self.log.warning(f"Cannot get list of CCD keys for {keyword}")
-            ccd_keywords = None
+            self.log.warning(f"Cannot get list of keys for: {keyword}")
+            keywords_list = None
         else:
-            # we extract them using separator
-            ccd_keywords = payload.split(sep)
-            if len(ccd_keywords) <= 1:
-                self.log.warning(f"List CCD keys for {keyword} is <= 1")
-        return ccd_keywords
+            # we extract them using the separator (i.e. ':')
+            keywords_list = payload.split(sep)
+            if len(keywords_list) <= 1:
+                self.log.warning(f"List keys for {keyword} is <= 1")
+            self.log.info(f"For {keyword}, extracted '{array_keys}': {keywords_list}")
+        return keywords_list
 
     def collect_from_HeaderService(self, imageName):
 
