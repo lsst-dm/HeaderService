@@ -491,7 +491,10 @@ class HSWorker(salobj.BaseCsc):
             if myData[name] is None:
                 self.log.warning(f"Cannot get keyword: {keyword} from topic: {name}")
             else:
-                metadata[keyword] = self.extract_from_myData(keyword, myData[name])
+                try:
+                    metadata[keyword] = self.extract_from_myData(keyword, myData[name])
+                except KeyError:
+                    self.log.warning(f"Cannot extract keyword: {keyword} from topic: {name}")
         return metadata
 
     def extract_from_myData(self, keyword, myData, sep=":"):

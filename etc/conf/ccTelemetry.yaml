@@ -118,15 +118,21 @@ telemetry:
   device: CCCamera
   Stype: Event
   topic: startIntegration
-  value: groupId
+  value: additionalValues
   collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: groupId
+  array: keyed_array
 
  IMGTYPE:
   device: CCCamera
   Stype: Event
   topic: startIntegration
-  value: imageType
+  value: additionalValues
   collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: imageType
+  array: keyed_array
 
  TESTTYPE:
   device: CCCamera
@@ -145,14 +151,14 @@ telemetry:
   value: exposureTime
   collect_after_event: start_collection_event
 
+ DARKTIME:
+  device: CCCamera
+  Stype: Event
+  topic: endOfImageTelemetry
+  value: darkTime
+  collect_after_event: end_collection_event
+
 # ---- Comment until xml is ready --------
-#
-# DARKTIME:
-#  device: CCCamera
-#  Stype: Event
-#  topic: endOfImageTelemetry
-#  value: darkTime
-#  collect_after_event: end_collection_event
 #
 # SHUTTIME:
 #  device: CCCamera
