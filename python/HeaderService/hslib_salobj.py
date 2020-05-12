@@ -327,7 +327,7 @@ class HSWorker(salobj.BaseCsc):
                           (exptime_key, self.config.timeout_exptime))
             metadata_tmp = self.collect([exptime_key])
             timeout = metadata_tmp[exptime_key] + self.config.timeout_exptime
-            self.log.info(f"Using timeout: %s [s]" % timeout)
+            self.log.info(f"Using timeout: {timeout} [s]")
 
             # Create timeout_task per imageName
             self.end_evt_timeout_task[imageName] = asyncio.ensure_future(self.end_evt_timeout(imageName,
@@ -362,7 +362,7 @@ class HSWorker(salobj.BaseCsc):
             self.clean(imageName)
 
         self.log.info(f"-------- Done: {imageName} -------------------")
-        self.log.info(f"-------- Ready for next image -----")
+        self.log.info("-------- Ready for next image -----")
         # Report and print the state
         self.report_summary_state()
 
@@ -466,7 +466,7 @@ class HSWorker(salobj.BaseCsc):
         Create the dictionaries holding per image information, such as:
         timeout tasks, metadata and headers
         """
-        self.log.info(f"Creating per imageName dictionaries")
+        self.log.info("Creating per imageName dictionaries")
         self.end_evt_timeout_task = {}
         self.metadata = {}
         self.HDR = {}

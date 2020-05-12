@@ -47,8 +47,8 @@ class HSWorker(salobj.BaseCsc):
             return
         print("Got endOfImageTelemetry")
         if self.endOfImage_timeout_task.done():
-            print(f"Not collecting end data because not expecting endOfImage")
-            self.log.error(f"endOfImage seen when not expected; ignored")
+            print("Not collecting end data because not expecting endOfImage")
+            self.log.error("endOfImage seen when not expected; ignored")
             return
         print("Collecting end...")
         self.endOfImage_timeout_task.cancel()
