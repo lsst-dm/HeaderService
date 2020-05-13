@@ -508,7 +508,7 @@ class HSWorker(salobj.BaseCsc):
             extracted_payload = payload
         # Case 2 -- array of values per sensor
         elif self.config.telemetry[keyword]['array'] == 'CCD_array':
-            self.log.debug(f"{keyword} is and array: CCD_array")
+            self.log.debug(f"{keyword} is an array: CCD_array")
             ccdnames = self.get_array_keys(keyword, myData, sep)
             extracted_payload = dict(zip(ccdnames, payload))
         elif self.config.telemetry[keyword]['array'] == 'CCD_array_str':
@@ -517,21 +517,19 @@ class HSWorker(salobj.BaseCsc):
             # Split the payload into an array of strings
             extracted_payload = dict(zip(ccdnames, payload.split(sep)))
         elif self.config.telemetry[keyword]['array'] == 'indexed_array':
-            self.log.debug(f"{keyword} is and array: indexed_array")
+            self.log.debug(f"{keyword} is an array: indexed_array")
             index = self.config.telemetry[keyword]['array_index']
             # Extract the requested index
             extracted_payload = payload[index]
         elif self.config.telemetry[keyword]['array'] == 'keyed_array':
-            self.log.debug(f"{keyword} is and array: keyed_array")
+            self.log.debug(f"{keyword} is an array: keyed_array")
             keywords = self.get_array_keys(keyword, myData, sep)
             key = self.config.telemetry[keyword]['array_keyname']
             # Extract only the requested key from the dictionary
             extracted_payload = dict(zip(keywords, payload.split(sep)))[key]
-        # If some kind of array
+        # If some kind of array take first element
         elif hasattr(payload, "__len__") and not isinstance(payload, str):
             self.log.debug(f"{keyword} is just an array")
-            # Otherwise take first element
-            self.log.debug(f"{keyword} is a non-indexed array")
             extracted_payload = payload[0]
         else:
             self.log.debug(f"Undefined type for {keyword}")

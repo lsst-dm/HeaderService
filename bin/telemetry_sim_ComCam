@@ -77,7 +77,7 @@ def cmdline():
     parser.add_argument("--additionalKeys", action="store", default='imageType:groupId:testType',
                         type=str, help="Optional additionalKeys")
     parser.add_argument("--additionalValues", action="store", default='BIAS:CALSET_XXXX_YYYY:SIMTEST_ABCD',
-                        type=str, help="Optional additionalKeys")
+                        type=str, help="Optional additionalValues")
 
     parser.add_argument("--sleeptime", action="store", default=1, type=float,
                         help="Sleep Time between step, in seconds")
