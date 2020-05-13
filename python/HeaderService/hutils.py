@@ -119,13 +119,13 @@ def read_head_template(fname, header=None):
     with open(fname) as fobj:
         lines = fobj.readlines()
 
-    lines = [line.rstrip() for line in lines if line[0:3] != 'END']
+    lines = [l.rstrip() for l in lines if l[0:3] != 'END']
 
     # if header is None an empty FITSHDR is created
     hdr = fitsio.FITSHDR(header)
 
-    for line in lines:
-        hdr.add_record(line)
+    for l in lines:
+        hdr.add_record(l)
 
     return hdr
 
