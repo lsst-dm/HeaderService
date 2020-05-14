@@ -119,13 +119,13 @@ def read_head_template(fname, header=None):
     with open(fname) as fobj:
         lines = fobj.readlines()
 
-    lines = [l.rstrip() for l in lines if l[0:3] != 'END']
+    lines = [line.rstrip() for line in lines if line[0:3] != 'END']
 
     # if header is None an empty FITSHDR is created
     hdr = fitsio.FITSHDR(header)
 
-    for l in lines:
-        hdr.add_record(l)
+    for line in lines:
+        hdr.add_record(line)
 
     return hdr
 
@@ -199,11 +199,11 @@ def repack_dict_list(mydict, masterkey):
     return newdict
 
 
-def get_image_size_from_imageReadoutParameters(myData, array_key='ccdNames', sep=":"):
+def get_image_size_from_imageReadoutParameters(myData, array_key='ccdLocation', sep=":"):
 
     ''' The stucture of the myData object for the imageReadoutParameters is:
      imageName    # string
-     ccdNames     # string
+     ccdLocation     # string
      ccdType      # short
      overRows     # int
      overCols     # int
@@ -231,7 +231,7 @@ def get_image_size_from_imageReadoutParameters(myData, array_key='ccdNames', sep
     payload = getattr(myData, array_key)
     geom[array_key] = payload.split(sep)
     # ONLY REPACK as as dictionary keyed to sensors,
-    # if more than one sensor is present in the ccdNames payload.
+    # if more than one sensor is present in the ccdLocation payload.
     # This is the case for ComCam and LSSTCam
     if len(geom[array_key]) > 1:
         geom_sensor = repack_dict_list(geom, array_key)
@@ -402,7 +402,7 @@ class HDRTEMPL:
         self.header['PRIMARY'] = self.header_primary
         PRIMARY_DATA = camera_coords.setup_primary()
         self.update_records(PRIMARY_DATA, 'PRIMARY')
-        self.log.info(f"Loading template for: PRIMARY")
+        self.log.info("Loading template for: PRIMARY")
 
         # 2. Load up segments (and PRIMARY_SENSOR if needed)
         for sensor in self.sensor_names:

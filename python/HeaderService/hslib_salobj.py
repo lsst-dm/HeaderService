@@ -327,7 +327,7 @@ class HSWorker(salobj.BaseCsc):
                           (exptime_key, self.config.timeout_exptime))
             metadata_tmp = self.collect([exptime_key])
             timeout = metadata_tmp[exptime_key] + self.config.timeout_exptime
-            self.log.info(f"Using timeout: %s [s]" % timeout)
+            self.log.info(f"Using timeout: {timeout} [s]")
 
             # Create timeout_task per imageName
             self.end_evt_timeout_task[imageName] = asyncio.ensure_future(self.end_evt_timeout(imageName,
@@ -362,7 +362,7 @@ class HSWorker(salobj.BaseCsc):
             self.clean(imageName)
 
         self.log.info(f"-------- Done: {imageName} -------------------")
-        self.log.info(f"-------- Ready for next image -----")
+        self.log.info("-------- Ready for next image -----")
         # Report and print the state
         self.report_summary_state()
 
@@ -466,7 +466,7 @@ class HSWorker(salobj.BaseCsc):
         Create the dictionaries holding per image information, such as:
         timeout tasks, metadata and headers
         """
-        self.log.info(f"Creating per imageName dictionaries")
+        self.log.info("Creating per imageName dictionaries")
         self.end_evt_timeout_task = {}
         self.metadata = {}
         self.HDR = {}
@@ -491,7 +491,10 @@ class HSWorker(salobj.BaseCsc):
             if myData[name] is None:
                 self.log.warning(f"Cannot get keyword: {keyword} from topic: {name}")
             else:
-                metadata[keyword] = self.extract_from_myData(keyword, myData[name])
+                try:
+                    metadata[keyword] = self.extract_from_myData(keyword, myData[name])
+                except KeyError:
+                    self.log.warning(f"Cannot extract keyword: {keyword} from topic: {name}")
         return metadata
 
     def extract_from_myData(self, keyword, myData, sep=":"):
@@ -505,47 +508,52 @@ class HSWorker(salobj.BaseCsc):
             extracted_payload = payload
         # Case 2 -- array of values per sensor
         elif self.config.telemetry[keyword]['array'] == 'CCD_array':
-            self.log.debug(f"{keyword} is an array")
-            ccdnames = self.get_CCD_keywords(keyword, myData, sep)
-            self.log.info(f"For {keyword} extracted ccdnames: {ccdnames}")
+            self.log.debug(f"{keyword} is an array: CCD_array")
+            ccdnames = self.get_array_keys(keyword, myData, sep)
             extracted_payload = dict(zip(ccdnames, payload))
         elif self.config.telemetry[keyword]['array'] == 'CCD_array_str':
-            self.log.debug(f"{keyword} is string an array")
-            ccdnames = self.get_CCD_keywords(keyword, myData, sep)
-            self.log.info(f"For {keyword} extracted ccdnames: {ccdnames}")
+            self.log.debug(f"{keyword} is string array: CCD_array_str")
+            ccdnames = self.get_array_keys(keyword, myData, sep)
             # Split the payload into an array of strings
             extracted_payload = dict(zip(ccdnames, payload.split(sep)))
-        # If some kind of array
+        elif self.config.telemetry[keyword]['array'] == 'indexed_array':
+            self.log.debug(f"{keyword} is an array: indexed_array")
+            index = self.config.telemetry[keyword]['array_index']
+            # Extract the requested index
+            extracted_payload = payload[index]
+        elif self.config.telemetry[keyword]['array'] == 'keyed_array':
+            self.log.debug(f"{keyword} is an array: keyed_array")
+            keywords = self.get_array_keys(keyword, myData, sep)
+            key = self.config.telemetry[keyword]['array_keyname']
+            # Extract only the requested key from the dictionary
+            extracted_payload = dict(zip(keywords, payload.split(sep)))[key]
+        # If some kind of array take first element
         elif hasattr(payload, "__len__") and not isinstance(payload, str):
-            if 'array_index' in self.config.telemetry[keyword]:
-                index = self.config.telemetry[keyword]['array_index']
-                # Extract the requested index
-                extracted_payload = payload[index]
-            else:
-                # Otherwise take first element
-                extracted_payload = payload[0]
+            self.log.debug(f"{keyword} is just an array")
+            extracted_payload = payload[0]
         else:
             self.log.debug(f"Undefined type for {keyword}")
             extracted_payload = None
         return extracted_payload
 
-    def get_CCD_keywords(self, keyword, myData, sep=":"):
+    def get_array_keys(self, keyword, myData, sep=":"):
         """
-        Function to extract a list of CCDs/Sensors for the ':'
-        separated string published by Camera
+        Function to extract a list of keywords for the ':'-separated string
+        published by Camera
         """
-        array_key = self.config.telemetry[keyword]['array_key']
-        payload = getattr(myData, array_key)
+        array_keys = self.config.telemetry[keyword]['array_keys']
+        payload = getattr(myData, array_keys)
         # Make sure we get back something
         if payload is None:
-            self.log.warning(f"Cannot get list of CCD keys for {keyword}")
-            ccd_keywords = None
+            self.log.warning(f"Cannot get list of keys for: {keyword}")
+            keywords_list = None
         else:
-            # we extract them using separator
-            ccd_keywords = payload.split(sep)
-            if len(ccd_keywords) <= 1:
-                self.log.warning(f"List CCD keys for {keyword} is <= 1")
-        return ccd_keywords
+            # we extract them using the separator (i.e. ':')
+            keywords_list = payload.split(sep)
+            if len(keywords_list) <= 1:
+                self.log.warning(f"List keys for {keyword} is <= 1")
+            self.log.info(f"For {keyword}, extracted '{array_keys}': {keywords_list}")
+        return keywords_list
 
     def collect_from_HeaderService(self, imageName):
 

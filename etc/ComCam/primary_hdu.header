@@ -61,6 +61,7 @@ CONTRLLR=                      / The controller (e.g. O for OCS, C for (A)CCS)
 DAYOBS  =                      / The observation day as defined by image name
 SEQNUM  =                      / The sequence number from the image name
 GROUPID =                      /
+TESTTYPE=                      / Test Type: BIAS:DARK:FLAT:OBS:PPUMP:QE:SFLAT
 
         ---- Information from Camera (Common block) ----
 SEQCKSUM=                      / Checksum of Sequencer

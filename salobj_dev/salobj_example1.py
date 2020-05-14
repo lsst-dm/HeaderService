@@ -40,7 +40,7 @@ class HSWorker(salobj.BaseCsc):
             print(f"Current State is {self.summary_state.name}")
             return
         print(f"Got startIntegration({data})")
-        print(f"Collecting start...")
+        print("Collecting start...")
         self.collect_beg()
         print(f"Metadata:{self.metadata}")
 
@@ -53,7 +53,7 @@ class HSWorker(salobj.BaseCsc):
         #    print(f"Current State is {self.summary_state.name}")
         #    return
         print(f"Got endOfImageTelemetry({data})")
-        print(f"Collecting end...")
+        print("Collecting end...")
         # self.collect_end()
         # print(f"Metadata:{self.metadata}")
         # self.myData["startIntegration"] = data

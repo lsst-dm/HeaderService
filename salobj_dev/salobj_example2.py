@@ -35,8 +35,8 @@ class HSWorker(salobj.BaseCsc):
         if self.summary_state != salobj.State.ENABLED:
             print(f"Current State is {self.summary_state.name}")
             return
-        print(f"Got startIntegration")
-        print(f"Collecting start...")
+        print("Got startIntegration")
+        print("Collecting start...")
         self.endOfImage_timeout_task.cancel()
         self.collect_start()
         self.endOfImage_timeout_task = asyncio.ensure_future(self.endOfImage_timeout(timeout=20))
@@ -45,19 +45,19 @@ class HSWorker(salobj.BaseCsc):
         if self.summary_state != salobj.State.ENABLED:
             print(f"Current State is {self.summary_state.name}")
             return
-        print(f"Got endOfImageTelemetry")
+        print("Got endOfImageTelemetry")
         if self.endOfImage_timeout_task.done():
-            print(f"Not collecting end data because not expecting endOfImage")
-            self.log.error(f"endOfImage seen when not expected; ignored")
+            print("Not collecting end data because not expecting endOfImage")
+            self.log.error("endOfImage seen when not expected; ignored")
             return
-        print(f"Collecting end...")
+        print("Collecting end...")
         self.endOfImage_timeout_task.cancel()
         self.collect_end()
 
     async def endOfImage_timeout(self, timeout):
         """Timeout timer for endOfImage telemetry callback"""
         await asyncio.sleep(timeout)
-        self.log.error(f"endOfImage not seen in {timeout} seconds; giving up")
+        self.log.error("endOfImage not seen in {timeout} seconds; giving up")
         self.clean()
 
     def collect_start(self):

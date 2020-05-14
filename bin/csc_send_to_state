@@ -28,7 +28,7 @@ async def main(args):
         newstate = getattr(salobj.State, args.state)
         remote.salinfo.log.info(f"Sending {args.csc_name} to: {args.state}")
         await salobj.set_summary_state(remote=remote, state=newstate)
-        remote.salinfo.log.info(f"Done")
+        remote.salinfo.log.info("Done")
 
 if __name__ == "__main__":
     args = cmdline()
