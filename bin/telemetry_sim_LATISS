@@ -121,7 +121,7 @@ if __name__ == "__main__":
     ptg = salobj.Controller(name="ATPtg", index=0)
     mcs = salobj.Controller(name="ATMCS", index=0)
     spec = salobj.Controller(name="ATSpectrograph", index=0)
-    hexa = salobj.Controller(name="ATHexapod", index=0)
+    ataos = salobj.Controller(name="ATAOS", index=0)
     dome = salobj.Controller(name="ATDome", index=0)
     dimm = salobj.Controller(name="DIMM", index=0)
     env = salobj.Controller(name="Environment", index=0)
@@ -196,17 +196,11 @@ if __name__ == "__main__":
     spec.evt_reportedLinearStagePosition.set_put(**kwLS)
     LOGGER.info("Sending simulated reportedLinearStagePosition")
 
-    # FocusZ positionZ for ATHexapod
-    kwHexa = {'positionX': 10,  # made up
-              'positionY': 10,  # made up
-              'positionZ': args.focusz,
-              'positionU': 10,  # made up
-              'positionV': 10,  # made up
-              'positionW': 10,  # made up
-              'priority': 1,
-              'force_output': True}
-    hexa.evt_positionUpdate.set_put(**kwHexa)
-    LOGGER.info("Sending simulated positionUpdate")
+    # FocusZ userApplied for ATAOS
+    kwataos = {'userApplied': 10,  # made up
+               'force_output': True}
+    ataos.evt_focusOffsetSummary.set_put(**kwataos)
+    LOGGER.info("Sending simulated focusOffsetSummary")
 
     LOGGER.info("---Sleeping for 1 s ---")
     time.sleep(1)

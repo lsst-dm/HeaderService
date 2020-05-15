@@ -17,9 +17,6 @@ log_format_date: '%Y-%m-%d %H:%M:%S'
 # path to the web server logfile
 weblogfile: 'www/webserver.log'
 
-# The ts_xml version we are using -- for now this is just curated and need to be changed manually when we change version
-ts_xml: "4.7.0"
-
 # port_number for webserver
 port_number: 8000
 
@@ -355,10 +352,10 @@ telemetry:
   array: timestamp_start
 
  FOCUSZ:
-  device: ATHexapod
+  device: ATAOS
   Stype: Event
-  topic: positionUpdate
-  value: positionZ
+  topic: focusOffsetSummary
+  value: userApplied
   collect_after_event: end_collection_event
 
  INSTPORT:
