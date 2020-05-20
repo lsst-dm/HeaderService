@@ -53,6 +53,7 @@ end_collection_event:
 imageParam_event:
     device: CCCamera
     topic: imageReadoutParameters
+    array_keys: ccdLocation
 
 # Telemetry values for images meta-data
 # https://confluence.lsstcorp.org/display/SYSENG/ComCam+Header+Information+Topic+Mapping

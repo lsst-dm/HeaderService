@@ -52,6 +52,7 @@ end_collection_event:
 imageParam_event:
     device: ATCamera
     topic: imageReadoutParameters
+    array_keys: ccdNames
 
 # Telemetry values for images meta-data
 # https://confluence.lsstcorp.org/pages/viewpage.action?spaceKey=SYSENG&title=Auxiliary+Telescope+Header+Information+Topic+Mapping
