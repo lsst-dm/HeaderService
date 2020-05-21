@@ -372,14 +372,15 @@ class HSWorker(salobj.BaseCsc):
         self.log.info("Extracting CCD/Sensor Image Parameters")
         # Extract from telemetry and identify the channel
         name = get_channel_name(self.config.imageParam_event)
+        array_keys = self.config.imageParam_event['array_keys']
         myData = self.Remote_get[name]()
         # exit in case we cannot get data from SAL
         if myData is None:
             self.log.warning("Cannot get geometry myData from {}".format(name))
             return
 
-        # in case we want to get NAXIS1/NAXIS2, etc.
-        geom = hutils.get_image_size_from_imageReadoutParameters(myData)
+        # Obtain the geometry that we'll use for each segment.
+        geom = hutils.get_image_size_from_imageReadoutParameters(myData, array_keys)
 
         # Update the geometry for the HDR object
         self.log.info(f"Updating header CCD geom for {imageName}")
