@@ -48,8 +48,6 @@ HAEND   =                      / [HH:MM:SS] Telescope hour angle at end
 ELEND   =                      / [deg] Telescope zenith distance at end
 AZEND   =                      / [deg] Telescope azimuth angle at end
 AMEND   =                      / Airmass at end
-INSTPORT=                      / The instrument port where LATISS is installed
-ATM3PORT=                      / The port the M3 is directing light into
 TRACKSYS=                      / Tracking coordinate system from ATMCS
 RADESYS =                      / Equatorial coordinate system
 FOCUSZ  =                      / Focus Z position from ATAOS/ATHexapod (mm)
@@ -72,10 +70,8 @@ SEQNAME =                      / SequenceName from Camera StartIntergration
 
         ---- Filter/grating information ----
 FILTER  =                      / Name of the filter
-FILTPOS =                      / Filter position
-GRATING =                      / Name of the second disperser
-GRATPOS =                      / disperser position
-LINSPOS =                      / Linear Stage
+FILTNAME=                      / Filter serial number or other identifier
+FILTPOS =                      / Filter position (numeric) in wheel
 
         ---- Exposure-related information ----
 EXPTIME =                      / Exposure time in seconds
