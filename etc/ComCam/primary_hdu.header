@@ -48,9 +48,9 @@ HAEND   =                      / [HH:MM:SS] Telescope hour angle at end
 ELEND   =                      / [deg] Telescope zenith distance at end
 AZEND   =                      / [deg] Telescope azimuth angle at end
 AMEND   =                      / Airmass at end
-TRACKSYS=                      / Tracking coordinate system from ATMCS
+TRACKSYS=                      / Tracking coordinate system
 RADESYS =                      / Equatorial coordinate system
-FOCUSZ  =                      / Focus Z position from ATAOS/ATHexapod (mm)
+FOCUSZ  =                      / Focus Z position
 OBJECT  =                      / Name of the observed object
 
         ---- Image-identifying used to build OBS-ID ----
