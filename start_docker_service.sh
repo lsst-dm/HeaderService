@@ -1,6 +1,6 @@
-TAGNAME=4.1.1-5.1.0-salobj_5.14.0-hs_2.3.0
+TAGNAME=4.1.1-6.0.0-salobj_5.15.0-hs_2.3.0
 DOCKER_IMA=lsstdm/atheaderservice:$TAGNAME
-NAME=aths
+NAME=headerservice
 
 # Make sure we have it
 docker pull $DOCKER_IMA

@@ -29,6 +29,8 @@ import subprocess
 from . import hutils
 from . import hscalc
 from lsst.ts import salobj
+import re
+import HeaderService
 
 
 class HSWorker(salobj.BaseCsc):
@@ -204,6 +206,7 @@ class HSWorker(salobj.BaseCsc):
                                 log_format_date=self.config.log_format_date)
         self.log.info(f"Logging Started at level:{self.config.loglevel}")
         self.log.info(f"Will send logging to: {self.config.logfile}")
+        self.log.info(f"Running HeaderService version: {HeaderService.__version__}")
 
     def create_BaseCsc(self):
         """
@@ -516,7 +519,7 @@ class HSWorker(salobj.BaseCsc):
             self.log.debug(f"{keyword} is string array: CCD_array_str")
             ccdnames = self.get_array_keys(keyword, myData, sep)
             # Split the payload into an array of strings
-            extracted_payload = dict(zip(ccdnames, payload.split(sep)))
+            extracted_payload = dict(zip(ccdnames, split_esc(payload, sep)))
         elif self.config.telemetry[keyword]['array'] == 'indexed_array':
             self.log.debug(f"{keyword} is an array: indexed_array")
             index = self.config.telemetry[keyword]['array_index']
@@ -527,7 +530,7 @@ class HSWorker(salobj.BaseCsc):
             keywords = self.get_array_keys(keyword, myData, sep)
             key = self.config.telemetry[keyword]['array_keyname']
             # Extract only the requested key from the dictionary
-            extracted_payload = dict(zip(keywords, payload.split(sep)))[key]
+            extracted_payload = dict(zip(keywords, split_esc(payload, sep)))[key]
         # If some kind of array take first element
         elif hasattr(payload, "__len__") and not isinstance(payload, str):
             self.log.debug(f"{keyword} is just an array")
@@ -550,7 +553,7 @@ class HSWorker(salobj.BaseCsc):
             keywords_list = None
         else:
             # we extract them using the separator (i.e. ':')
-            keywords_list = payload.split(sep)
+            keywords_list = split_esc(payload, sep)
             if len(keywords_list) <= 1:
                 self.log.warning(f"List keys for {keyword} is <= 1")
             self.log.info(f"For {keyword}, extracted '{array_keys}': {keywords_list}")
@@ -700,3 +703,30 @@ def extract_telemetry_channels(telem, start_collection_event=None,
             channels[name] = c
 
     return channels
+
+
+def split_esc(s, sep=':', esc='\\'):
+
+    '''
+    Split a string using separator (sep) and escape (esc) character
+    '''
+
+    # We want to replicate the spliting of string:
+    #
+    # s = "OBJECT:2020-06-16T18\:43\:55.039:OBJECT"
+    # print([re.sub(r'\\(.)','\\1',k) for k in re.split(r'(?<!\\):', s)])
+    # ['OBJECT', '2020-06-16T18:43:55.039', 'OBJECT']
+    #
+    # and:
+    #
+    # s = 'OBJECT:2020-06-16T18\\:43\\:55.039:OBJ\\\\ECT'
+    # print([re.sub(r'\\(.)','\\1',k) for k in re.split(r'(?<!\\):', s)])
+    # ['OBJECT', '2020-06-16T18:43:55.039', 'OBJ\\ECT']
+
+    # The regular expresions we'll use
+    r1 = r"(?<!\{esc}){sep}".format(esc=esc, sep=sep)
+    r2 = r'\{esc}(.)'.format(esc=esc)
+    r3 = '{esc}1'.format(esc=esc)
+    arr = [re.sub(r2, r3, k) for k in re.split(r1, s)]
+
+    return arr
