@@ -62,9 +62,7 @@ GROUPID =                      /
 TESTTYPE=                      / Test Type: BIAS:DARK:FLAT:OBS:PPUMP:QE:SFLAT
 
         ---- Information from Camera (Common block) ----
-SEQCKSUM=                      / Checksum of Sequencer
 IMAGETAG=                      / DAQ Image id
-SEQCKSUM=                      / Checksum of Sequencer
 
         ---- Filter/grating information ----
 FILTER  = 'r'                  / Name of the filter
