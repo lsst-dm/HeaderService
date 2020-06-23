@@ -67,7 +67,7 @@ IMAGETAG=                      / DAQ Image id
 SEQCKSUM=                      / Checksum of Sequencer
 
         ---- Filter/grating information ----
-FILTER  =                      / Name of the filter
+FILTER  = 'r'                  / Name of the filter
 FILTNAME=                      / Filter serial number or other identifier
 FILTPOS =                      / Filter position (numeric) in wheel
 
