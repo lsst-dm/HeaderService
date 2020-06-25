@@ -63,6 +63,7 @@ TESTTYPE=                      / Test Type: BIAS:DARK:FLAT:OBS:PPUMP:QE:SFLAT
 
         ---- Information from Camera (Common block) ----
 IMAGETAG=                      / DAQ Image id
+OBSANNOT=                      / Observing annotation
 
         ---- Filter/grating information ----
 FILTER  = 'r'                  / Name of the filter

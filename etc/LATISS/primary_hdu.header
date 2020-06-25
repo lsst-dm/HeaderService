@@ -94,6 +94,7 @@ CONTNUM =                      / CCD Controller (WREB) Serial Number
 IMAGETAG=                      / DAQ Image id
 TEMP_SET=                      / Temperature set point (deg C)
 CCDTEMP =                      / Measured temperature (deg C)
+OBSANNOT=                      / Observing annotation
 
         ---- Geometry from Camera ----
 DETSIZE =                      / Size of sensor
