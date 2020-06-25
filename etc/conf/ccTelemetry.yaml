@@ -159,6 +159,13 @@ telemetry:
   value: darkTime
   collect_after_event: end_collection_event
 
+ OBSANNOT:
+  device: CCCamera
+  Stype: Event
+  topic: imageReadoutParameters
+  value: daqAnnotation
+  collect_after_event: end_collection_event
+
 # ---- Comment until xml is ready --------
 #
 # SHUTTIME:

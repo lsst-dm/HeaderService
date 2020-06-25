@@ -73,6 +73,8 @@ def cmdline():
                         help="The imagetag of the observation.")
     parser.add_argument("--imageName", action="store", default=None, type=str,
                         help="Optional imageName")
+    parser.add_argument("--obsannot", action="store", default="Dummy Obs Annotation", type=str,
+                        help="Optional Observation annnotation")
 
     parser.add_argument("--additionalKeys", action="store", default='imageType:groupId:testType',
                         type=str, help="Optional additionalKeys")
@@ -144,6 +146,7 @@ if __name__ == "__main__":
             'ccdLocation': ':'.join(ccdLocation),
             'ccdSlot': ':'.join(ccdSlots),
             'raftBay': ':'.join(raftBays),
+            'daqAnnotation': args.obsannot,
             'force_output': True}
     cam.evt_imageReadoutParameters.set_put(**kwRO)
     LOGGER.info("Sending simulated imageReadoutParameters {}".format(kwRO))

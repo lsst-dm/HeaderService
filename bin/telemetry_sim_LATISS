@@ -34,6 +34,9 @@ def cmdline():
                         help="groupId")
     parser.add_argument("--imageType", action="store", default='OBJECT',
                         help="imageType")
+    parser.add_argument("--obsannot", action="store", default="Dummy Obs Annotation", type=str,
+                        help="Optional Observation annnotation")
+
     # Control imageName
     parser.add_argument("--telcode", action="store", default='AT',
                         help="The code for the telecope")
@@ -149,7 +152,8 @@ if __name__ == "__main__":
             'readCols': CCDGEOM.dimh,
             'readCols2': 0,
             'readRows': CCDGEOM.dimv,
-            'ccdNames': ':'.join(hutils.build_sensor_list('LATISS', sep='')),
+            'daqAnnotation': args.obsannot,
+            'ccdLocation': ':'.join(hutils.build_sensor_list('LATISS', sep='')),
             'force_output': True}
     cam.evt_imageReadoutParameters.set_put(**kwRO)
     LOGGER.info("Sending simulated imageReadoutParameters")
