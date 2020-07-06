@@ -155,11 +155,69 @@ class HSWorker(salobj.BaseCsc):
         self.ip_address = socket.gethostbyname(socket.gethostname())
         self.log.info("Will use IP: {} for web service".format(self.ip_address))
 
+    def get_s3instance(self):
+        """
+        Figure the location where are running to define the s3instance
+        in case it wasn't defined.
+        """
+        # Check if defined in self.config
+        if self.config.s3instance:
+            s3instance = self.config.s3instance
+            self.log.info(f"Will use s3instance in config: {s3instance}")
+            return s3instance
+        # Try to auto-figure out from location
+        self.log.warning("The s3instance was not defined in config")
+        address = socket.getfqdn()
+        if address.find('.ncsa.') >= 0:
+            s3instance = 'nts'
+        elif address.find('tuc') >= 0:
+            s3instance = 'tuc'
+        elif address.find('.cp.') >= 0:
+            s3instance = 'cp'
+        else:
+            s3instance = 'dummy'
+        self.log.info(f"Will use auto-config s3instance: {s3instance}")
+        return s3instance
+
+    def define_s3bucket(self):
+        """
+        Get the s3instance and define the name for the
+        s3 bucket using salobj
+
+        To access the S3 server, the environment variables are set via:
+
+        export S3_ENDPOINT_URL=http://lsst-nfs.ncsa.illinois.edu:9000
+        export AWS_ACCESS_KEY_ID={access_key}
+        export AWS_SECRET_ACCESS_KEY={secret_key}
+        """
+
+        s3instance = self.get_s3instance()
+        self.s3bucket_name = salobj.AsyncS3Bucket.make_bucket_name(s3instance=s3instance)
+        self.log.info(f"Will use Bucket name: {self.s3bucket_name}")
+
+        # 2. Use AsyncS3Bucket to make bucket + S3 connection
+        self.s3bucket = salobj.AsyncS3Bucket(name=self.s3bucket_name, domock=False)
+        self.log.info(f"Connection established to: {self.s3bucket_name}")
+        # We will re-use the connection made by salobj
+        self.s3conn = self.s3bucket.service_resource
+        self.log.info(f"Will use s3 endpoint_url: {self.s3conn.meta.client.meta.endpoint_url}")
+
+        # 3. Make sure the bucket exists in the list of bucket names:
+        bucket_names = [b.name for b in self.s3conn.buckets.all()]
+        if self.s3bucket_name not in bucket_names:
+            self.s3conn.create_bucket(Bucket=self.s3bucket_name)
+            self.log.info(f"Created Bucket: {self.s3bucket_name}")
+        else:
+            self.log.info(f"Bucket Name: {self.s3bucket_name} already exists")
+
     def start_web_server(self, logfile, httpserver="http.server"):
 
         """
         Start a light web service to serve the header files to the EFD
         """
+
+        # Get the hostname and IP address
+        self.get_ip()
 
         # Change PYTHONUNBUFFERED to 1 to allow continuous writing.
         os.environ['PYTHONUNBUFFERED'] = '1'
@@ -302,11 +360,11 @@ class HSWorker(salobj.BaseCsc):
         # Make sure that we have a place to put the files
         self.check_outdir(self.config.filepath)
 
-        # Get the hostname and IP address
-        self.get_ip()
-
         # Start the web server
-        self.start_web_server(self.config.weblogfile)
+        if self.config.lfa_mode == 's3':
+            self.define_s3bucket()
+        elif self.config.lfa_mode == 'http':
+            self.start_web_server(self.config.weblogfile)
 
         # Create dictionaries keyed to imageName
         self.create_dicts()
@@ -375,8 +433,8 @@ class HSWorker(salobj.BaseCsc):
             self.update_header(imageName)
             # Write the header
             self.write(imageName)
-            # Announce creation event
-            self.announce(imageName)
+            # Announce/upload LFO
+            await self.announce(imageName)
             # Clean up
             self.clean(imageName)
 
@@ -441,17 +499,46 @@ class HSWorker(salobj.BaseCsc):
         self.filename_HDR[imageName] = os.path.join(self.config.filepath,
                                                     self.config.format_HDR.format(imageName))
 
-    def announce(self, imageName):
+    async def announce(self, imageName):
         """
-        Broadcast the LFO Event for the HeaderService
+        Upload and broadcast the LFO Event for the HeaderService
         """
+
+        # if S3 bucket, upload before announcing to get
+        # the url that will be broadcast.
+        # Upload header file and get key/url
+        # key should be like:
+        # CCHeaderService/header/2020/05/21/CCHeaderService_header_CC_O_20200521_000008.yaml
+        if self.config.lfa_mode == 's3':
+            key = self.s3bucket.make_key(
+                salname=self.config.hs_name,
+                salindexname=None,
+                other=imageName,
+                generator='header',
+                date=self.metadata[imageName]['DATE-OBS'],
+                suffix=".yaml"
+            )
+            url = f"s3://{self.s3bucket.name}/{key}"
+            t0 = time.time()
+            with open(self.filename_HDR[imageName], "rb") as f:
+                await self.s3bucket.upload(fileobj=f, key=key)
+            self.log.info(f"Header s3 upload time: {hutils.elapsed_time(t0)}")
+            self.log.info(f"Will use s3 key: {key}")
+            self.log.info(f"Will use s3 url: {url}")
+        elif self.config.lfa_mode == 'http':
+            url = self.config.url_format.format(
+                ip_address=self.ip_address,
+                port_number=self.config.port_number,
+                filename_HDR=os.path.basename(self.filename_HDR[imageName]))
+            self.log.info(f"Will use http url: {url}")
+        else:
+            self.log.error(f"lfa_mode: {self.config.lfa_mode} not supported")
+
         # Get the md5 for the header file
         md5value = hutils.md5Checksum(self.filename_HDR[imageName])
         bytesize = os.path.getsize(self.filename_HDR[imageName])
         self.log.info("Got MD5SUM: {}".format(md5value))
-        url = self.config.url_format.format(ip_address=self.ip_address,
-                                            port_number=self.config.port_number,
-                                            filename_HDR=os.path.basename(self.filename_HDR[imageName]))
+
         # Now we publish filename and MD5
         # Build the kwargs
         kw = {'byteSize': bytesize,

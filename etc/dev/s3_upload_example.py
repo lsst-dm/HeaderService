@@ -12,7 +12,6 @@ export AWS_SECRET_ACCESS_KEY={secret_key}
 """
 
 from lsst.ts import salobj
-import astropy
 import asyncio
 import time
 
@@ -31,6 +30,10 @@ async def main(ID):
     # We will re-use the connection made by salobj
     s3conn = s3bucket.service_resource
 
+    # In case we want to delete contents and bucket
+    #    s3bucket.bucket.objects.all().delete()
+    # s3bucket.bucket.delete()
+
     # 3. Make sure the bucket exists in the list of bucket names:
     bucket_names = [b.name for b in s3conn.buckets.all()]
     if s3bucket_name not in bucket_names:
@@ -40,11 +43,16 @@ async def main(ID):
         print(f"Bucket: {s3bucket_name} already exists")
 
     # 4. Uploading the file, using filename/key/url combination
+    # key should be:
+    # CCHeaderService/header/2020/05/21/CCHeaderService_header_CC_O_20200521_000008.yaml
+
     key = s3bucket.make_key(
         salname='CCHeaderService',
-        salindexname=0,
-        generator=ID,
-        date=astropy.time.Time.now(),
+        salindexname=None,
+        generator='header',
+        other=ID,
+        date='2020-05-21T21:56:18.280',
+        suffix='.yaml'
     )
     url = f"s3://{s3bucket.name}/{key}"
     print(f"New key:{key}")
@@ -70,7 +78,6 @@ async def main(ID):
         print(f" + {bucket}")
         for file in bucket.objects.all():
             print(f"   - {file.key}")
-
 
 if __name__ == "__main__":
     # A header file example from ComCam
