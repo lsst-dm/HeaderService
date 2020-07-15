@@ -48,8 +48,8 @@ HAEND   =                      / [HH:MM:SS] Telescope hour angle at end
 ELEND   =                      / [deg] Telescope zenith distance at end
 AZEND   =                      / [deg] Telescope azimuth angle at end
 AMEND   =                      / Airmass at end
-TRACKSYS=                      / Tracking coordinate system
-RADESYS =                      / Equatorial coordinate system
+TRACKSYS=                      / Tracking RADEC(1), AZEL(2), PLANET(3), EPHEM(4)
+RADESYS =                      / Equatorial coordinate system FK5(1) or ICRS(2)
 FOCUSZ  =                      / Focus Z position
 OBJECT  =                      / Name of the observed object
 
