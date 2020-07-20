@@ -31,6 +31,7 @@ from . import hscalc
 from lsst.ts import salobj
 import re
 import HeaderService
+import importlib
 
 
 class HSWorker(salobj.BaseCsc):
@@ -56,6 +57,9 @@ class HSWorker(salobj.BaseCsc):
 
         # Define the callbacks for start/end
         self.define_evt_callbacks()
+
+        # Load enum idl libraries
+        self.load_enums_idl()
 
         # Define global lock to update dictionaries
         self.dlock = asyncio.Lock()
@@ -253,6 +257,18 @@ class HSWorker(salobj.BaseCsc):
         self.name_start = get_channel_name(self.config.start_collection_event)
         # Select the end_collection channel
         self.name_end = get_channel_name(self.config.end_collection_event)
+
+    def load_enums_idl(self):
+        """
+        Load using importlib the idl libraries for the enumerated CSCs
+        """
+        # Get the list of enum enum_csc
+        self.log.info("Extracting enum CSC's from telemetry dictionary")
+        self.enum_csc = get_enum_cscs(self.config.telemetry)
+        self.idl_lib = {}
+        for csc in self.enum_csc:
+            self.log.info(f"importing lsst.ts.idl.enums.{csc}")
+            self.idl_lib[csc] = importlib.import_module("lsst.ts.idl.enums.{}".format(csc))
 
     def get_channels(self):
         """Extract the unique channels by topic/device"""
@@ -531,6 +547,11 @@ class HSWorker(salobj.BaseCsc):
             key = self.config.telemetry[keyword]['array_keyname']
             # Extract only the requested key from the dictionary
             extracted_payload = dict(zip(keywords, split_esc(payload, sep)))[key]
+        # Case 3 -- enumeration using idl libraries
+        elif self.config.telemetry[keyword]['array'] == 'enum':
+            device = self.config.telemetry[keyword]['device']
+            array_name = self.config.telemetry[keyword]['array_name']
+            extracted_payload = getattr(self.idl_lib[device], array_name)(payload).name
         # If some kind of array take first element
         elif hasattr(payload, "__len__") and not isinstance(payload, str):
             self.log.debug(f"{keyword} is just an array")
@@ -636,6 +657,19 @@ def get_channel_device(c):
 def get_channel_devname(c):
     """ Standard formatting for the 'devname' of a channel across modules"""
     return "{}_{}".format(c['device'], c['device_index'])
+
+
+def get_enum_cscs(telem):
+    """
+    Get only the enumerated devices described
+    in the telemetry section of the config
+    """
+    enum_cscs = []
+    for key in telem:
+        if 'array' in telem[key] and telem[key]['array'] == 'enum':
+            if telem[key]['device'] not in enum_cscs:
+                enum_cscs.append(telem[key]['device'])
+    return enum_cscs
 
 
 def extract_telemetry_channels(telem, start_collection_event=None,

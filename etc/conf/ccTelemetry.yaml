@@ -457,6 +457,8 @@ telemetry:
   topic: currentTarget
   value: targetType
   collect_after_event: start_collection_event
+  array: enum
+  array_name: TargetTypes
 
  RADESYS:
   device: MTPtg
@@ -464,6 +466,8 @@ telemetry:
   topic: currentTarget
   value: frame
   collect_after_event: start_collection_event
+  array: enum
+  array_name: CoordFrame
 
 # # -------------------------------------------------
 # # ----- Filter information from CCCamera ----------
