@@ -451,19 +451,23 @@ telemetry:
   array_index: 2
   array: indexed_array
 
-#  TRACKSYS:
-#   device: ATMCS
-#   Stype: Event
-#   topic: target
-#   value: tracksys
-#   collect_after_event: start_collection_event
+ TRACKSYS:
+  device: MTPtg
+  Stype: Event
+  topic: currentTarget
+  value: targetType
+  collect_after_event: start_collection_event
+  array: enum
+  array_name: TargetTypes
 
-#  RADESYS:
-#   device: ATMCS
-#   Stype: Event
-#   topic: target
-#   value: radesys
-#   collect_after_event: start_collection_event
+ RADESYS:
+  device: MTPtg
+  Stype: Event
+  topic: currentTarget
+  value: frame
+  collect_after_event: start_collection_event
+  array: enum
+  array_name: CoordFrame
 
 # # -------------------------------------------------
 # # ----- Filter information from CCCamera ----------

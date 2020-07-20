@@ -63,10 +63,10 @@ def cmdline():
                         help="The instrument port where LATISS is installed")
     parser.add_argument("--m3port", action="store", default=1, type=int,
                         help="Port the M3 is directing light into")
-    parser.add_argument("--tracksys", action="store", default="Local", type=str,
-                        help="The tracking coordinate system [Local, Sidereal, or non-sidereal].")
-    parser.add_argument("--radesys", action="store", default="ICRS", type=str,
-                        help="The ra/dec track system value.")
+    parser.add_argument("--tracksys", action="store", default=1, type=int,
+                        help="The tracking coordinate system [RADEC(1), AZEL(2), PLANET(3), EPHEM(4)].")
+    parser.add_argument("--radesys", action="store", default=2, type=int,
+                        help="The ra/dec track system value [FK5(1) or ICRS(2)].")
     parser.add_argument("--object", action="store", default="ElGordo", type=str,
                         help="The name of the object observed.")
     parser.add_argument("--imagetag", action="store", default="TestTag", type=str,
@@ -167,9 +167,11 @@ if __name__ == "__main__":
             'rotPA': args.rotpa,
             'priority': 1,
             'targetName': args.object,
+            'targetType': args.tracksys,
+            'frame': args.radesys,
             'force_output': True}
     ptg.evt_currentTarget.set_put(**kwTA)
-    LOGGER.info("Sending simulated Ptg currentTarget")
+    LOGGER.info("Sending simulated Ptg currentTarget:{}".format(kwTA))
 
     # Loop over NSequence
     for k in range(args.NSequence):
