@@ -26,10 +26,14 @@ def cmdline():
                         help="The DEC of the visit")
     parser.add_argument("--rotpa", action="store", default=0.0, type=float,
                         help="The ROTPA for the visit")
+
     parser.add_argument("--filter", action="store", default='r',
+                        help="The filtertype")
+    parser.add_argument("--filtername", action="store", default='U-001',
                         help="Name of the filter")
-    parser.add_argument("--grating", action="store", default='R400',
-                        help="Name of the grating")
+    parser.add_argument("--filterpos", action="store", default=1,
+                        help="The filtertype")
+
     parser.add_argument("--groupId", action="store", default='LSSTTEST',
                         help="groupId")
     parser.add_argument("--imageType", action="store", default='OBJECT',
@@ -173,6 +177,13 @@ if __name__ == "__main__":
     ptg.evt_currentTarget.set_put(**kwTA)
     LOGGER.info("Sending simulated Ptg currentTarget:{}".format(kwTA))
 
+    # Set the filter names
+    kwFilter = {'filterName': args.filtername,
+                'filterType': args.filter,
+                'filterSlot': args.filterpos}
+    cam.evt_endSetFilter.set_put(**kwFilter)
+    LOGGER.info("Sending simulated Camera endSetFilter:{}".format(kwFilter))
+
     # Loop over NSequence
     for k in range(args.NSequence):
 
@@ -236,6 +247,10 @@ if __name__ == "__main__":
 
         # Send endReadout Event after startReadout is finished
         LOGGER.info("Sending simulated endReadout")
+        kwRO = kwInt
+        del kwRO['exposureTime']
+        kwRO['requestedExposureTime'] = args.exptime
+        LOGGER.info("Sending simulated endReadout")
         cam.evt_endReadout.set_put(**kwInt)
 
         # send endOfImageTelemetry event
@@ -254,6 +269,7 @@ if __name__ == "__main__":
                  'exposureTime': args.exptime,
                  'darkTime': shuttime + args.sleeptime,
                  'imageTag': args.imagetag,
+                 'measuredShutterOpenTime': shuttime,
                  'priority': 1,
                  'force_output': True}
         if args.delaytime > 0:
