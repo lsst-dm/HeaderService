@@ -166,13 +166,14 @@ telemetry:
   value: daqAnnotation
   collect_after_event: end_collection_event
 
+ SHUTTIME:
+  device: CCCamera
+  Stype: Event
+  topic: endOfImageTelemetry
+  value: measuredShutterOpenTime
+  collect_after_event: end_collection_event
+
 # ---- Comment until xml is ready --------
-#
-# SHUTTIME:
-#  device: CCCamera
-#  Stype: Event
-#  topic: shutterMotionProfile
-#  collect_after_event: end_collection_event
 #
 # CCDTEMP:
 #  device: CCCamera
@@ -469,19 +470,25 @@ telemetry:
   array: enum
   array_name: CoordFrame
 
-# # -------------------------------------------------
-# # ----- Filter information from CCCamera ----------
+# ----- Filter information from CCCamera ----------
 
-#  FILTER:
-#   device: CCCamera
-#   Stype: Event
-#   topic: startIntegration
-#   value: name
-#   collect_after_event: start_collection_event
+ FILTER:
+  device: CCCamera
+  Stype: Event
+  topic: endSetFilter
+  value: filterType
+  collect_after_event: start_collection_event
 
-#  FILTPOS:
-#   device: CCCamera
-#   Stype: Event
-#   topic: startIntegration
-#   value: position
-#   collect_after_event: start_collection_event
+ FILTNAME:
+  device: CCCamera
+  Stype: Event
+  topic: endSetFilter
+  value: filterName
+  collect_after_event: start_collection_event
+
+ FILTPOS:
+  device: CCCamera
+  Stype: Event
+  topic: endSetFilter
+  value: filterSlot
+  collect_after_event: start_collection_event
