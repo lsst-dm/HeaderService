@@ -24,9 +24,10 @@ port_number: 8000
 # The URL format to be used
 url_format: "http://{ip_address}:{port_number}/{filename_HDR}"
 
-# While we support both S3 and http LFA we need to define the mode [S3 or http]
-# lfa_mode: http
-lfa_mode: s3
+# While we support both s3 and http LFA we need to define the mode [s3 or http]
+lfa_mode: http
+
+# The s3 instance (i.e.: nts, tuc, cp)
 # s3instance: nts
 
 # Default write_mode (fits or string)

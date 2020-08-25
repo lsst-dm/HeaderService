@@ -160,11 +160,16 @@ class HSWorker(salobj.BaseCsc):
         Figure the location where are running to define the s3instance
         in case it wasn't defined.
         """
-        # Check if defined in self.config
+        # Check if defined in self.config or the environment
         if self.config.s3instance:
             s3instance = self.config.s3instance
             self.log.info(f"Will use s3instance in config: {s3instance}")
             return s3instance
+        elif 'S3INSTANCE' in os.environ:
+            s3instance = os.environ['S3INSTANCE']
+            self.log.info(f"Will use s3instance from environment: {s3instance}")
+            return s3instance
+
         # Try to auto-figure out from location
         self.log.warning("The s3instance was not defined in config")
         address = socket.getfqdn()
