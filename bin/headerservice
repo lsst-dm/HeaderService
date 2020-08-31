@@ -68,7 +68,7 @@ def cmdline():
                         choices=["s3", "http"],
                         help="The LFA Mode for the event [s3/http]")
     parser.add_argument("--s3instance", action="store", default=None,
-                        choices=["nts", "cp", "tuc", None],
+                        choices=["nts", "cp", "tuc", "ls", None],
                         help="The s3instance for the S3 Server")
 
     # Config salobj.BasecCsC object
