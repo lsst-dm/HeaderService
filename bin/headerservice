@@ -63,6 +63,14 @@ def cmdline():
     parser.add_argument("--hdu_delimiter", action="store", default='END',
                         help="Delimiter for string-based headers")
 
+    # S3/http LFO event
+    parser.add_argument("--lfa_mode", action="store", default='http', type=str.lower,
+                        choices=["s3", "http"],
+                        help="The LFA Mode for the event [s3/http]")
+    parser.add_argument("--s3instance", action="store", default=None,
+                        choices=["nts", "cp", "tuc", None],
+                        help="The s3instance for the S3 Server")
+
     # Config salobj.BasecCsC object
     parser.add_argument("--hs_name", action="store", default='ATHeaderService',
                         help="HeaderService name")

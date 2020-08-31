@@ -558,7 +558,7 @@ class HDRTEMPL:
             raise ValueError(msg)
             return
 
-        self.log.info("Header write time:{}".format(elapsed_time(t0)))
+        self.log.info(f"Header write time: {elapsed_time(t0)}")
         return
 
     def set_mimeType(self):
