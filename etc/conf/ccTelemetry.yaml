@@ -27,7 +27,7 @@ url_format: "http://{ip_address}:{port_number}/{filename_HDR}"
 # While we support both s3 and http LFA we need to define the mode [s3 or http]
 lfa_mode: http
 
-# The s3 instance (i.e.: nts, tuc, cp)
+# The s3 instance (i.e.: nts, tuc, ls, cp)
 # s3instance: nts
 
 # Default write_mode (fits or string)
