@@ -29,7 +29,6 @@ import subprocess
 from . import hutils
 from . import hscalc
 from lsst.ts import salobj
-import re
 import HeaderService
 import importlib
 
@@ -389,13 +388,26 @@ class HSWorker(salobj.BaseCsc):
             # Create the HDR object to be populated with the collected metadata
             # when loading the templates we get a HDR.header object
             self.log.info(f"Creating header object for : {imageName}")
-            # In the absense of a message from camera with the list of sensors
-            # we build the list using a function in hutils
-            self.sensors = hutils.build_sensor_list(self.config.instrument)
+
+            # Try to get the list of sensor from the Camera Configuration event
+            try:
+                self.vendor_names, self.sensors = self.read_camera_vendors()
+                self.log.info("Extracted vendors/ccdnames from Camera Configuration")
+            except TypeError:
+                # In the absense of a message from camera to provide the list
+                # of sensors and vendors, we build the list using a function
+                # in hutils
+                self.log.warning("Cannot read camera vendor list from event")
+                self.log.warning("Will use defaults from config file instead")
+                self.sensors = hutils.build_sensor_list(self.config.instrument)
+                self.vendor_names = self.config.vendor_names
+
+            self.log.info(f"Will use vendors: {self.vendor_names}")
+            self.log.info(f"Will use sensors:{self.sensors}")
             self.HDR[imageName] = hutils.HDRTEMPL(logger=self.log,
                                                   section=self.config.section,
                                                   instrument=self.config.instrument,
-                                                  vendor_names=self.config.vendor_names,
+                                                  vendor_names=self.vendor_names,
                                                   sensor_names=self.sensors,
                                                   write_mode=self.config.write_mode)
             self.HDR[imageName].load_templates()
@@ -447,6 +459,29 @@ class HSWorker(salobj.BaseCsc):
         self.log.info("-------- Ready for next image -----")
         # Report and print the state
         self.report_summary_state()
+
+    def read_camera_vendors(self, sep=":"):
+        """ Read the vendor/ccdLocation from camera event """
+        name = get_channel_name(self.config.cameraConf_event)
+        array_keys = self.config.cameraConf_event['array_keys']
+        param = self.config.cameraConf_event['value']
+        myData = self.Remote_get[name]()
+        # exit in case we cannot get data from SAL
+        if myData is None:
+            self.log.warning("Cannot get myData from {}".format(name))
+            return
+
+        # 1 We get the keywords List from myData
+        payload = getattr(myData, array_keys)
+        ccdnames = hutils.split_esc(payload, sep)
+        if len(ccdnames) <= 1:
+            self.log.warning(f"List keys for {name} is <= 1")
+            self.log.info(f"For {name}, extracted '{array_keys}': {ccdnames}")
+        # 2 Get the actual list of vendor names
+        payload = getattr(myData, param)
+        vendor_names = hutils.split_esc(payload, sep)
+        self.log.info("Successfully read vendors/ccdnames from Camera config event")
+        return vendor_names, ccdnames
 
     def update_header_geometry(self, imageName):
         """ Update the image geometry Camera Event """
@@ -627,7 +662,7 @@ class HSWorker(salobj.BaseCsc):
             self.log.debug(f"{keyword} is string array: CCD_array_str")
             ccdnames = self.get_array_keys(keyword, myData, sep)
             # Split the payload into an array of strings
-            extracted_payload = dict(zip(ccdnames, split_esc(payload, sep)))
+            extracted_payload = dict(zip(ccdnames, hutils.split_esc(payload, sep)))
         elif self.config.telemetry[keyword]['array'] == 'indexed_array':
             self.log.debug(f"{keyword} is an array: indexed_array")
             index = self.config.telemetry[keyword]['array_index']
@@ -638,7 +673,7 @@ class HSWorker(salobj.BaseCsc):
             keywords = self.get_array_keys(keyword, myData, sep)
             key = self.config.telemetry[keyword]['array_keyname']
             # Extract only the requested key from the dictionary
-            extracted_payload = dict(zip(keywords, split_esc(payload, sep)))[key]
+            extracted_payload = dict(zip(keywords, hutils.split_esc(payload, sep)))[key]
         # Case 3 -- enumeration using idl libraries
         elif self.config.telemetry[keyword]['array'] == 'enum':
             device = self.config.telemetry[keyword]['device']
@@ -666,7 +701,7 @@ class HSWorker(salobj.BaseCsc):
             keywords_list = None
         else:
             # we extract them using the separator (i.e. ':')
-            keywords_list = split_esc(payload, sep)
+            keywords_list = hutils.split_esc(payload, sep)
             if len(keywords_list) <= 1:
                 self.log.warning(f"List keys for {keyword} is <= 1")
             self.log.info(f"For {keyword}, extracted '{array_keys}': {keywords_list}")
@@ -829,30 +864,3 @@ def extract_telemetry_channels(telem, start_collection_event=None,
             channels[name] = c
 
     return channels
-
-
-def split_esc(s, sep=':', esc='\\'):
-
-    '''
-    Split a string using separator (sep) and escape (esc) character
-    '''
-
-    # We want to replicate the spliting of string:
-    #
-    # s = "OBJECT:2020-06-16T18\:43\:55.039:OBJECT"
-    # print([re.sub(r'\\(.)','\\1',k) for k in re.split(r'(?<!\\):', s)])
-    # ['OBJECT', '2020-06-16T18:43:55.039', 'OBJECT']
-    #
-    # and:
-    #
-    # s = 'OBJECT:2020-06-16T18\\:43\\:55.039:OBJ\\\\ECT'
-    # print([re.sub(r'\\(.)','\\1',k) for k in re.split(r'(?<!\\):', s)])
-    # ['OBJECT', '2020-06-16T18:43:55.039', 'OBJ\\ECT']
-
-    # The regular expresions we'll use
-    r1 = r"(?<!\{esc}){sep}".format(esc=esc, sep=sep)
-    r2 = r'\{esc}(.)'.format(esc=esc)
-    r3 = '{esc}1'.format(esc=esc)
-    arr = [re.sub(r2, r3, k) for k in re.split(r1, s)]
-
-    return arr

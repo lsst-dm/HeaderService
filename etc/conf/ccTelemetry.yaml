@@ -61,6 +61,14 @@ imageParam_event:
     topic: imageReadoutParameters
     array_keys: ccdLocation
 
+# The event for the camera vendor and CCD names configuration
+cameraConf_event:
+    device: CCCamera
+    topic: focalPlaneSummaryInfo
+    value: ccdManufacturer
+    array_keys: ccdLocation
+    # array: CCD_array_str
+
 # Telemetry values for images meta-data
 # https://confluence.lsstcorp.org/display/SYSENG/ComCam+Header+Information+Topic+Mapping
 telemetry:
