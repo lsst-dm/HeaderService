@@ -35,6 +35,7 @@ import copy
 from .camera_coords import CCDInfo
 from . import camera_coords
 import datetime
+import re
 # import HeaderService.camera_coords as camera_coords
 
 spinner = itertools.cycle(['-', '/', '|', '\\'])
@@ -197,6 +198,33 @@ def repack_dict_list(mydict, masterkey):
         for key in mydict.keys():
             newdict[newkey][key] = mydict[key][indx]
     return newdict
+
+
+def split_esc(s, sep=':', esc='\\'):
+
+    '''
+    Split a string using separator (sep) and escape (esc) character
+    '''
+
+    # We want to replicate the spliting of string:
+    #
+    # s = "OBJECT:2020-06-16T18\:43\:55.039:OBJECT"
+    # print([re.sub(r'\\(.)','\\1',k) for k in re.split(r'(?<!\\):', s)])
+    # ['OBJECT', '2020-06-16T18:43:55.039', 'OBJECT']
+    #
+    # and:
+    #
+    # s = 'OBJECT:2020-06-16T18\\:43\\:55.039:OBJ\\\\ECT'
+    # print([re.sub(r'\\(.)','\\1',k) for k in re.split(r'(?<!\\):', s)])
+    # ['OBJECT', '2020-06-16T18:43:55.039', 'OBJ\\ECT']
+
+    # The regular expresions we'll use
+    r1 = r"(?<!\{esc}){sep}".format(esc=esc, sep=sep)
+    r2 = r'\{esc}(.)'.format(esc=esc)
+    r3 = '{esc}1'.format(esc=esc)
+    arr = [re.sub(r2, r3, k) for k in re.split(r1, s)]
+
+    return arr
 
 
 def get_image_size_from_imageReadoutParameters(myData, array_key='ccdLocation', sep=":"):
