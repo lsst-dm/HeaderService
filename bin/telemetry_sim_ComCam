@@ -7,7 +7,7 @@ import HeaderService.hscalc as hscalc
 import HeaderService.camera_coords as camera_coords
 import random
 import lsst.ts.salobj as salobj
-
+import asyncio
 
 # Get the info from the camera_coords library for and ITL sensor
 CCDGEOM = camera_coords.CCDInfo('ITL')
@@ -104,7 +104,7 @@ def get_tai_time():
     return salobj.tai_from_utc(time.time())
 
 
-if __name__ == "__main__":
+async def amain():
 
     # Get the command line arguments
     args = cmdline()
@@ -139,6 +139,7 @@ if __name__ == "__main__":
              'rebLSSTName': ':'.join(['REBNAME_TEST', ]*9),
              'ccdTempSetPoint': [random.uniform(-30, 0) for i in range(9)]}
     cam.evt_focalPlaneSummaryInfo.set_put(**kwfPl)
+
     LOGGER.info("Sending simulated focalPlaneSummaryInfo {}".format(kwfPl))
 
     kwRO = {'overRows': [args.overv]*9,
@@ -153,6 +154,7 @@ if __name__ == "__main__":
             'daqAnnotation': args.obsannot,
             'force_output': True}
     cam.evt_imageReadoutParameters.set_put(**kwRO)
+
     LOGGER.info("Sending simulated imageReadoutParameters {}".format(kwRO))
 
     # FocusZ positionZ for Hexapod
@@ -279,3 +281,6 @@ if __name__ == "__main__":
         cam.evt_endOfImageTelemetry.set_put(**kwEND)
         LOGGER.info(f"---Sleeping for {args.sleeptime} s ---")
         time.sleep(args.sleeptime)
+
+
+asyncio.run(amain())

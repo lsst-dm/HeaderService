@@ -87,9 +87,8 @@ def cmdline():
     return args
 
 
-if __name__ == "__main__":
-
-    # Get the args from the command-line
+async def amain():
     args = cmdline()
     hs = hslib_salobj.HSWorker(**args.__dict__)
-    asyncio.get_event_loop().run_until_complete(hs.done_task)
+    await hs.done_task
+asyncio.run(amain())
