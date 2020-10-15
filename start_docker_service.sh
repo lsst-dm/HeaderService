@@ -1,4 +1,4 @@
-TAGNAME=4.1.4-6.1.0-salobj_5.17.0-hs_2.3.3
+TAGNAME=4.1.4-6.1.0-salobj_5.17.0-hs_2.4.0
 DOCKER_IMA=lsstdm/atheaderservice:$TAGNAME
 NAME=headerservice
 
