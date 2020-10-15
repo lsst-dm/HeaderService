@@ -66,9 +66,7 @@ class HSWorker(salobj.BaseCsc):
     async def close_tasks(self):
         """Close tasks on super and evt timeout"""
         await super().close_tasks()
-        # Loop over all task and cancel all of them
-        for imageName in self.end_evt_timeout_task:
-            self.end_evt_timeout_task[imageName].cancel()
+        self.cancel_timeout_tasks()
 
     async def end_evt_timeout(self, imageName, timeout):
         """Timeout timer for end event telemetry callback"""
@@ -79,14 +77,16 @@ class HSWorker(salobj.BaseCsc):
         async with self.dlock:
             self.clean(imageName)
 
-    def report_summary_state(self):
-        """Call to report_summary_state and LOGGER"""
-        super().report_summary_state()
+    def cancel_timeout_tasks(self):
+        """Cancel the per-image timeout tasks"""
+        self.log.info(f"Current state is: {self.summary_state.name}")
+        for imageName in self.end_evt_timeout_task:
+            self.end_evt_timeout_task[imageName].cancel()
+
+    async def handle_summary_state(self):
         self.log.info(f"Current state is: {self.summary_state.name}")
         if self.summary_state != salobj.State.ENABLED:
-            # Loop over all task and cancel all of them
-            for imageName in self.end_evt_timeout_task:
-                self.end_evt_timeout_task[imageName].cancel()
+            self.cancel_timeout_tasks()
 
     def define_evt_callbacks(self):
         """Set the callback functions based on configuration"""
@@ -457,8 +457,8 @@ class HSWorker(salobj.BaseCsc):
 
         self.log.info(f"-------- Done: {imageName} -------------------")
         self.log.info("-------- Ready for next image -----")
-        # Report and print the state
-        self.report_summary_state()
+        # Cancel timed out tasks
+        self.cancel_timeout_tasks()
 
     def read_camera_vendors(self, sep=":"):
         """ Read the vendor/ccdLocation from camera event """
