@@ -35,6 +35,8 @@ def cmdline():
                         help="Timeout for end Telemetry event in seconds")
     parser.add_argument("--port_number", action="store", default='8000', type=str,
                         help="Port number for webserver")
+    parser.add_argument("--ip_address", action="store", default=None, type=str,
+                        help="IP address for broadcast for webserver")
 
     # Logging options (loglevel/loggile/log_format/log_format_date)
     parser.add_argument("--loglevel", action="store", default='INFO', type=str.upper,
@@ -60,8 +62,6 @@ def cmdline():
     parser.add_argument("--write_mode", action="store", default='fits', type=str.lower,
                         choices=["fits", "yaml"],
                         help="Mode for writing header files [fits/string]")
-    parser.add_argument("--hdu_delimiter", action="store", default='END',
-                        help="Delimiter for string-based headers")
 
     # S3/http LFO event
     parser.add_argument("--lfa_mode", action="store", default='http', type=str.lower,
