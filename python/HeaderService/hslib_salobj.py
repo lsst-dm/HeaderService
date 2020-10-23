@@ -151,8 +151,17 @@ class HSWorker(salobj.BaseCsc):
 
     def get_ip(self):
         """Figure out the IP we will be using to broadcast"""
-        self.ip_address = socket.gethostbyname(socket.gethostname())
-        self.log.info("Will use IP: {} for web service".format(self.ip_address))
+
+        # Check if definced in self.config or the environment
+        if self.config.ip_address:
+            self.ip_address = self.config.ip_address
+            self.log.info(f"Will use IP: {self.ip_address} in config for web service")
+        elif 'IP_HEADERSERVICE' in os.environ:
+            self.ip_address = os.environ['IP_HEADERSERVICE']
+            self.log.info(f"Will use IP: {self.ip_address} fron environment for web service")
+        else:
+            self.ip_address = socket.gethostbyname(socket.gethostname())
+            self.log.info(f"Will use IP: {self.ip_address} auto-config for web service")
 
     def get_s3instance(self):
         """
