@@ -79,7 +79,6 @@ class HSWorker(salobj.BaseCsc):
 
     def cancel_timeout_tasks(self):
         """Cancel the per-image timeout tasks"""
-        self.log.info(f"Current state is: {self.summary_state.name}")
         for imageName in self.end_evt_timeout_task:
             self.end_evt_timeout_task[imageName].cancel()
 
@@ -148,6 +147,26 @@ class HSWorker(salobj.BaseCsc):
         # Final collection using asyncio lock, will call functions that
         # take care of updating data structures. We also write the header file.
         asyncio.ensure_future(self.complete_tasks_END(imageName))
+
+    def get_tstand(self):
+        """Figure the Test Stand in use"""
+        # Check if definced in self.config or the environment
+        if self.config.tstand:
+            self.tstand = self.config.tstand
+            self.log.info(f"Will use TSTAND: {self.tstand} in configurarion")
+        elif 'TSTAND_HEADERSERVICE' in os.environ:
+            self.tstand = os.environ['TSTAND_HEADERSERVICE']
+            self.log.info(f"Will use TSTAND: {self.tstand} in from environment")
+        else:
+            # Try to auto-figure out from location
+            self.log.warning("The TSTAND was not defined in config/environment")
+            address = socket.getfqdn()
+            if address.find('.ncsa.') >= 0:
+                self.tstand = "NCSA"
+                self.log.info(f"Will use auto-config tstand: {self.tstand}")
+            else:
+                self.tstand = None
+                self.log.info("Unable to auto-config tstand -- will be left undefined")
 
     def get_ip(self):
         """Figure out the IP we will be using to broadcast"""
@@ -378,6 +397,9 @@ class HSWorker(salobj.BaseCsc):
             self.define_s3bucket()
         elif self.config.lfa_mode == 'http':
             self.start_web_server(self.config.weblogfile)
+
+        # Get the TSTAND
+        self.get_tstand()
 
         # Create dictionaries keyed to imageName
         self.create_dicts()
@@ -743,6 +765,8 @@ class HSWorker(salobj.BaseCsc):
         metadata['MJD-BEG'] = float(DATE_BEG.mjd)
         metadata['MJD-END'] = float(DATE_END.mjd)
         metadata['FILENAME'] = self.filename_FITS[imageName]
+        if self.tstand:
+            metadata['TSTAND'] = self.tstand
 
         # If not LATISS stop here
         if self.config.instrument != 'LATISS':

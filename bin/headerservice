@@ -37,6 +37,8 @@ def cmdline():
                         help="Port number for webserver")
     parser.add_argument("--ip_address", action="store", default=None, type=str,
                         help="IP address for broadcast for webserver")
+    parser.add_argument("--tstand", action="store", default=None, type=str,
+                        help="The test stand used")
 
     # Logging options (loglevel/loggile/log_format/log_format_date)
     parser.add_argument("--loglevel", action="store", default='INFO', type=str.upper,

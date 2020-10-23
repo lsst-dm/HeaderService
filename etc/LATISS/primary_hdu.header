@@ -31,6 +31,9 @@ OBSGEO-X=           1818938.94 / [m] X-axis Geocentric coordinate
 OBSGEO-Y=          -5208470.95 / [m] Y-axis Geocentric coordinate
 OBSGEO-Z=          -3195172.08 / [m] Z-axis Geocentric coordinate
 
+        ---- Test Stand information ----
+TSTAND  =                      / The Test Stand used
+
         ---- Pointing info, etc. ----
 RA      =                      / RA commanded from pointing component
 DEC     =                      / DEC commanded from pointing component
