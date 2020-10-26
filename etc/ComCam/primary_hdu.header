@@ -61,6 +61,9 @@ SEQNUM  =                      / The sequence number from the image name
 GROUPID =                      /
 TESTTYPE=                      / Test Type: BIAS:DARK:FLAT:OBS:PPUMP:QE:SFLAT
 
+        ---- Test Stand information ----
+TSTAND  =                      / The Test Stand used
+
         ---- Information from Camera (Common block) ----
 IMAGETAG=                      / DAQ Image id
 OBSANNOT=                      / Observing annotation
