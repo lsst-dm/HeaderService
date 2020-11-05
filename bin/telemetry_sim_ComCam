@@ -54,7 +54,7 @@ def cmdline():
                         help="Exposure time in seconds")
     parser.add_argument("--airmass", action="store", default=1.237, type=float,
                         help="Airmass")
-    parser.add_argument("--ha", action="store", default='30.0', type=str,
+    parser.add_argument("--ha", action="store", default='30.0', type=float,
                         help="The HA")
     parser.add_argument("--el", action="store", default=75.0, type=float,
                         help="The elevation angle")
@@ -223,16 +223,14 @@ async def amain():
 
         # Send the startIntegration for image: k
         LOGGER.info("Sending simulated startIntegration")
-        kwInt = {'imageType': args.imageType,
-                 'groupId': args.groupId,
-                 'imagesInSequence': args.NSequence,
+        kwInt = {'imagesInSequence': args.NSequence,
                  'imageName': imageName,
                  'imageIndex': k,
                  'imageNumber': seqN,
                  'imageSource': 'CC',
                  'imageController': 'O',
                  'imageDate': DAYOBS,
-                 'timeStampAcquisitionStart': timeStamp,
+                 'timestampAcquisitionStart': timeStamp,
                  'exposureTime': args.exptime,
                  'additionalKeys': args.additionalKeys,
                  'additionalValues': args.additionalValues,
@@ -256,16 +254,14 @@ async def amain():
         cam.evt_endReadout.set_put(**kwInt)
 
         # send endOfImageTelemetry event
-        kwEND = {'imageType': args.imageType,
-                 'groupId': args.groupId,
-                 'imagesInSequence': args.NSequence,
+        kwEND = {'imagesInSequence': args.NSequence,
                  'imageName': imageName,
                  'imageIndex': k,
                  'imageNumber': seqN,
                  'imageSource': 'CC',
                  'imageController': 'O',
                  'imageDate': DAYOBS,
-                 'timeStampAcquisitionStart': timeStamp,
+                 'timestampAcquisitionStart': timeStamp,
                  'timestampDateObs': timeStamp,
                  'timestampDateEnd': get_tai_time(),
                  'exposureTime': args.exptime,
