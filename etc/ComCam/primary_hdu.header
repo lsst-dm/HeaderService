@@ -69,7 +69,7 @@ IMAGETAG=                      / DAQ Image id
 OBSANNOT=                      / Observing annotation
 
         ---- Filter/grating information ----
-FILTER  = 'r'                  / Name of the filter
+FILTER  =                      / Name of the filter
 FILTNAME=                      / Filter serial number or other identifier
 FILTPOS =                      / Filter position (numeric) in wheel
 
