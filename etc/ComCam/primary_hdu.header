@@ -69,9 +69,10 @@ IMAGETAG=                      / DAQ Image id
 OBSANNOT=                      / Observing annotation
 
         ---- Filter/grating information ----
-FILTER  =                      / Name of the filter
-FILTNAME=                      / Filter serial number or other identifier
-FILTPOS =                      / Filter position (numeric) in wheel
+FILTBAND=                      / Name of the filter band
+FILTER  =                      / Name of the physical filter
+FILTSLOT=                      / Filter home slot
+FILTPOS =                      / Filter measured position of slide
 
         ---- Exposure-related information ----
 EXPTIME =                      / Exposure time in seconds

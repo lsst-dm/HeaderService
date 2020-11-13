@@ -27,12 +27,14 @@ def cmdline():
     parser.add_argument("--rotpa", action="store", default=0.0, type=float,
                         help="The ROTPA for the visit")
 
-    parser.add_argument("--filter", action="store", default='r',
-                        help="The filtertype")
+    parser.add_argument("--filterband", action="store", default='r',
+                        help="The filter band name (i.e. r)")
     parser.add_argument("--filtername", action="store", default='U-001',
-                        help="Name of the filter")
-    parser.add_argument("--filterpos", action="store", default=1,
-                        help="The filtertype")
+                        help="Name of the physical filter (i.e. U-001")
+    parser.add_argument("--filterslot", action="store", default=0,
+                        help="Filter slot of the physical filter (i.e. U-001")
+    parser.add_argument("--filterpos", action="store", default=666.0,
+                        help="The filter measured position of slide (i.e.: 666.0)")
 
     parser.add_argument("--groupId", action="store", default='LSSTTEST',
                         help="groupId")
@@ -180,9 +182,10 @@ async def amain():
     LOGGER.info("Sending simulated Ptg currentTarget:{}".format(kwTA))
 
     # Set the filter names
-    kwFilter = {'filterName': args.filtername,
-                'filterType': args.filter,
-                'filterSlot': args.filterpos}
+    kwFilter = {'filterType': args.filterband,
+                'filterName': args.filtername,
+                'filterPosition': args.filterpos,
+                'filterSlot': args.filterslot}
     cam.evt_endSetFilter.set_put(**kwFilter)
     LOGGER.info("Sending simulated Camera endSetFilter:{}".format(kwFilter))
 

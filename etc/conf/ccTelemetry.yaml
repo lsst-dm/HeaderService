@@ -486,23 +486,30 @@ telemetry:
 
 # ----- Filter information from CCCamera ----------
 
- FILTER:
+ FILTBAND:
   device: CCCamera
   Stype: Event
   topic: endSetFilter
   value: filterType
   collect_after_event: start_collection_event
 
- FILTNAME:
+ FILTER:
   device: CCCamera
   Stype: Event
   topic: endSetFilter
   value: filterName
   collect_after_event: start_collection_event
 
- FILTPOS:
+ FILTSLOT:
   device: CCCamera
   Stype: Event
   topic: endSetFilter
   value: filterSlot
+  collect_after_event: start_collection_event
+
+ FILTPOS:
+  device: CCCamera
+  Stype: Event
+  topic: endSetFilter
+  value: filterPosition
   collect_after_event: start_collection_event
