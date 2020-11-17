@@ -7,7 +7,7 @@ import HeaderService.hscalc as hscalc
 import HeaderService.camera_coords as camera_coords
 import random
 import lsst.ts.salobj as salobj
-
+import asyncio
 
 # Get the info from the camera_coords library for and E2V sensor
 CCDGEOM = camera_coords.CCDInfo('E2V')
@@ -30,12 +30,6 @@ def cmdline():
                         help="Name of the filter")
     parser.add_argument("--grating", action="store", default='R400',
                         help="Name of the grating")
-    parser.add_argument("--groupId", action="store", default='LSSTTEST',
-                        help="groupId")
-    parser.add_argument("--imageType", action="store", default='OBJECT',
-                        help="imageType")
-    parser.add_argument("--obsannot", action="store", default="Dummy Obs Annotation", type=str,
-                        help="Optional Observation annnotation")
 
     # Control imageName
     parser.add_argument("--telcode", action="store", default='AT',
@@ -53,7 +47,7 @@ def cmdline():
                         help="Exposure time in seconds")
     parser.add_argument("--airmass", action="store", default=1.237, type=float,
                         help="Airmass")
-    parser.add_argument("--ha", action="store", default='30.0', type=str,
+    parser.add_argument("--ha", action="store", default=30.0, type=float,
                         help="The HA")
     parser.add_argument("--el", action="store", default=75.0, type=float,
                         help="The elevation angle")
@@ -72,8 +66,17 @@ def cmdline():
                         help="The ra/dec track system value.")
     parser.add_argument("--object", action="store", default="ElGordo", type=str,
                         help="The name of the object observed.")
-    parser.add_argument("--imagetag", action="store", default="ElGordo", type=str,
+    parser.add_argument("--imagetag", action="store", default="TestTag", type=str,
                         help="The imagetag of the observation.")
+    parser.add_argument("--imageName", action="store", default=None, type=str,
+                        help="Optional imageName")
+    parser.add_argument("--obsannot", action="store", default="Dummy Obs Annotation", type=str,
+                        help="Optional Observation annnotation")
+
+    parser.add_argument("--additionalKeys", action="store", default='imageType:groupId:testType',
+                        type=str, help="Optional additionalKeys")
+    parser.add_argument("--additionalValues", action="store", default='BIAS:CALSET_XXXX_YYYY:SIMTEST_ABCD',
+                        type=str, help="Optional additionalValues")
 
     parser.add_argument("--seeing", action="store", default=1.2, type=float,
                         help="The Seeing from the DIMM monitor (arcsec).")
@@ -114,7 +117,7 @@ def get_tai_time():
     return salobj.tai_from_utc(time.time())
 
 
-if __name__ == "__main__":
+async def amain():
 
     # Get the command line arguments
     args = cmdline()
@@ -131,18 +134,30 @@ if __name__ == "__main__":
 
     LOGGER = hutils.create_logger()
 
-    # Camera confguration from wrebSettingsApplied
-    kwWREB = {'ccdManufacturer': 'ITL',
-              'ccdType': '3800C',
-              'ccdSerialNumber': '20304',
-              'ccdName': 'ITL-3800C-098',
-              # Made up values just for testing
-              'sequencerChecksum': 1234567890,
-              'sequencerKey': 'SEQNAME_TEST',
-              'rebName': 'REBNAME_TEST',
-              'rebSerialNumber': 'REBSER_TEST'}
-    cam.evt_wrebSettingsApplied.set_put(**kwWREB)
-    LOGGER.info("Sending simulated wrebSettingsApplied")
+    # Camera Geometry
+    # Send sub-set of imageReadoutParameters, we populate only a few fields
+    ccdLocation = hutils.build_sensor_list('LATISS', sep='')
+    ccdSlots = [s[3:] for s in ccdLocation]
+    raftBays = [s[0:3] for s in ccdLocation]
+    Nsensors = len(ccdLocation)
+
+    # Camera confguration from focalPlaneSummaryInfo
+    kwfPl = {'ccdLocation': ':'.join(ccdLocation),
+             'ccdSlot': ':'.join(ccdSlots),
+             'raftBay': ':'.join(raftBays),
+             'rebSerialNumber': ':'.join(['REBSER_TEST', ]*Nsensors),
+             'ccdManSerNum': ':'.join(['12345', ]*Nsensors),
+             'ccdManufacturer': ':'.join(['ITL', ]*Nsensors),
+             'ccdType': 0,
+             'ccdLSSTName': ':'.join(['ITL-YYYY-XXX', ]*Nsensors),
+             # Made up values just for testing
+             'sequencerChecksum': ':'.join(['1234567890', ]*Nsensors),
+             'sequencerKey': ':'.join(['SEQNAME_TEST', ]*Nsensors),
+             'rebLSSTName': ':'.join(['REBNAME_TEST', ]*Nsensors),
+             'ccdTempSetPoint': random.uniform(-30, 0),
+             }
+    cam.evt_focalPlaneSummaryInfo.set_put(**kwfPl)
+    LOGGER.info("Sending simulated focalPlaneSummaryInfo {}".format(kwfPl))
 
     # Camera Geometry
     # Send sub-set of imageReadoutParameters, we populate only a few fields
@@ -153,7 +168,7 @@ if __name__ == "__main__":
             'readCols2': 0,
             'readRows': CCDGEOM.dimv,
             'daqAnnotation': args.obsannot,
-            'ccdLocation': ':'.join(hutils.build_sensor_list('LATISS', sep='')),
+            'ccdLocation': ':'.join(ccdLocation),
             'force_output': True}
     cam.evt_imageReadoutParameters.set_put(**kwRO)
     LOGGER.info("Sending simulated imageReadoutParameters")
@@ -296,19 +311,20 @@ if __name__ == "__main__":
 
         # Send the startIntegration for image: k
         LOGGER.info("Sending simulated startIntegration")
-        kwInt = {'imageType': args.imageType,
-                 'groupId': args.groupId,
-                 'imagesInSequence': args.NSequence,
+        kwInt = {'imagesInSequence': args.NSequence,
                  'imageName': imageName,
                  'imageIndex': k,
                  'imageNumber': seqN,
-                 'imageSource': 'AT',
+                 'imageSource': args.telcode,
                  'imageController': 'O',
                  'imageDate': DAYOBS,
-                 'timeStampAcquisitionStart': timeStamp,
+                 'timestampAcquisitionStart': timeStamp,
                  'exposureTime': args.exptime,
+                 'additionalKeys': args.additionalKeys,
+                 'additionalValues': args.additionalValues,
                  'priority': 1,
                  'force_output': True}
+
         cam.evt_startIntegration.set_put(**kwInt)
         LOGGER.info("Sending simulated startIntergration: {}".format(kwInt))
         LOGGER.info(f"Waiting for {args.exptime} sec")
@@ -325,7 +341,7 @@ if __name__ == "__main__":
 
         # The END telemetry for Airmass using ATPtg.currentTargetStatus
         kwTA = {'timestamp': get_tai_time(),
-                'ha': str(float(args.ha)*1.01),
+                'ha': args.ha*1.01,
                 'airmass': args.airmass*1.01}
         ptg.tel_currentTargetStatus.set_put(**kwTA)
         LOGGER.info("Sending simulated currentTargetStatus HA/AIRMASS End")
@@ -340,24 +356,27 @@ if __name__ == "__main__":
 
         # Send endReadout event
         LOGGER.info("Sending simulated endReadout")
+        kwRO = kwInt
+        del kwRO['exposureTime']
+        kwRO['requestedExposureTime'] = args.exptime
+        LOGGER.info("Sending simulated endReadout")
         cam.evt_endReadout.set_put(**kwInt)
 
         # send endOfImageTelemetry event
-        kwEND = {'imageType': args.imageType,
-                 'groupId': args.groupId,
-                 'imagesInSequence': args.NSequence,
+        kwEND = {'imagesInSequence': args.NSequence,
                  'imageName': imageName,
                  'imageIndex': k,
                  'imageNumber': seqN,
-                 'imageSource': 'AT',
+                 'imageSource': args.telcode,
                  'imageController': 'O',
                  'imageDate': DAYOBS,
-                 'timeStampAcquisitionStart': timeStamp,
+                 'timestampAcquisitionStart': timeStamp,
                  'timestampDateObs': timeStamp,
                  'timestampDateEnd': get_tai_time(),
                  'exposureTime': args.exptime,
                  'darkTime': shuttime + args.sleeptime,
                  'imageTag': args.imagetag,
+                 'measuredShutterOpenTime': shuttime,
                  'priority': 1,
                  'force_output': True}
         if args.delaytime > 0:
@@ -367,3 +386,5 @@ if __name__ == "__main__":
         cam.evt_endOfImageTelemetry.set_put(**kwEND)
         LOGGER.info(f"---Sleeping for {args.sleeptime} s ---")
         time.sleep(args.sleeptime)
+
+asyncio.run(amain())
