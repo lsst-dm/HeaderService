@@ -3,6 +3,7 @@
 # The name of the HeaderService
 hs_name: ATHeaderService
 instrument: LATISS
+# Vendor names come from an ATCamera Event, this is in case it does not
 vendor_names: ['ITL']
 section: LATISS
 
@@ -23,8 +24,14 @@ port_number: 8000
 # The URL format to be used
 url_format: "http://{ip_address}:{port_number}/{filename_HDR}"
 
+# While we support both s3 and http LFA we need to define the mode [s3 or http]
+lfa_mode: http
+
+# The s3 instance (i.e.: nts, tuc, ls, cp)
+# s3instance: nts
+
 # Default write_mode (fits or string)
-write_mode: fits
+write_mode: yaml
 
 # Timeout beyond the requested exposure time to wait for an end of Telemetry event (in seconds)
 timeout_exptime: 30
@@ -52,6 +59,13 @@ end_collection_event:
 imageParam_event:
     device: ATCamera
     topic: imageReadoutParameters
+    array_keys: ccdLocation
+
+# The event for the camera vendor and CCD names configuration
+cameraConf_event:
+    device: ATCamera
+    topic: focalPlaneSummaryInfo
+    value: ccdManufacturer
     array_keys: ccdLocation
 
 # Telemetry values for images meta-data
@@ -118,15 +132,31 @@ telemetry:
   device: ATCamera
   Stype: Event
   topic: startIntegration
-  value: groupId
+  value: additionalValues
   collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: groupId
+  array: keyed_array
 
  IMGTYPE:
-   device: ATCamera
-   Stype: Event
-   topic: startIntegration
-   value: imageType
-   collect_after_event: start_collection_event
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: additionalValues
+  collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: imageType
+  array: keyed_array
+
+ TESTTYPE:
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: additionalValues
+  collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: testType
+  array: keyed_array
 
  EXPTIME:
   device: ATCamera
@@ -140,6 +170,13 @@ telemetry:
   Stype: Event
   topic: endOfImageTelemetry
   value: darkTime
+  collect_after_event: end_collection_event
+
+ OBSANNOT:
+  device: ATCamera
+  Stype: Event
+  topic: imageReadoutParameters
+  value: daqAnnotation
   collect_after_event: end_collection_event
 
  SHUTTIME:
@@ -168,58 +205,84 @@ telemetry:
  CCD_MANU:
   device: ATCamera
   Stype: Event
-  topic: wrebSettingsApplied
+  topic: focalPlaneSummaryInfo
   value: ccdManufacturer
   collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_keys: ccdLocation
 
  CCD_TYPE:
   device: ATCamera
   Stype: Event
-  topic: wrebSettingsApplied
+  topic: focalPlaneSummaryInfo
   value: ccdType
   collect_after_event: start_collection_event
+  #array: CCD_array
+  #array_keys: ccdLocation
 
  CCD_SERN:
   device: ATCamera
   Stype: Event
-  topic: wrebSettingsApplied
-  value: ccdSerialNumber
+  topic: focalPlaneSummaryInfo
+  value: ccdManSerNum
   collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_keys: ccdLocation
 
  LSST_NUM:
   device: ATCamera
   Stype: Event
-  topic: wrebSettingsApplied
-  value: ccdName
+  topic: focalPlaneSummaryInfo
+  value: ccdLSSTName
   collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_keys: ccdLocation
 
- SEQCKSUM:
+ CCDSLOT:
   device: ATCamera
   Stype: Event
-  topic: wrebSettingsApplied
-  value: sequencerChecksum
+  topic: focalPlaneSummaryInfo
+  value: ccdSlot
   collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_keys: ccdLocation
 
- SEQNAME:
+ RAFTBAY:
   device: ATCamera
   Stype: Event
-  topic: wrebSettingsApplied
-  value: sequencerKey
+  topic: focalPlaneSummaryInfo
+  value: raftBay
   collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_keys: ccdLocation
 
- REBNAME:
-  device: ATCamera
-  Stype: Event
-  topic: wrebSettingsApplied
-  value: rebName
-  collect_after_event: start_collection_event
+# SEQCKSUM:
+#  device: ATCamera
+#  Stype: Event
+#  topic: wrebSettingsApplied
+#  value: sequencerChecksum
+#  collect_after_event: start_collection_event
 
- CONTNUM:
-  device: ATCamera
-  Stype: Event
-  topic: wrebSettingsApplied
-  value: rebSerialNumber
-  collect_after_event: start_collection_event
+# SEQNAME:
+#  device: ATCamera
+#  Stype: Event
+#  topic: wrebSettingsApplied
+#  value: sequencerKey
+#  collect_after_event: start_collection_event
+
+# REBNAME:
+#  device: ATCamera
+#  Stype: Event
+#  topic: wrebSettingsApplied
+#  value: rebName
+#  collect_after_event: start_collection_event
+
+# CONTNUM:
+#  device: ATCamera
+#  Stype: Event
+#  topic: wrebSettingsApplied
+#  value: rebSerialNumber
+#  collect_after_event: start_collection_event
 
  IMAGETAG:
   device: ATCamera

@@ -3,7 +3,7 @@
 # The name of the HeaderService
 hs_name: CCHeaderService
 instrument: ComCam
-# Vendor names should come from an CCCamera Event in the future
+# Vendor names come from a CCCamera Event, this is in case it does not
 vendor_names: ['ITL','ITL','ITL','ITL','ITL','ITL','ITL','ITL','ITL','ITL']
 section: ComCam
 
@@ -67,7 +67,6 @@ cameraConf_event:
     topic: focalPlaneSummaryInfo
     value: ccdManufacturer
     array_keys: ccdLocation
-    # array: CCD_array_str
 
 # Telemetry values for images meta-data
 # https://confluence.lsstcorp.org/display/SYSENG/ComCam+Header+Information+Topic+Mapping

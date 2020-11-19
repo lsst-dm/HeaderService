@@ -36,10 +36,6 @@ def cmdline():
     parser.add_argument("--filterpos", action="store", default=666.0,
                         help="The filter measured position of slide (i.e.: 666.0)")
 
-    parser.add_argument("--groupId", action="store", default='LSSTTEST',
-                        help="groupId")
-    parser.add_argument("--imageType", action="store", default='OBJECT',
-                        help="imageType")
     # Control imageName
     parser.add_argument("--telcode", action="store", default='CC',
                         help="The code for the telecope")
@@ -125,23 +121,23 @@ async def amain():
     ccdLocation = hutils.build_sensor_list('ComCam', sep='')
     ccdSlots = [s[3:] for s in ccdLocation]
     raftBays = [s[0:3] for s in ccdLocation]
+    Nsensors = len(ccdLocation)
 
     # Camera confguration from focalPlaneSummaryInfo
     kwfPl = {'ccdLocation': ':'.join(ccdLocation),
              'ccdSlot': ':'.join(ccdSlots),
              'raftBay': ':'.join(raftBays),
-             'rebSerialNumber': ':'.join(['REBSER_TEST', ]*9),
-             'ccdManSerNum': ':'.join(['12345', ]*9),
-             'ccdManufacturer': ':'.join(['ITL', ]*9),
-             'ccdType': [1, ]*9,
-             'ccdLSSTName': ':'.join(['ITL-YYYY-XXX', ]*9),
+             'rebSerialNumber': ':'.join(['REBSER_TEST', ]*Nsensors),
+             'ccdManSerNum': ':'.join(['12345', ]*Nsensors),
+             'ccdManufacturer': ':'.join(['ITL', ]*Nsensors),
+             'ccdType': [1, ]*Nsensors,
+             'ccdLSSTName': ':'.join(['ITL-YYYY-XXX', ]*Nsensors),
              # Made up values just for testing
-             'sequencerChecksum': ':'.join(['1234567890', ]*9),
-             'sequencerKey': ':'.join(['SEQNAME_TEST', ]*9),
-             'rebLSSTName': ':'.join(['REBNAME_TEST', ]*9),
-             'ccdTempSetPoint': [random.uniform(-30, 0) for i in range(9)]}
+             'sequencerChecksum': ':'.join(['1234567890', ]*Nsensors),
+             'sequencerKey': ':'.join(['SEQNAME_TEST', ]*Nsensors),
+             'rebLSSTName': ':'.join(['REBNAME_TEST', ]*Nsensors),
+             'ccdTempSetPoint': [random.uniform(-30, 0) for i in range(Nsensors)]}
     cam.evt_focalPlaneSummaryInfo.set_put(**kwfPl)
-
     LOGGER.info("Sending simulated focalPlaneSummaryInfo {}".format(kwfPl))
 
     kwRO = {'overRows': [args.overv]*9,
@@ -156,7 +152,6 @@ async def amain():
             'daqAnnotation': args.obsannot,
             'force_output': True}
     cam.evt_imageReadoutParameters.set_put(**kwRO)
-
     LOGGER.info("Sending simulated imageReadoutParameters {}".format(kwRO))
 
     # FocusZ positionZ for Hexapod
@@ -230,7 +225,7 @@ async def amain():
                  'imageName': imageName,
                  'imageIndex': k,
                  'imageNumber': seqN,
-                 'imageSource': 'CC',
+                 'imageSource': args.telcode,
                  'imageController': 'O',
                  'imageDate': DAYOBS,
                  'timestampAcquisitionStart': timeStamp,
@@ -261,7 +256,7 @@ async def amain():
                  'imageName': imageName,
                  'imageIndex': k,
                  'imageNumber': seqN,
-                 'imageSource': 'CC',
+                 'imageSource': args.telcode,
                  'imageController': 'O',
                  'imageDate': DAYOBS,
                  'timestampAcquisitionStart': timeStamp,

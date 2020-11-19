@@ -31,9 +31,6 @@ OBSGEO-X=           1818938.94 / [m] X-axis Geocentric coordinate
 OBSGEO-Y=          -5208470.95 / [m] Y-axis Geocentric coordinate
 OBSGEO-Z=          -3195172.08 / [m] Z-axis Geocentric coordinate
 
-        ---- Test Stand information ----
-TSTAND  =                      / The Test Stand used
-
         ---- Pointing info, etc. ----
 RA      =                      / RA commanded from pointing component
 DEC     =                      / DEC commanded from pointing component
@@ -84,6 +81,14 @@ CONTRLLR=                      / The controller (e.g. O for OCS, C for (A)CCS)
 DAYOBS  =                      / The observation day as defined by image name
 SEQNUM  =                      / The sequence number from the image name
 GROUPID =                      /
+TESTTYPE=                      / Test Type: BIAS:DARK:FLAT:OBS:PPUMP:QE:SFLAT
+
+        ---- Test Stand information ----
+TSTAND  =                      / The Test Stand used
+
+        ---- Information from Camera (Common block) ----
+IMAGETAG=                      / DAQ Image id
+OBSANNOT=                      / Observing annotation
 
         ---- Information from Camera ----
 CCD_MANU=                      / CCD Manufacturer
@@ -94,10 +99,10 @@ SEQCKSUM=                      / Checksum of Sequencer
 SEQNAME =                      / SequenceName from Camera StartIntergration
 REBNAME =                      / Name of the REB
 CONTNUM =                      / CCD Controller (WREB) Serial Number
-IMAGETAG=                      / DAQ Image id
 TEMP_SET=                      / Temperature set point (deg C)
 CCDTEMP =                      / Measured temperature (deg C)
-OBSANNOT=                      / Observing annotation
+CCDSLOT =                      / Name of the CCD Slot (SXx)
+RAFTBAY =                      / Name of the RAFT Bay (Rnn)
 
         ---- Geometry from Camera ----
 DETSIZE =                      / Size of sensor
