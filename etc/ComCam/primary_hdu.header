@@ -54,7 +54,7 @@ FOCUSZ  =                      / Focus Z position
 OBJECT  =                      / Name of the observed object
 
         ---- Image-identifying used to build OBS-ID ----
-TELCODE =                      / The code for the telescope (AT/CC/MC)
+CAMCODE =                      / The code for the telescope (AT/CC/MC)
 CONTRLLR=                      / The controller (e.g. O for OCS, C for (A)CCS)
 DAYOBS  =                      / The observation day as defined by image name
 SEQNUM  =                      / The sequence number from the image name

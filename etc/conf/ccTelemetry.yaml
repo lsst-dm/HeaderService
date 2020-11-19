@@ -100,7 +100,7 @@ telemetry:
   value: imageName
   collect_after_event: start_collection_event
 
- TELCODE:
+ CAMCODE:
   device: CCCamera
   Stype: Event
   topic: startIntegration
