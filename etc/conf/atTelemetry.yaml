@@ -486,8 +486,14 @@ telemetry:
   value: mainDoorOpeningPercentage
   collect_after_event: start_collection_event
 
-# --------------------------------------------------------------
 # ----- Filter/Grating information from ATSpectrograph ---------
+
+ FILTBAND:
+  device: ATSpectrograph
+  Stype: Event
+  topic: reportedFilterPosition
+  value: band
+  collect_after_event: start_collection_event
 
  FILTER:
   device: ATSpectrograph
@@ -496,11 +502,11 @@ telemetry:
   value: name
   collect_after_event: start_collection_event
 
- FILTPOS:
+ FILTSLOT:
   device: ATSpectrograph
   Stype: Event
   topic: reportedFilterPosition
-  value: position
+  value: slot
   collect_after_event: start_collection_event
 
  GRATING:
@@ -510,11 +516,18 @@ telemetry:
   value: name
   collect_after_event: start_collection_event
 
- GRATPOS:
+ GRATBAND:
   device: ATSpectrograph
   Stype: Event
   topic: reportedDisperserPosition
-  value: position
+  value: band
+  collect_after_event: start_collection_event
+
+ GRATSLOT:
+  device: ATSpectrograph
+  Stype: Event
+  topic: reportedDisperserPosition
+  value: slot
   collect_after_event: start_collection_event
 
  LINSPOS:

@@ -111,11 +111,12 @@ OVERV   =                      / Vert-overscan pix
 PREH    =                      / Pre-scan pixels
 
         ---- Filter/grating information ----
-FILTER  =                      / Name of the filter
-FILTPOS =                      / Filter position
-GRATING =                      / Name of the second disperser
-GRATPOS =                      / disperser position
-LINSPOS =                      / Linear Stage
+FILTBAND=                      / Name of the filter band
+FILTER  =                      / Name of the physical filter
+FILTSLOT=                      / Filter home slot (1-indexed) 
+GRATING =                      / Name of physical grating
+GRATSLOT=                      / Grating's slot (1-indexed)
+LINSPOS =                      / Position of slide
 
         ---- Exposure-related information ----
 EXPTIME =                      / Exposure time in seconds
