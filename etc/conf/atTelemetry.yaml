@@ -256,33 +256,41 @@ telemetry:
   array: CCD_array_str
   array_keys: ccdLocation
 
-# SEQCKSUM:
-#  device: ATCamera
-#  Stype: Event
-#  topic: wrebSettingsApplied
-#  value: sequencerChecksum
-#  collect_after_event: start_collection_event
+ SEQCKSUM:
+  device: ATCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: sequencerChecksum
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_keys: ccdLocation
 
-# SEQNAME:
-#  device: ATCamera
-#  Stype: Event
-#  topic: wrebSettingsApplied
-#  value: sequencerKey
-#  collect_after_event: start_collection_event
+ SEQNAME:
+  device: ATCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: sequencerKey
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_keys: ccdLocation
 
-# REBNAME:
-#  device: ATCamera
-#  Stype: Event
-#  topic: wrebSettingsApplied
-#  value: rebName
-#  collect_after_event: start_collection_event
+ REBNAME:
+  device: ATCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: rebLSSTName
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_keys: ccdLocation
 
-# CONTNUM:
-#  device: ATCamera
-#  Stype: Event
-#  topic: wrebSettingsApplied
-#  value: rebSerialNumber
-#  collect_after_event: start_collection_event
+ CONTNUM:
+  device: ATCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: rebSerialNumber
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_keys: ccdLocation
 
  IMAGETAG:
   device: ATCamera
