@@ -112,7 +112,7 @@ async def amain():
     # Create handlers for the CSCs we want to simulate messages
     cam = salobj.Controller(name="CCCamera", index=0)
     ptg = salobj.Controller(name="MTPtg", index=0)
-    hexa = salobj.Controller(name="Hexapod", index=1)
+    hexa = salobj.Controller(name="MTHexapod", index=1)
 
     LOGGER = hutils.create_logger()
 
