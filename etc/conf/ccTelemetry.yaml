@@ -456,7 +456,7 @@ telemetry:
   array: timestamp_start
 
  FOCUSZ:
-  device: Hexapod
+  device: MTHexapod
   device_index: 1
   Stype: Telemetry
   topic: application
