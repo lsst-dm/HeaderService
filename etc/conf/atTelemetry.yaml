@@ -217,8 +217,6 @@ telemetry:
   topic: focalPlaneSummaryInfo
   value: ccdType
   collect_after_event: start_collection_event
-  #array: CCD_array
-  #array_keys: ccdLocation
 
  CCD_SERN:
   device: ATCamera
@@ -562,35 +560,35 @@ telemetry:
 
 # ---- Weather information -----------------------------
  AIRTEMP:
-  device: Environment
+  device: WeatherStation
   Stype: Telemetry
   topic: weather
   value: ambient_temp
   collect_after_event: start_collection_event
 
  PRESSURE:
-  device: Environment
+  device: WeatherStation
   Stype: Telemetry
   topic: weather
   value: pressure
   collect_after_event: start_collection_event
 
  HUMIDITY:
-  device: Environment
+  device: WeatherStation
   Stype: Telemetry
   topic: weather
   value: humidity
   collect_after_event: start_collection_event
 
  WINDSPD:
-  device: Environment
+  device: WeatherStation
   Stype: Telemetry
   topic: windSpeed
   value: value
   collect_after_event: start_collection_event
 
  WINDDIR:
-  device: Environment
+  device: WeatherStation
   Stype: Telemetry
   topic: windDirection
   value: value

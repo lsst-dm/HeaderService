@@ -113,8 +113,9 @@ PREH    =                      / Pre-scan pixels
         ---- Filter/grating information ----
 FILTBAND=                      / Name of the filter band
 FILTER  =                      / Name of the physical filter
-FILTSLOT=                      / Filter home slot (1-indexed) 
+FILTSLOT=                      / Filter home slot (1-indexed)
 GRATING =                      / Name of physical grating
+GRATBAND=                      / Descriptive name
 GRATSLOT=                      / Grating's slot (1-indexed)
 LINSPOS =                      / Position of slide
 
