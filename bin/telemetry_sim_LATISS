@@ -26,10 +26,22 @@ def cmdline():
                         help="The DEC of the visit")
     parser.add_argument("--rotpa", action="store", default=0.0, type=float,
                         help="The ROTPA for the visit")
-    parser.add_argument("--filter", action="store", default='r',
+
+    parser.add_argument("--filterband", action="store", default='r',
                         help="Name of the filter")
-    parser.add_argument("--grating", action="store", default='R400',
-                        help="Name of the grating")
+    parser.add_argument("--filtername", action="store", default='KPNO_1111_436nm',
+                        help="Name of the physical filter (i.e. KPNO_1111_436nm)")
+    parser.add_argument("--filterslot", action="store", default=0,
+                        help="Filter slot (1-indexed)")
+    parser.add_argument("--linpos", action="store", default=666.0,
+                        help="The filter measured position of slide (i.e.: 666.0)")
+
+    parser.add_argument("--gratingname", action="store", default='ronchi90lpmm',
+                        help="Name of the physical grating")
+    parser.add_argument("--gratingband", action="store", default='R100',
+                        help="Name of the grating descriptive name")
+    parser.add_argument("--gratingslot", action="store", default=1,
+                        help="Grating's slot (1-indexed)")
 
     # Control imageName
     parser.add_argument("--camcode", action="store", default='AT',
@@ -130,7 +142,7 @@ async def amain():
     ataos = salobj.Controller(name="ATAOS", index=0)
     dome = salobj.Controller(name="ATDome", index=0)
     dimm = salobj.Controller(name="DIMM", index=0)
-    env = salobj.Controller(name="Environment", index=0)
+    env = salobj.Controller(name="WeatherStation", index=0)
 
     LOGGER = hutils.create_logger()
 
@@ -193,23 +205,25 @@ async def amain():
     LOGGER.info("Sending simulated ATSpectrograph settingsApplied")
 
     # Filter information for ATSpectrograph
-    kwFT = {'name': args.filter,
-            'position': 1,  # Made up
+    kwFT = {'name': args.filtername,
+            'band': args.filterband,
+            'slot': args.filterslot,
             'priority': 1,
             'force_output': True}
     spec.evt_reportedFilterPosition.set_put(**kwFT)
     LOGGER.info("Sending simulated reportedFilterPosition")
 
     # Disperser information for ATSpectrograph
-    kwDP = {'name': args.grating,
-            'position': 2,  # Made up
+    kwDP = {'name': args.gratingname,
+            'band': args.gratingband,
+            'slot': args.gratingslot,
             'priority': 1,
             'force_output': True}
     spec.evt_reportedDisperserPosition.set_put(**kwDP)
     LOGGER.info("Sending simulated reportedDisperserPosition")
 
     # Linear Stage position for ATSpectrograph
-    kwLS = {'position': 2,  # Made up
+    kwLS = {'position': args.linpos,
             'priority': 1,
             'force_output': True}
     spec.evt_reportedLinearStagePosition.set_put(**kwLS)
