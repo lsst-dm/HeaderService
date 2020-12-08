@@ -589,7 +589,12 @@ class HSWorker(salobj.BaseCsc):
                 date=self.metadata[imageName]['DATE-OBS'],
                 suffix=".yaml"
             )
-            url = f"s3://{self.s3bucket.name}/{key}"
+            # In case we want to go back to an s3 url
+            # url = f"s3://{self.s3bucket.name}/{key}"
+
+            # The url for simple a wget/curl fetch
+            # i.e. http://S3_ENDPOINT_URL/s3buket_name/key
+            url = f"{self.s3conn.meta.client.meta.endpoint_url}/{self.s3bucket.name}/{key}"
             t0 = time.time()
             with open(self.filename_HDR[imageName], "rb") as f:
                 await self.s3bucket.upload(fileobj=f, key=key)
