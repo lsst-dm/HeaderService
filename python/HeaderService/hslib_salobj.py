@@ -262,7 +262,8 @@ class HSWorker(salobj.BaseCsc):
         # Get the system's python
         python_exe = sys.executable
         # Make sure there isn't another process running
-        cmd = "ps -ax | grep {0} | grep -v grep | awk '{{print $1}}'".format(httpserver)
+        cmd = f"ps -ax | grep \"{httpserver} {self.config.port_number}\" | grep -v grep | awk '{{print $1}}'"
+        self.log.info(f"Checking for webserver running: {cmd}")
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
         pid = p.stdout.read().decode()
         self.log.info(f"Writing web log to: {logfile}")
