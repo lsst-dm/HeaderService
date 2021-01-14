@@ -18,6 +18,6 @@ OVERH   =                      / Over-scan pixels
 OVERV   =                      / Vert-overscan pix
 PREH    =                      / Pre-scan pixels
 
----- Checksums ----
+        ---- Checksums ----
 CHECKSUM=                      / checksum for the current HDU
 DATASUM =                      / checksum of the data records
