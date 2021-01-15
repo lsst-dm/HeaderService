@@ -21,7 +21,7 @@ weblogfile: 'www/webserver.log'
 # port_number for webserver
 port_number: 8000
 
-# The URL format to be used
+# The URL format to be used for lfa_mode=http
 url_format: "http://{ip_address}:{port_number}/{filename_HDR}"
 
 # While we support both s3 and http LFA we need to define the mode [s3 or http]
@@ -456,7 +456,7 @@ telemetry:
   array: timestamp_start
 
  FOCUSZ:
-  device: Hexapod
+  device: MTHexapod
   device_index: 1
   Stype: Telemetry
   topic: application

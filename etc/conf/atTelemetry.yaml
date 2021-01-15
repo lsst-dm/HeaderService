@@ -21,7 +21,7 @@ weblogfile: 'www/webserver.log'
 # port_number for webserver
 port_number: 8000
 
-# The URL format to be used
+# The URL format to be used for lfa_mode=http
 url_format: "http://{ip_address}:{port_number}/{filename_HDR}"
 
 # While we support both s3 and http LFA we need to define the mode [s3 or http]
@@ -217,8 +217,6 @@ telemetry:
   topic: focalPlaneSummaryInfo
   value: ccdType
   collect_after_event: start_collection_event
-  #array: CCD_array
-  #array_keys: ccdLocation
 
  CCD_SERN:
   device: ATCamera
@@ -486,8 +484,14 @@ telemetry:
   value: mainDoorOpeningPercentage
   collect_after_event: start_collection_event
 
-# --------------------------------------------------------------
 # ----- Filter/Grating information from ATSpectrograph ---------
+
+ FILTBAND:
+  device: ATSpectrograph
+  Stype: Event
+  topic: reportedFilterPosition
+  value: band
+  collect_after_event: start_collection_event
 
  FILTER:
   device: ATSpectrograph
@@ -496,11 +500,11 @@ telemetry:
   value: name
   collect_after_event: start_collection_event
 
- FILTPOS:
+ FILTSLOT:
   device: ATSpectrograph
   Stype: Event
   topic: reportedFilterPosition
-  value: position
+  value: slot
   collect_after_event: start_collection_event
 
  GRATING:
@@ -510,11 +514,18 @@ telemetry:
   value: name
   collect_after_event: start_collection_event
 
- GRATPOS:
+ GRATBAND:
   device: ATSpectrograph
   Stype: Event
   topic: reportedDisperserPosition
-  value: position
+  value: band
+  collect_after_event: start_collection_event
+
+ GRATSLOT:
+  device: ATSpectrograph
+  Stype: Event
+  topic: reportedDisperserPosition
+  value: slot
   collect_after_event: start_collection_event
 
  LINSPOS:
@@ -549,35 +560,35 @@ telemetry:
 
 # ---- Weather information -----------------------------
  AIRTEMP:
-  device: Environment
+  device: WeatherStation
   Stype: Telemetry
   topic: weather
   value: ambient_temp
   collect_after_event: start_collection_event
 
  PRESSURE:
-  device: Environment
+  device: WeatherStation
   Stype: Telemetry
   topic: weather
   value: pressure
   collect_after_event: start_collection_event
 
  HUMIDITY:
-  device: Environment
+  device: WeatherStation
   Stype: Telemetry
   topic: weather
   value: humidity
   collect_after_event: start_collection_event
 
  WINDSPD:
-  device: Environment
+  device: WeatherStation
   Stype: Telemetry
   topic: windSpeed
   value: value
   collect_after_event: start_collection_event
 
  WINDDIR:
-  device: Environment
+  device: WeatherStation
   Stype: Telemetry
   topic: windDirection
   value: value

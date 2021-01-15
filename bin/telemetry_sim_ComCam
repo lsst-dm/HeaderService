@@ -30,9 +30,9 @@ def cmdline():
     parser.add_argument("--filterband", action="store", default='r',
                         help="The filter band name (i.e. r)")
     parser.add_argument("--filtername", action="store", default='U-001',
-                        help="Name of the physical filter (i.e. U-001")
+                        help="Name of the physical filter (i.e. U-001)")
     parser.add_argument("--filterslot", action="store", default=0,
-                        help="Filter slot of the physical filter (i.e. U-001")
+                        help="Filter slot (1-indexed)")
     parser.add_argument("--filterpos", action="store", default=666.0,
                         help="The filter measured position of slide (i.e.: 666.0)")
 
@@ -112,7 +112,7 @@ async def amain():
     # Create handlers for the CSCs we want to simulate messages
     cam = salobj.Controller(name="CCCamera", index=0)
     ptg = salobj.Controller(name="MTPtg", index=0)
-    hexa = salobj.Controller(name="Hexapod", index=1)
+    hexa = salobj.Controller(name="MTHexapod", index=1)
 
     LOGGER = hutils.create_logger()
 
