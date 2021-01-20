@@ -33,7 +33,7 @@ import logging
 LOGGER = logging.getLogger(__name__)
 
 
-def get_date(timeStamp=None, scale='tai'):
+def get_date(timeStamp=None, format='unix', scale='utc'):
 
     """
     A simple function to the get an astropy.datetime.Time object
@@ -44,6 +44,12 @@ def get_date(timeStamp=None, scale='tai'):
     timeStamp : float
         Optional timestamp (in seconds) passed as an argument. If None
         is received, then the function will get the time now()
+
+    fomat: string
+        Optional format (i.e.: unix) to pass to the astropy.Time function
+
+    scale: string
+        Optional scale (i.e: utc, tai) to pass to the astropy.Time function
 
     Returns
     -------
@@ -57,7 +63,7 @@ def get_date(timeStamp=None, scale='tai'):
     if timeStamp is None:
         t = Time.now()
     else:
-        t = Time(timeStamp, format="unix", scale=scale)
+        t = Time(timeStamp, format=format, scale=scale)
     return t
 
 
