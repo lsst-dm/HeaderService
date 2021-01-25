@@ -39,7 +39,7 @@ timeout_keyword: 'EXPTIME'
 
 # The file naming event source and definitions
 filepath: 'www/DMHS_filerepo'
-format_HDR: "{}.header"
+format_HDR: "{}.yaml"
 format_FITS: "{}.fits"
 imageName_event:
     device: ATCamera
