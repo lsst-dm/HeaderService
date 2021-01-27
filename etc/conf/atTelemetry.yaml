@@ -189,8 +189,8 @@ telemetry:
  CCDTEMP:
   device: ATCamera
   Stype: Telemetry
-  topic: wreb
-  value: ccdTemp0
+  topic: fp_Ccd
+  value: temp
   collect_after_event: start_collection_event
 
  TEMP_SET:

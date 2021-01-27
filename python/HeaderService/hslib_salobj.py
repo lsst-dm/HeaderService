@@ -677,6 +677,10 @@ class HSWorker(salobj.BaseCsc):
             else:
                 try:
                     metadata[keyword] = self.extract_from_myData(keyword, myData[name])
+                    # Scale by `scale` if it was defined
+                    if 'scale' in self.config.telemetry[keyword]:
+                        metadata[keyword] = metadata[keyword]*self.config.telemetry[keyword]['scale']
+                        self.log.info(f"Scaled key: {keyword} by: {self.config.telemetry[keyword]['scale']}")
                 except KeyError:
                     self.log.warning(f"Cannot extract keyword: {keyword} from topic: {name}")
         return metadata
