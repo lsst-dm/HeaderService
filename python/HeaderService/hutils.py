@@ -281,9 +281,9 @@ def build_sensor_list(instrument, sep=""):
     sensor_names = []
     if instrument == 'LATISS':
         raft = raft_names[0]
-        i = 1
-        j = 1
-        sensor_names = [f"R{raft}{sep}S{i}{j}"]
+        i = 0
+        j = 0
+        sensor_names = [f"R{raft}{sep}SW{j}"]
         return sensor_names
 
     for raft in raft_names:
@@ -351,12 +351,7 @@ class HDRTEMPL:
         self.templ_file = {}
         self.templ_file['PRIMARY'] = os.path.join(self.templ_path, self.templ_primary_name)
         self.templ_file['SEGMENT'] = os.path.join(self.templ_path, self.templ_segment_name)
-        # For ComCam and LSSTCam we use PRIMARY_SENSOR_NAME template
-        if self.instrument == 'ComCam' or self.instrument == 'LSSTCam':
-            self.is_primary_sensor = True
-            self.templ_file['SENSOR'] = os.path.join(self.templ_path, self.templ_primary_sensor_name)
-        else:
-            self.is_primary_sensor = False
+        self.templ_file['SENSOR'] = os.path.join(self.templ_path, self.templ_primary_sensor_name)
 
     def build_hdrlist(self, n=16):
         """
@@ -382,7 +377,9 @@ class HDRTEMPL:
                 self.segment_names[sensor].append(segment_name)
                 # Account for different formating for EXTNAME for LATISS
                 if self.instrument == 'LATISS':
-                    extname = f"{self.segname}{segment_name}"
+                    # extname = f"{self.segname}{segment_name}"
+                    extname = f"{sensor}_{self.segname}{segment_name}"
+
                 else:
                     extname = f"{sensor}_{self.segname}{segment_name}"
                 self.HDRLIST.append(extname)
@@ -400,18 +397,12 @@ class HDRTEMPL:
 
     def get_primary_extname(self, sensor):
         """Get the PRIMARY extension name used for a sensor/CCD"""
-        if self.is_primary_sensor:
-            extname = f"{sensor}_PRIMARY"
-        else:
-            extname = 'PRIMARY'
+        extname = f"{sensor}_PRIMARY"
         return extname
 
     def get_segment_extname(self, sensor, seg):
         """Get the right SEGMENT extension name used for a sensor/CCD"""
-        if self.is_primary_sensor:
-            extname = f"{sensor}_{self.segname}{seg}"
-        else:
-            extname = f"{self.segname}{seg}"
+        extname = f"{sensor}_{self.segname}{seg}"
         return extname
 
     def load_templates(self):
@@ -419,9 +410,7 @@ class HDRTEMPL:
         # Read in the primary and segment templates with fitsio
         self.header_primary = read_head_template(self.templ_file['PRIMARY'])
         self.header_segment = read_head_template(self.templ_file['SEGMENT'])
-        # if per sensor PRIMARY template, we will read it
-        if self.is_primary_sensor:
-            self.header_primary_sensor = read_head_template(self.templ_file['SENSOR'])
+        self.header_primary_sensor = read_head_template(self.templ_file['SENSOR'])
 
         # Start loadin templates into the self.header object
         # 1. Load up the template for the PRIMARY header
@@ -436,14 +425,11 @@ class HDRTEMPL:
         for sensor in self.sensor_names:
             # Get the extname for the primary/sensor combo
             extname = self.get_primary_extname(sensor)
-            # if per sensor PRIMARY template, we will read it
-            if self.is_primary_sensor:
-                self.header[extname] = copy.deepcopy(self.header_primary_sensor)
-                PRIMARY_DATA_SENSOR = self.CCDInfo[sensor].setup_primary_sensor()
-                self.log.info(f"Loading template for: {extname}")
-                self.update_records(PRIMARY_DATA_SENSOR, extname)
-            else:
-                self.log.info(f"No per sensor info for: {sensor}")
+            self.header[extname] = copy.deepcopy(self.header_primary_sensor)
+            PRIMARY_DATA_SENSOR = self.CCDInfo[sensor].setup_primary_sensor()
+            self.log.info(f"Loading template for: {extname}")
+            self.update_records(PRIMARY_DATA_SENSOR, extname)
+
             # Loop over all segment in Sensor/CCD
             for seg in self.segment_names[sensor]:
                 # Get the right extnamme for sensor/segment combination

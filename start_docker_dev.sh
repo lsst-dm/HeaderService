@@ -11,6 +11,7 @@ xhost + $ip
 echo "starting docker with image: $DOCKER_IMA"
 docker run -ti -e DISPLAY=$ip:0 \
     -h $hostname \
+    --network host \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -v $HOME/sal-home:/home/$HSUSER \
     --name $NAME \
