@@ -1,5 +1,5 @@
 HSUSER=headerservice
-TAGNAME=5.0.1-7.1.0-salobj_6.2.0-hs_2.7.0
+TAGNAME=5.0.1-7.1.0-salobj_6.2.0-hs_2.7.1
 DOCKER_IMA=lsstdm/headerservice:$TAGNAME
 NAME=headerservice
 

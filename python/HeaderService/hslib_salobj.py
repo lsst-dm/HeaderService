@@ -311,10 +311,17 @@ class HSWorker(salobj.BaseCsc):
         """
         super().__init__(name=self.config.hs_name, index=self.config.hs_index,
                          initial_state=getattr(salobj.State, self.config.hs_initial_state))
+        # Logging
+        self.setup_logging()
+        # Version information
         self.log.info(f"Starting the CSC with {self.config.hs_name}")
         self.log.info(f"Creating worker for: {self.config.hs_name}")
         self.log.info(f"Running salobj version: {salobj.__version__}")
         self.log.info(f"Starting in State:{self.summary_state.name}")
+
+        # Set the CSC version using softwareVersions
+        self.log.info(f"Setting softwareVersions Event with version: {HeaderService.__version__}")
+        self.evt_softwareVersions.set(cscVersion=HeaderService.__version__)
 
     def create_Remotes(self):
         """
@@ -384,8 +391,6 @@ class HSWorker(salobj.BaseCsc):
         """
         Non-SAL/salobj related task that need to be prepared
         """
-        # Logging
-        self.setup_logging()
 
         # The user running the process
         self.USER = os.environ['USER']
