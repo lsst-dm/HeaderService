@@ -140,12 +140,12 @@ async def amain():
     cam.evt_focalPlaneSummaryInfo.set_put(**kwfPl)
     LOGGER.info("Sending simulated focalPlaneSummaryInfo {}".format(kwfPl))
 
-    kwRO = {'overRows': [args.overv]*9,
-            'overCols': [args.overh]*9,
-            'preCols': [args.preh]*9,
-            'readCols': [CCDGEOM.dimh]*9,
-            'readCols2': [0]*9,
-            'readRows': [CCDGEOM.dimv]*9,
+    kwRO = {'overRows': [args.overv]*Nsensors,
+            'overCols': [args.overh]*Nsensors,
+            'preCols': [args.preh]*Nsensors,
+            'readCols': [CCDGEOM.dimh]*Nsensors,
+            'readCols2': [0]*Nsensors,
+            'readRows': [CCDGEOM.dimv]*Nsensors,
             'ccdLocation': ':'.join(ccdLocation),
             'ccdSlot': ':'.join(ccdSlots),
             'raftBay': ':'.join(raftBays),

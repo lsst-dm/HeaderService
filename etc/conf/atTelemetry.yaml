@@ -217,6 +217,8 @@ telemetry:
   topic: focalPlaneSummaryInfo
   value: ccdType
   collect_after_event: start_collection_event
+  array: CCD_array
+  array_keys: ccdLocation
 
  CCD_SERN:
   device: ATCamera
@@ -543,6 +545,8 @@ telemetry:
   topic: imageReadoutParameters
   value: overCols
   collect_after_event: end_collection_event
+  array: CCD_array
+  array_keys: ccdLocation
 
  OVERV:
   device: ATCamera
@@ -550,6 +554,8 @@ telemetry:
   topic: imageReadoutParameters
   value: overRows
   collect_after_event: end_collection_event
+  array: CCD_array
+  array_keys: ccdLocation
 
  PREH:
   device: ATCamera
@@ -557,6 +563,8 @@ telemetry:
   topic: imageReadoutParameters
   value: preCols
   collect_after_event: end_collection_event
+  array: CCD_array
+  array_keys: ccdLocation
 
 # ---- Weather information -----------------------------
  AIRTEMP:
