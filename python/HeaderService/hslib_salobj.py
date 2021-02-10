@@ -703,6 +703,13 @@ class HSWorker(salobj.BaseCsc):
         elif self.config.telemetry[keyword]['array'] == 'CCD_array':
             self.log.debug(f"{keyword} is an array: CCD_array")
             ccdnames = self.get_array_keys(keyword, myData, sep)
+            # When ATCamera sends (via SAL/DDS) and array with just one element
+            # this is actually not send as a list/array, but as scalar instead.
+            # Therefore, if expecting and list/array and length is (1), then we
+            # need to recast SAL payload as a list.
+            if len(ccdnames) == 1 and not isinstance(payload, list):
+                payload = [payload]
+                self.log.warning(f"Recasting payload to a list for {keyword}:{payload}")
             extracted_payload = dict(zip(ccdnames, payload))
         elif self.config.telemetry[keyword]['array'] == 'CCD_array_str':
             self.log.debug(f"{keyword} is string array: CCD_array_str")
