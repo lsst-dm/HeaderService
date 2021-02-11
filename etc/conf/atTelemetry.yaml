@@ -569,6 +569,7 @@ telemetry:
 # ---- Weather information -----------------------------
  AIRTEMP:
   device: WeatherStation
+  device_index: 1
   Stype: Telemetry
   topic: weather
   value: ambient_temp
@@ -576,6 +577,7 @@ telemetry:
 
  PRESSURE:
   device: WeatherStation
+  device_index: 1
   Stype: Telemetry
   topic: weather
   value: pressure
@@ -583,6 +585,7 @@ telemetry:
 
  HUMIDITY:
   device: WeatherStation
+  device_index: 1
   Stype: Telemetry
   topic: weather
   value: humidity
@@ -590,6 +593,7 @@ telemetry:
 
  WINDSPD:
   device: WeatherStation
+  device_index: 1
   Stype: Telemetry
   topic: windSpeed
   value: value
@@ -597,6 +601,7 @@ telemetry:
 
  WINDDIR:
   device: WeatherStation
+  device_index: 1
   Stype: Telemetry
   topic: windDirection
   value: value
@@ -604,6 +609,7 @@ telemetry:
 
  SEEING:
   device: DIMM
+  device_index: 1
   Stype: Event
   topic: dimmMeasurement
   value: fwhm

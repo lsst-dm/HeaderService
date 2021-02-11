@@ -141,8 +141,8 @@ async def amain():
     spec = salobj.Controller(name="ATSpectrograph", index=0)
     ataos = salobj.Controller(name="ATAOS", index=0)
     dome = salobj.Controller(name="ATDome", index=0)
-    dimm = salobj.Controller(name="DIMM", index=0)
-    env = salobj.Controller(name="WeatherStation", index=0)
+    dimm = salobj.Controller(name="DIMM", index=1)
+    env = salobj.Controller(name="WeatherStation", index=1)
 
     LOGGER = hutils.create_logger()
 
