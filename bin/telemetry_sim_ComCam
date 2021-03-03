@@ -113,6 +113,7 @@ async def amain():
     cam = salobj.Controller(name="CCCamera", index=0)
     ptg = salobj.Controller(name="MTPtg", index=0)
     hexa = salobj.Controller(name="MTHexapod", index=1)
+    mount = salobj.Controller(name="MTMount", index=0)
 
     LOGGER = hutils.create_logger()
 
@@ -211,13 +212,19 @@ async def amain():
         ptg.tel_currentTargetStatus.set_put(**kwTA)
         LOGGER.info("Sending simulated currentTargetStatus HA/AIRMASS Start")
 
-        # The START telemetry for RA/DEC, EL/AZ from the MTPtg.mount_positions
-        kwMP = {'ra': [args.ra]*100,
-                'declination': [args.dec]*100,
-                'elevationCalculatedAngle': [args.el]*100,
-                'azimuthCalculatedAngle': [args.az]*100}
-        ptg.tel_mount_positions.set_put(**kwMP)
-        LOGGER.info("Sending simulated mount_positions for RA/DEC EL/AZ Start")
+        # The START telemetry for RA/DEC, EL/AZ from the MTPtg.mountPosition
+        kwMP = {'ra': args.ra,
+                'declination': args.dec,
+                'elevationActualPosition': args.el,
+                'azimuthActualPosition': args.az}
+        ptg.tel_mountPosition.set_put(**kwMP)
+        LOGGER.info("Sending simulated mountPosition for RA/DEC EL/AZ Start")
+
+        kwEL = {'actualPosition': args.el}
+        mount.tel_elevation.set_put(**kwEL)
+        kwAZ = {'actualPosition': args.az}
+        mount.tel_azimuth.set_put(**kwAZ)
+        LOGGER.info("Sending simulated mount positions for EL/AZ Start")
 
         # Send the startIntegration for image: k
         LOGGER.info("Sending simulated startIntegration")
@@ -244,12 +251,32 @@ async def amain():
         cam.evt_startReadout.set_put(**kwInt)
 
         # Send endReadout Event after startReadout is finished
-        LOGGER.info("Sending simulated endReadout")
         kwRO = kwInt
         del kwRO['exposureTime']
         kwRO['requestedExposureTime'] = args.exptime
         LOGGER.info("Sending simulated endReadout")
         cam.evt_endReadout.set_put(**kwInt)
+
+        # The END telemetry for RA/DEC, EL/AZ from the MTPtg.mountPosition
+        kwMP = {'ra': args.ra*random.uniform(0.95, 1.05),
+                'declination': args.dec*random.uniform(0.95, 1.05),
+                'elevationActualPosition': args.el*random.uniform(0.95, 1.05),
+                'azimuthActualPosition': args.az*random.uniform(0.95, 1.05)}
+        ptg.tel_mountPosition.set_put(**kwMP)
+        LOGGER.info("Sending simulated mountPosition for RA/DEC EL/AZ END")
+
+        # The END telemetry for Airmass using the MTPtg.currentTargetStatus
+        kwTA = {'timestamp': get_tai_time(),
+                'ha': args.ha*random.uniform(0.95, 1.05),
+                'airmass': args.airmass*random.uniform(0.95, 1.05)}
+        ptg.tel_currentTargetStatus.set_put(**kwTA)
+        LOGGER.info("Sending simulated currentTargetStatus HA/AIRMASS END")
+
+        kwEL = {'actualPosition': args.el*random.uniform(0.95, 1.05)}
+        mount.tel_elevation.set_put(**kwEL)
+        kwAZ = {'actualPosition': args.az**random.uniform(0.95, 1.05)}
+        mount.tel_azimuth.set_put(**kwAZ)
+        LOGGER.info("Sending simulated mount positions for EL/AZ END")
 
         # send endOfImageTelemetry event
         kwEND = {'imagesInSequence': args.NSequence,

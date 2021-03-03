@@ -341,7 +341,7 @@ telemetry:
  RASTART:
   device: ATPtg
   Stype: Telemetry
-  topic: mount_positions
+  topic: mountPositions
   value: ra
   collect_after_event: start_collection_event
   array: timestamp_start
@@ -349,7 +349,7 @@ telemetry:
  DECSTART:
   device: ATPtg
   Stype: Telemetry
-  topic: mount_positions
+  topic: mountPositions
   value: declination
   collect_after_event: start_collection_event
   array: timestamp_start
@@ -371,7 +371,7 @@ telemetry:
  ELSTART:
   device: ATPtg
   Stype: Telemetry
-  topic: mount_positions
+  topic: mountPositions
   value: elevationCalculatedAngle
   collect_after_event: start_collection_event
   array: timestamp_start
@@ -379,7 +379,7 @@ telemetry:
  AZSTART:
   device: ATPtg
   Stype: Telemetry
-  topic: mount_positions
+  topic: mountPositions
   value: azimuthCalculatedAngle
   collect_after_event: start_collection_event
   array: timestamp_start
@@ -387,7 +387,7 @@ telemetry:
  RAEND:
   device: ATPtg
   Stype: Telemetry
-  topic: mount_positions
+  topic: mountPositions
   value: ra
   collect_after_event: end_collection_event
   array: timestamp_start
@@ -395,7 +395,7 @@ telemetry:
  DECEND:
   device: ATPtg
   Stype: Telemetry
-  topic: mount_positions
+  topic: mountPositions
   value: declination
   collect_after_event: end_collection_event
   array: timestamp_start
@@ -417,7 +417,7 @@ telemetry:
  ELEND:
   device: ATPtg
   Stype: Telemetry
-  topic: mount_positions
+  topic: mountPositions
   value: elevationCalculatedAngle
   collect_after_event: end_collection_event
   array: timestamp_start
@@ -425,7 +425,7 @@ telemetry:
  AZEND:
   device: ATPtg
   Stype: Telemetry
-  topic: mount_positions
+  topic: mountPositions
   value: azimuthCalculatedAngle
   collect_after_event: end_collection_event
   array: timestamp_start

@@ -366,18 +366,16 @@ telemetry:
  RASTART:
   device: MTPtg
   Stype: Telemetry
-  topic: mount_positions
+  topic: mountPosition
   value: ra
   collect_after_event: start_collection_event
-  array: timestamp_start
 
  DECSTART:
   device: MTPtg
   Stype: Telemetry
-  topic: mount_positions
+  topic: mountPosition
   value: declination
   collect_after_event: start_collection_event
-  array: timestamp_start
 
  HASTART:
   device: MTPtg
@@ -394,36 +392,32 @@ telemetry:
   collect_after_event: start_collection_event
 
  ELSTART:
-  device: MTPtg
+  device: MTMount
   Stype: Telemetry
-  topic: mount_positions
-  value: elevationCalculatedAngle
+  topic: elevation
+  value: actualPosition
   collect_after_event: start_collection_event
-  array: timestamp_start
 
  AZSTART:
-  device: MTPtg
+  device: MTMount
   Stype: Telemetry
-  topic: mount_positions
-  value: azimuthCalculatedAngle
+  topic: azimuth
+  value: actualPosition
   collect_after_event: start_collection_event
-  array: timestamp_start
 
  RAEND:
   device: MTPtg
   Stype: Telemetry
-  topic: mount_positions
+  topic: mountPosition
   value: ra
   collect_after_event: end_collection_event
-  array: timestamp_start
 
  DECEND:
   device: MTPtg
   Stype: Telemetry
-  topic: mount_positions
+  topic: mountPosition
   value: declination
   collect_after_event: end_collection_event
-  array: timestamp_start
 
  HAEND:
   device: MTPtg
@@ -440,20 +434,18 @@ telemetry:
   collect_after_event: end_collection_event
 
  ELEND:
-  device: MTPtg
+  device: MTMount
   Stype: Telemetry
-  topic: mount_positions
-  value: elevationCalculatedAngle
+  topic: elevation
+  value: actualPosition
   collect_after_event: end_collection_event
-  array: timestamp_start
 
  AZEND:
-  device: MTPtg
+  device: MTMount
   Stype: Telemetry
-  topic: mount_positions
-  value: azimuthCalculatedAngle
+  topic: azimuth
+  value: actualPosition
   collect_after_event: end_collection_event
-  array: timestamp_start
 
  FOCUSZ:
   device: MTHexapod
