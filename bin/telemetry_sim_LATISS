@@ -315,13 +315,13 @@ async def amain():
         ptg.tel_currentTargetStatus.set_put(**kwTA)
         LOGGER.info("Sending simulated currentTargetStatus HA/AIRMASS Start")
 
-        # The START telemetry for RA/DEC, EL/AZ from the ATPtg.mount_positions
+        # The START telemetry for RA/DEC, EL/AZ from the ATPtg.mountPositions
         kwMP = {'ra': [args.ra]*100,
                 'declination': [args.dec]*100,
                 'elevationCalculatedAngle': [args.el]*100,
                 'azimuthCalculatedAngle': [args.az]*100}
-        ptg.tel_mount_positions.set_put(**kwMP)
-        LOGGER.info("Sending simulated mount_positions for RA/DEC EL/AZ Start")
+        ptg.tel_mountPositions.set_put(**kwMP)
+        LOGGER.info("Sending simulated mountPositions for RA/DEC EL/AZ Start")
 
         # Send the startIntegration for image: k
         LOGGER.info("Sending simulated startIntegration")
@@ -360,13 +360,13 @@ async def amain():
         ptg.tel_currentTargetStatus.set_put(**kwTA)
         LOGGER.info("Sending simulated currentTargetStatus HA/AIRMASS End")
 
-        # The END telemetry for RA/DEC EL/AZ from the ATPtg.mount_positions
+        # The END telemetry for RA/DEC EL/AZ from the ATPtg.mountPositions
         kwMP = {'ra': [args.ra*random.uniform(1, 1.01)]*100,
                 'declination': [args.dec*random.uniform(1, 1.01)]*100,
                 'elevationCalculatedAngle': [args.el*1.01]*100,
                 'azimuthCalculatedAngle': [args.az*1.01]*100}
-        ptg.tel_mount_positions.set_put(**kwMP)
-        LOGGER.info("Sending simulated mount_positions for RA/DEC EL/AZ End")
+        ptg.tel_mountPositions.set_put(**kwMP)
+        LOGGER.info("Sending simulated mountPositions for RA/DEC EL/AZ End")
 
         # Send endReadout event
         LOGGER.info("Sending simulated endReadout")
