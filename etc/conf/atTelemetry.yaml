@@ -11,7 +11,7 @@ section: LATISS
 loglevel: 'INFO'
 
 # Path to the log location and other log definitions
-logfile: 'www/HeaderService.log'
+logfile: 'www/ATHeaderService.log'
 log_format: '[%(asctime)s.%(msecs)03d][%(levelname)s][%(name)s][%(funcName)s] %(message)s'
 log_format_date: '%Y-%m-%d %H:%M:%S'
 
