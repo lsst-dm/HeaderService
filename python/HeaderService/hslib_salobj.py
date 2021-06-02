@@ -682,6 +682,7 @@ class HSWorker(salobj.BaseCsc):
             else:
                 try:
                     metadata[keyword] = self.extract_from_myData(keyword, myData[name])
+                    self.log.debug(f"Extracted {keyword}: {metadata[keyword]}")
                     # Scale by `scale` if it was defined
                     if 'scale' in self.config.telemetry[keyword]:
                         metadata[keyword] = metadata[keyword]*self.config.telemetry[keyword]['scale']

@@ -333,10 +333,11 @@ telemetry:
 
  ROTPA:
   device: ATPtg
-  Stype: Event
-  topic: currentTarget
-  value: rotPA
+  Stype: Telemetry
+  topic: mountPositions
+  value: skyAngle
   collect_after_event: start_collection_event
+  array: undef
 
  RASTART:
   device: ATPtg
@@ -344,7 +345,7 @@ telemetry:
   topic: mountPositions
   value: ra
   collect_after_event: start_collection_event
-  array: timestamp_start
+  array: undef
 
  DECSTART:
   device: ATPtg
@@ -352,7 +353,7 @@ telemetry:
   topic: mountPositions
   value: declination
   collect_after_event: start_collection_event
-  array: timestamp_start
+  array: undef
 
  HASTART:
   device: ATPtg
@@ -374,7 +375,7 @@ telemetry:
   topic: mountPositions
   value: elevationCalculatedAngle
   collect_after_event: start_collection_event
-  array: timestamp_start
+  array: undef
 
  AZSTART:
   device: ATPtg
@@ -382,7 +383,7 @@ telemetry:
   topic: mountPositions
   value: azimuthCalculatedAngle
   collect_after_event: start_collection_event
-  array: timestamp_start
+  array: undef
 
  RAEND:
   device: ATPtg
@@ -390,7 +391,7 @@ telemetry:
   topic: mountPositions
   value: ra
   collect_after_event: end_collection_event
-  array: timestamp_start
+  array: undef
 
  DECEND:
   device: ATPtg
@@ -398,7 +399,7 @@ telemetry:
   topic: mountPositions
   value: declination
   collect_after_event: end_collection_event
-  array: timestamp_start
+  array: undef
 
  HAEND:
   device: ATPtg
@@ -420,7 +421,7 @@ telemetry:
   topic: mountPositions
   value: elevationCalculatedAngle
   collect_after_event: end_collection_event
-  array: timestamp_start
+  array: undef
 
  AZEND:
   device: ATPtg
@@ -428,7 +429,7 @@ telemetry:
   topic: mountPositions
   value: azimuthCalculatedAngle
   collect_after_event: end_collection_event
-  array: timestamp_start
+  array: undef
 
  FOCUSZ:
   device: ATAOS
