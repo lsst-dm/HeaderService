@@ -318,6 +318,7 @@ async def amain():
         # The START telemetry for RA/DEC, EL/AZ from the ATPtg.mountPositions
         kwMP = {'ra': [args.ra]*100,
                 'declination': [args.dec]*100,
+                'skyAngle': [args.rotpa]*100,
                 'elevationCalculatedAngle': [args.el]*100,
                 'azimuthCalculatedAngle': [args.az]*100}
         ptg.tel_mountPositions.set_put(**kwMP)
@@ -363,6 +364,7 @@ async def amain():
         # The END telemetry for RA/DEC EL/AZ from the ATPtg.mountPositions
         kwMP = {'ra': [args.ra*random.uniform(1, 1.01)]*100,
                 'declination': [args.dec*random.uniform(1, 1.01)]*100,
+                'skyAngle': [args.rotpa*random.uniform(1, 1.01)]*100,
                 'elevationCalculatedAngle': [args.el*1.01]*100,
                 'azimuthCalculatedAngle': [args.az*1.01]*100}
         ptg.tel_mountPositions.set_put(**kwMP)
