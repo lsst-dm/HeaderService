@@ -77,6 +77,8 @@ def cmdline():
                         help="Optional imageName")
     parser.add_argument("--obsannot", action="store", default="Dummy Obs Annotation", type=str,
                         help="Optional Observation annnotation")
+    parser.add_argument("--emuimage", action="store", default="Dummy EMUNAME", type=str,
+                        help="Optional Emulated Image Name")
 
     parser.add_argument("--additionalKeys", action="store", default='imageType:groupId:testType',
                         type=str, help="Optional additionalKeys")
@@ -293,6 +295,7 @@ async def amain():
                  'darkTime': shuttime + args.sleeptime,
                  'imageTag': args.imagetag,
                  'measuredShutterOpenTime': shuttime,
+                 'emulatedImage': args.emuimage,
                  'priority': 1,
                  'force_output': True}
         if args.delaytime > 0:

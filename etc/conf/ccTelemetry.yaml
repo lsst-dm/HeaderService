@@ -158,6 +158,13 @@ telemetry:
   array_keyname: testType
   array: keyed_array
 
+ EMUIMAGE:
+  device: CCCamera
+  Stype: Event
+  topic: endOfImageTelemetry
+  value: emulatedImage
+  collect_after_event: end_collection_event
+
  EXPTIME:
   device: CCCamera
   Stype: Event
