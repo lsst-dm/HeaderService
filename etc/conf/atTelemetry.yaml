@@ -193,13 +193,6 @@ telemetry:
   value: measuredExposureTime
   collect_after_event: end_collection_event
 
- CCDTEMP:
-  device: ATCamera
-  Stype: Telemetry
-  topic: fp_Ccd
-  value: temp
-  collect_after_event: start_collection_event
-
  TEMP_SET:
   device: ATCamera
   Stype: Telemetry
@@ -209,13 +202,22 @@ telemetry:
 
 # --- Camera Sensor information
 
+ CCDTEMP:
+  device: ATCamera
+  Stype: Telemetry
+  topic: focal_plane_Ccd
+  value: temp
+  collect_after_event: start_collection_event
+  array: CCD_array
+  array_keys: location
+
  CCD_MANU:
   device: ATCamera
   Stype: Event
   topic: focalPlaneSummaryInfo
   value: ccdManufacturer
   collect_after_event: start_collection_event
-  array: CCD_array_str
+  array: CCD_array
   array_keys: ccdLocation
 
  CCD_TYPE:

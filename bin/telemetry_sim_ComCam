@@ -207,6 +207,13 @@ async def amain():
         else:
             imageName = "{}_{}_{}_{:06d}".format(args.camcode, args.controller, DAYOBS, seqN)
 
+        # Send CCD temperature telemetry using a random generator
+        kwCCD = {'location': ':'.join(ccdLocation),
+                 'temp': [random.uniform(-30, 0)]*Nsensors
+                 }
+        LOGGER.info("Sending simulated fp_Ccd {}".format(kwCCD))
+        cam.tel_focal_plane_Ccd.set_put(**kwCCD)
+
         # The START telemetry for Airmass using the MTPtg.currentTargetStatus
         kwTA = {'timestamp': get_tai_time(),
                 'ha': args.ha,
