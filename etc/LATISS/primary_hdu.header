@@ -93,7 +93,6 @@ OBSANNOT=                      / Observing annotation
 
         ---- Information from Camera ----
 TEMP_SET=                      / Temperature set point (deg C)
-CCDTEMP =                      / Measured temperature (deg C)
 
         ---- Filter/grating information ----
 FILTBAND=                      / Name of the filter band

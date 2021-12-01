@@ -193,17 +193,16 @@ telemetry:
   value: measuredShutterOpenTime
   collect_after_event: end_collection_event
 
-# ---- Comment until xml is ready --------
-#
-# CCDTEMP:
-#  device: CCCamera
-#  Stype: Telemetry
-#  topic: wreb
-#  value: ccdTemp0
-#  array_per_CCD: True
-#
-
 # --- Camera Sensor information
+
+ CCDTEMP:
+  device: CCCamera
+  Stype: Telemetry
+  topic: focal_plane_Ccd
+  value: temp
+  collect_after_event: start_collection_event
+  array: CCD_array
+  array_keys: location
 
  CCD_MANU:
   device: CCCamera

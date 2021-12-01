@@ -301,9 +301,11 @@ async def amain():
         imageName = "{}_{}_{}_{:06d}".format(args.camcode, args.controller, DAYOBS, seqN)
 
         # Send CCD temperature telemetry using a random generator
-        kwCCD = {'temp': random.uniform(-30, 0)}
-        cam.tel_fp_Ccd.set_put(**kwCCD)
-        LOGGER.info("Sending simulated fp_Ccd")
+        kwCCD = {'location': ':'.join(ccdLocation),
+                 'temp': [random.uniform(-30, 0)]*Nsensors
+                 }
+        LOGGER.info("Sending simulated fp_Ccd {}".format(kwCCD))
+        cam.tel_focal_plane_Ccd.set_put(**kwCCD)
 
         # Send CCD temperature Setpoint telemetry using a random generator
         kwCCD = {'tempCCDSetPoint': random.uniform(-50, -40)}

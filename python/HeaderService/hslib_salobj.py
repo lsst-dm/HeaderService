@@ -798,7 +798,7 @@ class HSWorker(salobj.BaseCsc):
             return
 
         # ---------------------------------------------------------------------
-        # This functions will only be usef for LATISS
+        # This functions will only be used for LATISS
 
         if set(('RA', 'DEC', 'ROTPA', 'RADESYS')).issubset(metadata):
             sensor = self.sensors[0]
