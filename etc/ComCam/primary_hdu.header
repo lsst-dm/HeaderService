@@ -62,6 +62,10 @@ GROUPID =                      /
 TESTTYPE=                      / Test Type: BIAS:DARK:FLAT:OBS:PPUMP:QE:SFLAT
 EMUIMAGE=                      / Image being emulated
 
+        ---- Additional Keys Information from Camera ----
+PROGRAM =                      / Name of the program
+REASON  =                      / Reason for observation
+
         ---- Test Stand information ----
 TSTAND  =                      / The Test Stand used
 

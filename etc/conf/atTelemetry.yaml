@@ -158,6 +158,26 @@ telemetry:
   array_keyname: testType
   array: keyed_array
 
+ REASON:
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: additionalValues
+  collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: reason
+  array: keyed_array
+
+ PROGRAM:
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: additionalValues
+  collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: program
+  array: keyed_array
+
  EMUIMAGE:
   device: ATCamera
   Stype: Event
