@@ -80,9 +80,11 @@ def cmdline():
     parser.add_argument("--emuimage", action="store", default="Dummy EMUNAME", type=str,
                         help="Optional Emulated Image Name")
 
-    parser.add_argument("--additionalKeys", action="store", default='imageType:groupId:testType',
+    parser.add_argument("--additionalKeys", action="store",
+                        default='imageType:groupId:testType:reason:program',
                         type=str, help="Optional additionalKeys")
-    parser.add_argument("--additionalValues", action="store", default='BIAS:CALSET_XXXX_YYYY:SIMTEST_ABCD',
+    parser.add_argument("--additionalValues", action="store",
+                        default='BIAS:CALSET_XXXX_YYYY:SIMTEST_ABCD:No-good-reason:my_program',
                         type=str, help="Optional additionalValues")
 
     parser.add_argument("--sleeptime", action="store", default=1, type=float,
