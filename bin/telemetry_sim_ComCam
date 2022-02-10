@@ -241,7 +241,7 @@ async def amain():
         LOGGER.info("Sending simulated startIntegration")
         kwInt = {'imagesInSequence': args.NSequence,
                  'imageName': imageName,
-                 'imageIndex': k,
+                 'imageIndex': k+1,
                  'imageNumber': seqN,
                  'imageSource': args.camcode,
                  'imageController': 'O',

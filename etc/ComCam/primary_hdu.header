@@ -62,6 +62,10 @@ GROUPID =                      /
 TESTTYPE=                      / Test Type: BIAS:DARK:FLAT:OBS:PPUMP:QE:SFLAT
 EMUIMAGE=                      / Image being emulated
 
+        ---- Image sequence numbers
+CURINDEX=                      / Index number for exposure within the sequence
+MAXINDEX=                      / Number of requested images in sequence
+
         ---- Additional Keys Information from Camera ----
 PROGRAM =                      / Name of the program
 REASON  =                      / Reason for observation

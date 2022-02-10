@@ -88,6 +88,10 @@ EMUIMAGE=                      / Image being emulated
 PROGRAM =                      / Name of the program
 REASON  =                      / Reason for observation
 
+        ---- Image sequence numbers
+CURINDEX=                      / Index number for exposure within the sequence
+MAXINDEX=                      / Number of requested images in sequence
+
         ---- Test Stand information ----
 TSTAND  =                      / The Test Stand used
 
