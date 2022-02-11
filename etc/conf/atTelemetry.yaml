@@ -658,3 +658,40 @@ telemetry:
   topic: dimmMeasurement
   value: fwhm
   collect_after_event: start_collection_event
+
+# ------- Hierarch keywords --------
+
+ HIERARCH SIMULATE ATMCS:
+   device: ATMCS
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE ATHEXAPOD:
+   device: ATHexapod
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE ATPNEUMATICS:
+   device: ATPneumatics
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE ATDOME:
+   device: ATDome
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE ATSPECTROGRAPH:
+   device: ATSpectrograph
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event

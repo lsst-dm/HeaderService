@@ -117,7 +117,13 @@ async def amain():
     cam = salobj.Controller(name="CCCamera", index=0)
     ptg = salobj.Controller(name="MTPtg", index=0)
     hexa = salobj.Controller(name="MTHexapod", index=1)
+    hexa2 = salobj.Controller(name="MTHexapod", index=2)
     mount = salobj.Controller(name="MTMount", index=0)
+    m1m3 = salobj.Controller(name="MTM1M3", index=0)
+    m2 = salobj.Controller(name="MTM2", index=0)
+    dome = salobj.Controller(name="MTDome", index=0)
+    rotator = salobj.Controller(name="MTRotator", index=0)
+    dometraj = salobj.Controller(name="MTDomeTrajectory", index=0)
 
     LOGGER = hutils.create_logger()
 
@@ -189,6 +195,24 @@ async def amain():
     cam.evt_endSetFilter.set_put(**kwFilter)
     LOGGER.info("Sending simulated Camera endSetFilter:{}".format(kwFilter))
 
+    kwSim = {'mode': 1}
+    m2.evt_simulationMode.set_put(**kwSim)
+    LOGGER.info("Sending simulationMode for MTM2 {}".format(kwSim))
+    m1m3.evt_simulationMode.set_put(**kwSim)
+    LOGGER.info("Sending simulationMode for MTM1M3 {}".format(kwSim))
+    mount.evt_simulationMode.set_put(**kwSim)
+    LOGGER.info("Sending simulationMode for MTMount {}".format(kwSim))
+    hexa.evt_simulationMode.set_put(**kwSim)
+    LOGGER.info("Sending simulationMode for MTHexapod-1 {}".format(kwSim))
+    hexa2.evt_simulationMode.set_put(**kwSim)
+    LOGGER.info("Sending simulationMode for MTHexapod-2 {}".format(kwSim))
+    dome.evt_simulationMode.set_put(**kwSim)
+    LOGGER.info("Sending simulationMode for MTDome {}".format(kwSim))
+    rotator.evt_simulationMode.set_put(**kwSim)
+    LOGGER.info("Sending simulationMode for MTRotator {}".format(kwSim))
+    dometraj.evt_simulationMode.set_put(**kwSim)
+    LOGGER.info("Sending simulationMode for MTDomeTrajectory {}".format(kwSim))
+
     # Loop over NSequence
     for k in range(args.NSequence):
 
@@ -236,6 +260,7 @@ async def amain():
         kwAZ = {'actualPosition': args.az}
         mount.tel_azimuth.set_put(**kwAZ)
         LOGGER.info("Sending simulated mount positions for EL/AZ Start")
+
 
         # Send the startIntegration for image: k
         LOGGER.info("Sending simulated startIntegration")

@@ -544,3 +544,63 @@ telemetry:
   topic: endSetFilter
   value: filterPosition
   collect_after_event: start_collection_event
+
+# ------- Hierarch keywords --------
+
+ HIERARCH SIMULATE MTMOUNT:
+   device: MTMount
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE MTM1M3:
+   device: MTM1M3
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE MTM2:
+   device: MTM2
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE CAMHEXAPOD:
+   device: MTHexapod
+   device_index: 1
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE M2HEXAPOD:
+   device: MTHexapod
+   device_index: 2
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE MTROTATOR:
+   device: MTRotator
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE MTDOME:
+   device: MTDome
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE MTDOMETRAJECTORY:
+   device: MTDomeTrajectory
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event

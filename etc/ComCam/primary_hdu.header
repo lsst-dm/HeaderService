@@ -91,3 +91,13 @@ DARKTIME=                      / Dark time in seconds
         ---- Header information ----
 FILENAME=                      / Original file name
 HEADVER =                      / Version of header
+
+        ---- Hierarch information for CSC Simulatiom Mode ----
+HIERARCH SIMULATE MTMOUNT= / MTMount Simulation Mode (False=0)
+HIERARCH SIMULATE MTM1M3= / MTM1M3 Simulation Mode (False=0)
+HIERARCH SIMULATE MTM2= / MTM2 Simulation Mode (False=0)
+HIERARCH SIMULATE CAMHEXAPOD= / CAMHexapod Simulation Mode (False=0)
+HIERARCH SIMULATE M2HEXAPOD= / M2Hexapod Simulation Mode (False=0)
+HIERARCH SIMULATE MTROTATOR= / MTRotator Simulation Mode (False=0)
+HIERARCH SIMULATE MTDOME= / MTDome Simulation Mode (False=0)
+HIERARCH SIMULATE MTDOMETRAJECTORY= / MTDomeTrajectory Simulation Mode (False=0)

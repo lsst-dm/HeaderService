@@ -145,6 +145,8 @@ async def amain():
     dome = salobj.Controller(name="ATDome", index=0)
     dimm = salobj.Controller(name="DIMM", index=1)
     env = salobj.Controller(name="WeatherStation", index=1)
+    hexa = salobj.Controller(name="ATHexapod", index=0)
+    pneumatics = salobj.Controller(name="ATPneumatics", index=0)
 
     LOGGER = hutils.create_logger()
 
@@ -283,6 +285,18 @@ async def amain():
     kwWindDir = {'value': args.windDirection}
     env.tel_windDirection.set_put(**kwWindDir)
     LOGGER.info("Sending simulated Wind Direction")
+
+    kwSim = {'mode': 1}
+    mcs.evt_simulationMode.set_put(**kwSim)
+    LOGGER.info("Sending simulationMode for ATMCS {}".format(kwSim))
+    hexa.evt_simulationMode.set_put(**kwSim)
+    LOGGER.info("Sending simulationMode for ATHexapod {}".format(kwSim))
+    pneumatics.evt_simulationMode.set_put(**kwSim)
+    LOGGER.info("Sending simulationMode for ATPneumatics {}".format(kwSim))
+    dome.evt_simulationMode.set_put(**kwSim)
+    LOGGER.info("Sending simulationMode for ATDome {}".format(kwSim))
+    spec.evt_simulationMode.set_put(**kwSim)
+    LOGGER.info("Sending simulationMode for ATSpectrograph {}".format(kwSim))
 
     # Loop over NSequence
     for k in range(args.NSequence):
