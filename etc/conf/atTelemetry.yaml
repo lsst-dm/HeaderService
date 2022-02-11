@@ -220,6 +220,20 @@ telemetry:
   value: tempCCDSetPoint
   collect_after_event: start_collection_event
 
+ CURINDEX:
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageIndex
+  collect_after_event: start_collection_event
+
+ MAXINDEX:
+  device: ATCamera
+  Stype: Event
+  topic: startIntegration
+  value: imagesInSequence
+  collect_after_event: start_collection_event
+
 # --- Camera Sensor information
 
  CCDTEMP:
