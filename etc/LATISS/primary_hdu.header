@@ -131,3 +131,10 @@ HEADVER =                      / Version of header
         ---- Checksums ----
 CHECKSUM=                      / checksum for the current HDU
 DATASUM =                      / checksum of the data records
+
+        ---- Hierarch information for CSC Simulatiom Mode ----
+HIERARCH SIMULATE ATMCS= / ATMCS Simulation Mode (False=0)
+HIERARCH SIMULATE ATHEXAPOD= / ATHexapod Simulation Mode (False=0)
+HIERARCH SIMULATE ATPNEUMATICS= / ATPneumatics Simulation Mode (False=0)
+HIERARCH SIMULATE ATDOME= / ATDome Simulation Mode (False=0)
+HIERARCH SIMULATE ATSPECTROGRAPH= / ATSpectrograph Simulation Mode (False=0)

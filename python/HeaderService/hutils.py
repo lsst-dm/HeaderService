@@ -128,7 +128,28 @@ def read_head_template(fname, header=None):
     for line in lines:
         hdr.add_record(line)
 
+    # Nedd to fix the keyword for HIERARCH, as fitsio removes the
+    # HIERARCH string from the keyword. Here we put it back
+    index_map = copy.deepcopy(hdr._index_map)
+    for keyword in index_map:
+        rec = get_record(hdr, keyword)
+        try:
+            is_hierarch = check_hierarch(rec)
+        except Exception:
+            is_hierarch = False
+        if is_hierarch:
+            name_old = rec['name']
+            name_new = f"HIERARCH {rec['name']}"
+            rec['name'] = name_new
+            hdr._index_map[name_new] = hdr._index_map.pop(name_old)
+
     return hdr
+
+
+def check_hierarch(record):
+    """Check if record is HIERARCH"""
+    card_string = record['card_string']
+    return card_string[0:8].upper() == 'HIERARCH'
 
 
 def get_record(header, keyword):
