@@ -7,6 +7,7 @@ import HeaderService.hscalc as hscalc
 import HeaderService.camera_coords as camera_coords
 import random
 import lsst.ts.salobj as salobj
+import lsst.ts.utils as ts_utils
 import asyncio
 
 # Get the info from the camera_coords library for and E2V sensor
@@ -128,7 +129,7 @@ def cmdline():
 
 def get_tai_time():
     """ Shortcut to get tai time now"""
-    return salobj.tai_from_utc(time.time())
+    return ts_utils.tai_from_utc(time.time())
 
 
 async def amain():
@@ -172,7 +173,7 @@ async def amain():
              'rebLSSTName': ':'.join(['REBNAME_TEST', ]*Nsensors),
              'ccdTempSetPoint': random.uniform(-30, 0),
              }
-    cam.evt_focalPlaneSummaryInfo.set_put(**kwfPl)
+    await cam.evt_focalPlaneSummaryInfo.set_write(**kwfPl)
     LOGGER.info("Sending simulated focalPlaneSummaryInfo {}".format(kwfPl))
 
     # Camera Geometry
@@ -186,7 +187,7 @@ async def amain():
             'daqAnnotation': args.obsannot,
             'ccdLocation': ':'.join(ccdLocation),
             'force_output': True}
-    cam.evt_imageReadoutParameters.set_put(**kwRO)
+    await cam.evt_imageReadoutParameters.set_write(**kwRO)
     LOGGER.info("Sending simulated imageReadoutParameters")
 
     # Pointing information
@@ -198,14 +199,14 @@ async def amain():
             'priority': 1,
             'targetName': args.object,
             'force_output': True}
-    ptg.evt_currentTarget.set_put(**kwTA)
+    await ptg.evt_currentTarget.set_write(**kwTA)
     LOGGER.info("Sending simulated Ptg currentTarget")
 
     # The settingsApplied for ATSpectrograph
     kwSA = {'instrumentPort': args.instport,
             'priority': 1,
             'force_output': True}
-    spec.evt_settingsAppliedValues.set_put(**kwSA)
+    await spec.evt_settingsAppliedValues.set_write(**kwSA)
     LOGGER.info("Sending simulated ATSpectrograph settingsApplied")
 
     # Filter information for ATSpectrograph
@@ -214,7 +215,7 @@ async def amain():
             'slot': args.filterslot,
             'priority': 1,
             'force_output': True}
-    spec.evt_reportedFilterPosition.set_put(**kwFT)
+    await spec.evt_reportedFilterPosition.set_write(**kwFT)
     LOGGER.info("Sending simulated reportedFilterPosition")
 
     # Disperser information for ATSpectrograph
@@ -223,20 +224,20 @@ async def amain():
             'slot': args.gratingslot,
             'priority': 1,
             'force_output': True}
-    spec.evt_reportedDisperserPosition.set_put(**kwDP)
+    await spec.evt_reportedDisperserPosition.set_write(**kwDP)
     LOGGER.info("Sending simulated reportedDisperserPosition")
 
     # Linear Stage position for ATSpectrograph
     kwLS = {'position': args.linpos,
             'priority': 1,
             'force_output': True}
-    spec.evt_reportedLinearStagePosition.set_put(**kwLS)
+    await spec.evt_reportedLinearStagePosition.set_write(**kwLS)
     LOGGER.info("Sending simulated reportedLinearStagePosition")
 
     # FocusZ userApplied for ATAOS
     kwataos = {'userApplied': 10,  # made up
                'force_output': True}
-    ataos.evt_focusOffsetSummary.set_put(**kwataos)
+    await ataos.evt_focusOffsetSummary.set_write(**kwataos)
     LOGGER.info("Sending simulated focusOffsetSummary")
 
     LOGGER.info("---Sleeping for 1 s ---")
@@ -247,7 +248,7 @@ async def amain():
     kwM3 = {'selected': args.m3port,
             'priority': 1,
             'force_output': True}
-    mcs.evt_m3PortSelected.set_put(**kwM3)
+    await mcs.evt_m3PortSelected.set_write(**kwM3)
     LOGGER.info("Sending simulated m3PortSelected")
 
     # The target from ATMCS
@@ -255,47 +256,47 @@ async def amain():
                 'tracksys': args.tracksys,
                 'priority': 1,
                 'force_output': True}
-    mcs.evt_target.set_put(**kwTarget)
+    await mcs.evt_target.set_write(**kwTarget)
     LOGGER.info("Sending simulated ATMCS Target")
 
     # Seeing
     kwSeeing = {'fwhm': args.seeing}
-    dimm.evt_dimmMeasurement.set_put(**kwSeeing)
+    await dimm.evt_dimmMeasurement.set_write(**kwSeeing)
 
     # Sending Dome information
     kwDome = {'azimuthPosition': args.domeaz,
               'dropoutDoorOpeningPercentage': args.shutterlow,
               'mainDoorOpeningPercentage': args.shutterupp}
-    dome.tel_position.set_put(**kwDome)
+    await dome.tel_position.set_write(**kwDome)
     LOGGER.info("Sending simulated Dome Information")
 
     # Weather/Env Information
     kwWeather = {'ambient_temp': args.ambient_temp,
                  'pressure': args.pressure,
                  'humidity': args.humidity}
-    env.tel_weather.set_put(**kwWeather)
+    await env.tel_weather.set_write(**kwWeather)
     LOGGER.info("Sending simulated Temp/pressure/humidity")
 
     # Wind Speed
     kwWindSpeed = {'value': args.windSpeed}
-    env.tel_windSpeed.set_put(**kwWindSpeed)
+    await env.tel_windSpeed.set_write(**kwWindSpeed)
     LOGGER.info("Sending simulated Wind Speed")
 
     # Wind Direction
     kwWindDir = {'value': args.windDirection}
-    env.tel_windDirection.set_put(**kwWindDir)
+    await env.tel_windDirection.set_write(**kwWindDir)
     LOGGER.info("Sending simulated Wind Direction")
 
     kwSim = {'mode': 1}
-    mcs.evt_simulationMode.set_put(**kwSim)
+    await mcs.evt_simulationMode.set_write(**kwSim)
     LOGGER.info("Sending simulationMode for ATMCS {}".format(kwSim))
-    hexa.evt_simulationMode.set_put(**kwSim)
+    await hexa.evt_simulationMode.set_write(**kwSim)
     LOGGER.info("Sending simulationMode for ATHexapod {}".format(kwSim))
-    pneumatics.evt_simulationMode.set_put(**kwSim)
+    await pneumatics.evt_simulationMode.set_write(**kwSim)
     LOGGER.info("Sending simulationMode for ATPneumatics {}".format(kwSim))
-    dome.evt_simulationMode.set_put(**kwSim)
+    await dome.evt_simulationMode.set_write(**kwSim)
     LOGGER.info("Sending simulationMode for ATDome {}".format(kwSim))
-    spec.evt_simulationMode.set_put(**kwSim)
+    await spec.evt_simulationMode.set_write(**kwSim)
     LOGGER.info("Sending simulationMode for ATSpectrograph {}".format(kwSim))
 
     # Loop over NSequence
@@ -319,18 +320,18 @@ async def amain():
                  'temp': [random.uniform(-30, 0)]*Nsensors
                  }
         LOGGER.info("Sending simulated fp_Ccd {}".format(kwCCD))
-        cam.tel_focal_plane_Ccd.set_put(**kwCCD)
+        await cam.tel_focal_plane_Ccd.set_write(**kwCCD)
 
         # Send CCD temperature Setpoint telemetry using a random generator
         kwCCD = {'tempCCDSetPoint': random.uniform(-50, -40)}
-        cam.tel_vacuum.set_put(**kwCCD)
+        await cam.tel_vacuum.set_write(**kwCCD)
         LOGGER.info("Sending simulated vacuum")
 
         # The START telemetry for Airmass using ATPtg.currentTargetStatus
         kwTA = {'timestamp': get_tai_time(),
                 'ha': args.ha,
                 'airmass': args.airmass}
-        ptg.tel_currentTargetStatus.set_put(**kwTA)
+        await ptg.tel_currentTargetStatus.set_write(**kwTA)
         LOGGER.info("Sending simulated currentTargetStatus HA/AIRMASS Start")
 
         # The START telemetry for RA/DEC, EL/AZ from the ATPtg.mountPositions
@@ -339,7 +340,7 @@ async def amain():
                 'skyAngle': [args.rotpa]*100,
                 'elevationCalculatedAngle': [args.el]*100,
                 'azimuthCalculatedAngle': [args.az]*100}
-        ptg.tel_mountPositions.set_put(**kwMP)
+        await ptg.tel_mountPositions.set_write(**kwMP)
         LOGGER.info("Sending simulated mountPositions for RA/DEC EL/AZ Start")
 
         # Send the startIntegration for image: k
@@ -358,25 +359,25 @@ async def amain():
                  'priority': 1,
                  'force_output': True}
 
-        cam.evt_startIntegration.set_put(**kwInt)
+        await cam.evt_startIntegration.set_write(**kwInt)
         LOGGER.info("Sending simulated startIntergration: {}".format(kwInt))
         LOGGER.info(f"Waiting for {args.exptime} sec")
         time.sleep(args.exptime)
 
         # Send startReadout Event after integration is finished
         LOGGER.info("Sending simulated startReadout")
-        cam.evt_startReadout.set_put(**kwInt)
+        await cam.evt_startReadout.set_write(**kwInt)
 
         # Send Measured exptime event
         LOGGER.info("Sending simulated Measured Exptime")
         shuttime = args.exptime + random.uniform(0, 0.5)
-        cam.evt_shutterMotionProfile.set_put(measuredExposureTime=shuttime)
+        await cam.evt_shutterMotionProfile.set_write(measuredExposureTime=shuttime)
 
         # The END telemetry for Airmass using ATPtg.currentTargetStatus
         kwTA = {'timestamp': get_tai_time(),
                 'ha': args.ha*1.01,
                 'airmass': args.airmass*1.01}
-        ptg.tel_currentTargetStatus.set_put(**kwTA)
+        await ptg.tel_currentTargetStatus.set_write(**kwTA)
         LOGGER.info("Sending simulated currentTargetStatus HA/AIRMASS End")
 
         # The END telemetry for RA/DEC EL/AZ from the ATPtg.mountPositions
@@ -385,7 +386,7 @@ async def amain():
                 'skyAngle': [args.rotpa*random.uniform(1, 1.01)]*100,
                 'elevationCalculatedAngle': [args.el*1.01]*100,
                 'azimuthCalculatedAngle': [args.az*1.01]*100}
-        ptg.tel_mountPositions.set_put(**kwMP)
+        await ptg.tel_mountPositions.set_write(**kwMP)
         LOGGER.info("Sending simulated mountPositions for RA/DEC EL/AZ End")
 
         # Send endReadout event
@@ -394,7 +395,7 @@ async def amain():
         del kwRO['exposureTime']
         kwRO['requestedExposureTime'] = args.exptime
         LOGGER.info("Sending simulated endReadout")
-        cam.evt_endReadout.set_put(**kwInt)
+        await cam.evt_endReadout.set_write(**kwInt)
 
         # send endOfImageTelemetry event
         kwEND = {'imagesInSequence': args.NSequence,
@@ -418,7 +419,7 @@ async def amain():
             LOGGER.info(f"Delaying endOfImageTelemetry {args.delaytime}[s]")
             time.sleep(args.delaytime)
         LOGGER.info("Sending simulated endOfImageTelemetry")
-        cam.evt_endOfImageTelemetry.set_put(**kwEND)
+        await cam.evt_endOfImageTelemetry.set_write(**kwEND)
         LOGGER.info(f"---Sleeping for {args.sleeptime} s ---")
         time.sleep(args.sleeptime)
 

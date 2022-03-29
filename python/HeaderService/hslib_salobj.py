@@ -309,6 +309,9 @@ class HSWorker(salobj.BaseCsc):
         State object that keeps track of the HS current state.  We use
         a start_state to set the initial state
         """
+
+        self.version = HeaderService.__version__
+
         super().__init__(name=self.config.hs_name, index=self.config.hs_index,
                          initial_state=getattr(salobj.State, self.config.hs_initial_state))
         # Logging
@@ -633,7 +636,7 @@ class HSWorker(salobj.BaseCsc):
               'priority': 1,
               }
 
-        self.evt_largeFileObjectAvailable.set_put(**kw)
+        await self.evt_largeFileObjectAvailable.set_write(**kw)
         self.log.info(f"Sent {self.config.hs_name} largeFileObjectAvailable: {kw}")
 
     def write(self, imageName):
