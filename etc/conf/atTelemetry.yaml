@@ -33,9 +33,14 @@ lfa_mode: http
 # Default write_mode (fits or string)
 write_mode: yaml
 
+# The event to get the timeout
+timeout_event:
+    device: ATCamera
+    topic: startIntegration
+    value: timeout
+
 # Timeout beyond the requested exposure time to wait for an end of Telemetry event (in seconds)
 timeout_exptime: 30
-timeout_keyword: 'EXPTIME'
 
 # The file naming event source and definitions
 filepath: 'www/DMHS_filerepo'

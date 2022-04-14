@@ -456,11 +456,9 @@ class HSWorker(salobj.BaseCsc):
             self.get_filenames(imageName)
 
             # Get the requested exposure time to estimate the total timeout
-            exptime_key = self.config.timeout_keyword
-            self.log.info("Collecting key to set timeout as key %s + %s" %
-                          (exptime_key, self.config.timeout_exptime))
-            metadata_tmp = self.collect([exptime_key])
-            timeout = metadata_tmp[exptime_key] + self.config.timeout_exptime
+            timeout_camera = self.read_timeout_from_camera()
+            timeout = timeout_camera + self.config.timeout_exptime
+            self.log.info(f"Setting timeout as camera_timeout + {self.config.timeout_exptime}")
             self.log.info(f"Using timeout: {timeout} [s]")
 
             # Create timeout_task per imageName
@@ -543,6 +541,19 @@ class HSWorker(salobj.BaseCsc):
         self.log.info(f"Updating header CCD geom for {imageName}")
         self.HDR[imageName].load_geometry(geom)
         self.log.info("Templates Updated")
+
+    def read_timeout_from_camera(self):
+        """Extract the timeout from Camera Event"""
+        # Extract from telemetry and identify the channel
+        name = get_channel_name(self.config.timeout_event)
+        myData = self.Remote_get[name]()
+        param = self.config.timeout_event['value']
+        if myData is None:
+            self.log.warning("Cannot get timeout myData from {}".format(name))
+            return
+        timeout_camera = getattr(myData, param)
+        self.log.info(f"Extracted timeout from Camera: {timeout_camera}")
+        return timeout_camera
 
     def update_header(self, imageName):
 
