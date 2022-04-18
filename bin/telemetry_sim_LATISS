@@ -354,6 +354,7 @@ async def amain():
                  'imageDate': DAYOBS,
                  'timestampAcquisitionStart': timeStamp,
                  'exposureTime': args.exptime,
+                 'timeout': args.exptime,
                  'additionalKeys': args.additionalKeys,
                  'additionalValues': args.additionalValues,
                  'priority': 1,
@@ -366,6 +367,7 @@ async def amain():
 
         # Send startReadout Event after integration is finished
         LOGGER.info("Sending simulated startReadout")
+        del kwInt['timeout']
         await cam.evt_startReadout.set_write(**kwInt)
 
         # Send Measured exptime event
