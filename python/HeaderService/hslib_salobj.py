@@ -458,7 +458,7 @@ class HSWorker(salobj.BaseCsc):
             # Get the requested exposure time to estimate the total timeout
             timeout_camera = self.read_timeout_from_camera()
             timeout = timeout_camera + self.config.timeout_exptime
-            self.log.info(f"Setting timeout as camera_timeout + {self.config.timeout_exptime}")
+            self.log.info(f"Setting timeout: {timeout_camera} + {self.config.timeout_exptime} [s]")
             self.log.info(f"Using timeout: {timeout} [s]")
 
             # Create timeout_task per imageName
@@ -548,11 +548,12 @@ class HSWorker(salobj.BaseCsc):
         name = get_channel_name(self.config.timeout_event)
         myData = self.Remote_get[name]()
         param = self.config.timeout_event['value']
+        device = self.config.timeout_event['device']
         if myData is None:
             self.log.warning("Cannot get timeout myData from {}".format(name))
             return
         timeout_camera = getattr(myData, param)
-        self.log.info(f"Extracted timeout from Camera: {timeout_camera}")
+        self.log.info(f"Extracted timeout from {device}: {timeout_camera}")
         return timeout_camera
 
     def update_header(self, imageName):
