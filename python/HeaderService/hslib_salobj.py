@@ -433,7 +433,7 @@ class HSWorker(salobj.BaseCsc):
             try:
                 self.vendor_names, self.sensors = self.read_camera_vendors()
                 self.log.info("Extracted vendors/ccdnames from Camera Configuration")
-            except TypeError:
+            except Exception:
                 # In the absense of a message from camera to provide the list
                 # of sensors and vendors, we build the list using a function
                 # in hutils
@@ -447,6 +447,7 @@ class HSWorker(salobj.BaseCsc):
             self.HDR[imageName] = hutils.HDRTEMPL(logger=self.log,
                                                   section=self.config.section,
                                                   instrument=self.config.instrument,
+                                                  segname=self.config.segname,
                                                   vendor_names=self.vendor_names,
                                                   sensor_names=self.sensors,
                                                   write_mode=self.config.write_mode)
@@ -456,7 +457,17 @@ class HSWorker(salobj.BaseCsc):
             self.get_filenames(imageName)
 
             # Get the requested exposure time to estimate the total timeout
-            timeout_camera = self.read_timeout_from_camera()
+            try:
+                timeout_camera = self.read_timeout_from_camera()
+                self.log.info(f"Extracted timeout: {timeout_camera}[s] from Camera")
+            except AttributeError:
+                self.log.warning("Cannot extract timout from camera, will use EXPTIME instead")
+                exptime_key = self.config.timeout_keyword
+                self.log.info("Collecting key to set timeout as key %s + %s" %
+                              (exptime_key, self.config.timeout_exptime))
+                metadata_tmp = self.collect([exptime_key])
+                timeout_camera = metadata_tmp[exptime_key]
+                self.log.info(f"Extracted timeout: {timeout_camera}[s] from {exptime_key}")
             timeout = timeout_camera + self.config.timeout_exptime
             self.log.info(f"Setting timeout: {timeout_camera} + {self.config.timeout_exptime} [s]")
             self.log.info(f"Using timeout: {timeout} [s]")
@@ -483,7 +494,12 @@ class HSWorker(salobj.BaseCsc):
 
             # Update header using the information from the camera geometry
             self.log.info("Updating Header with Camera information")
-            self.update_header_geometry(imageName)
+            try:
+                self.update_header_geometry(imageName)
+            except Exception as e:
+                self.log.warning("Failed call to update_header_geometry")
+                self.log.warning(e)
+
             # Update header object with metadata dictionary
             self.update_header(imageName)
             # Write the header
@@ -523,6 +539,12 @@ class HSWorker(salobj.BaseCsc):
 
     def update_header_geometry(self, imageName):
         """ Update the image geometry Camera Event """
+
+        # if config.imageParam_event is False, we skip
+        if not self.config.imageParam_event:
+            self.log.info("No imageParam_event, will not update_header_geometry")
+            return
+
         # Image paramters
         self.log.info("Extracting CCD/Sensor Image Parameters")
         # Extract from telemetry and identify the channel

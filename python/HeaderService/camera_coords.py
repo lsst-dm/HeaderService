@@ -71,6 +71,15 @@ SCAN_GEOM['E2V'] = {'dimv': 2002,
                     'ccdax': 4004,
                     'ccday': 4096}
 
+# --- This is a copy of E2V to make it work for GC -----
+SCAN_GEOM['DUMMY'] = {'dimv': 2002,
+                      'dimh': 512,
+                      'preh': 10,
+                      'overh': 54,
+                      'overv': 46,
+                      'ccdax': 4004,
+                      'ccday': 4096}
+
 # Mapping for the CHANNEL (Output number or HDU) keyword to the segments
 CHANNEL = {}
 CHANNEL['E2V'] = {'00': 16,
@@ -115,22 +124,28 @@ CHANNEL['ITL'] = {'00': 8,
 # It turns out that the HDU (aka SEGNAME) is unrelated to the CHANNEL
 # definition of Figure 1 of LCA-13501 and it is the same for E2V and
 # ITL sensors
-SEGNAME = {1: '10',
-           2: '11',
-           3: '12',
-           4: '13',
-           5: '14',
-           6: '15',
-           7: '16',
-           8: '17',
-           9: '07',
-           10: '06',
-           11: '05',
-           12: '04',
-           13: '03',
-           14: '02',
-           15: '01',
-           16: '00'}
+SLAC_SEGNAME = {1: '10',
+                2: '11',
+                3: '12',
+                4: '13',
+                5: '14',
+                6: '15',
+                7: '16',
+                8: '17',
+                9: '07',
+                10: '06',
+                11: '05',
+                12: '04',
+                13: '03',
+                14: '02',
+                15: '01',
+                16: '00'}
+
+SEGNAME = {}
+SEGNAME['LATISS'] = SLAC_SEGNAME
+SEGNAME['ComCam'] = SLAC_SEGNAME
+SEGNAME['LSSTCam'] = SLAC_SEGNAME
+SEGNAME['GenericCamera'] = {1: '1'}
 
 
 """
@@ -145,6 +160,7 @@ rs = []
 """
 RAFTS = {}
 RAFTS['LATISS'] = ['22']
+RAFTS['GenericCamera'] = ['']  # Making this up for now
 RAFTS['ComCam'] = ['22']
 RAFTS['LSSTCam'] = ['34', '24', '14',
                     '43', '33', '23', '13', '03',

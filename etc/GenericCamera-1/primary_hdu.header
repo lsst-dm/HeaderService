@@ -1,0 +1,65 @@
+SIMPLE  =                    T /
+BITPIX  =                    8 / bits per data value
+NAXIS   =                    0 / number of axes
+EXTEND  =                    T / Extensions are permitted
+ORIGIN  = 'LSST DM Header Service'/ FITS file originator
+
+        ---- Date, night and basic image information ----
+TIMESYS = 'TAI'                / The time scale used
+DATE    =                      / Creation Date and Time of File
+DATE-OBS=                      / Date of observation (image acquisition)
+DATE-BEG=                      / Time at the start of integration
+DATE-END=                      / end date of the observation
+MJD     =                      / Modified Julian Date that the file was written
+MJD-OBS =                      / Modified Julian Date of observation
+MJD-BEG =                      / Modified Julian Date derived from DATE-BEG
+MJD-END =                      / Modified Julian Date derived from DATE-END
+OBSID   =                      / ImageName from Camera StartIntergration
+BUNIT   = 'adu     '           / Brightness units for pixel array
+
+        ---- Telescope info, location, observer ----
+FACILITY= 'Vera C. Rubin Observatory' / Facility name
+TELESCOP=                      / Telescope name
+INSTRUME= 'Simulation Camera'  / Instrument used
+OBSERVER= 'LSST'               / Observer name(s)
+OBS-LONG=           -70.749417 / [deg] Observatory east longitude
+OBS-LAT =           -30.244639 / [deg] Observatory latitude
+OBS-ELEV=               2663.0 / [m] Observatory elevation
+OBSGEO-X=           1818938.94 / [m] X-axis Geocentric coordinate
+OBSGEO-Y=          -5208470.95 / [m] Y-axis Geocentric coordinate
+OBSGEO-Z=          -3195172.08 / [m] Z-axis Geocentric coordinate
+
+        ---- Image-identifying used to build OBS-ID ----
+CAMCODE =                      / The code for the camera
+CONTRLLR=                      / The controller (e.g. O for OCS, C for (A)CCS)
+DAYOBS  =                      / The observation day as defined by image name
+SEQNUM  =                      / The sequence number from the image name
+GROUPID =                      /
+IMGTYPE =                      / BIAS, DARK, FLAT, OBJECT
+
+        ---- Image sequence numbers
+CURINDEX=                      / Index number for exposure within the sequence
+MAXINDEX=                      / Number of requested images in sequence
+
+        ---- Additional Keys Information from Camera ----
+PROGRAM =                      / Name of the program
+REASON  =                      / Reason for observation
+
+        ---- Test Stand information ----
+TSTAND  =                      / The Test Stand used
+
+        ---- Information from Camera ----
+CAMMM   =                      / Camera Make and model
+DIAMETER=	                     / Lens diameter [mm]
+FOCALLEN=                      / Lens focal length [mm]
+
+        ---- Exposure-related information ----
+EXPTIME =                      / [s] Exposure time
+
+        ---- Header information ----
+FILENAME=                      / Original file name
+HEADVER =                      / Version of header
+
+        ---- Checksums ----
+CHECKSUM=                      / checksum for the current HDU
+DATASUM =                      / checksum of the data records

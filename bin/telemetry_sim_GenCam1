@@ -1,0 +1,126 @@
+#!/usr/bin/env python3
+
+import time
+import argparse
+import HeaderService.hutils as hutils
+import HeaderService.hscalc as hscalc
+import lsst.ts.salobj as salobj
+import lsst.ts.utils as ts_utils
+import asyncio
+
+
+def cmdline():
+
+    # Make conf_parser that hold values from a config.ini file
+    parser = argparse.ArgumentParser(description="Send telemetry to Header Client")
+
+    # The command-line arguments
+
+    parser.add_argument("--camcode", action="store", default='GC',
+                        help="The code for the telecope")
+    parser.add_argument("--controller", action="store", default='O',
+                        help="The controller (O for OCS, C for CCS)")
+    parser.add_argument("--dayobs", action="store", default=None,
+                        help="The observation day as defined by image name")
+    parser.add_argument("--seqnum", action="store", default=1, type=int,
+                        help="The sequence number from the image name")
+
+    parser.add_argument("--NSequence", action="store", default=1, type=int,
+                        help="Number of exposure in sequence")
+
+    parser.add_argument("--exptime", action="store", default=15, type=float,
+                        help="Exposure time in seconds")
+
+    parser.add_argument("--object", action="store", default="ElGordo", type=str,
+                        help="The name of the object observed.")
+    parser.add_argument("--imagetag", action="store", default="TestTag", type=str,
+                        help="The imagetag of the observation.")
+    parser.add_argument("--imageName", action="store", default=None, type=str,
+                        help="Optional imageName")
+    parser.add_argument("--obsannot", action="store", default="Dummy Obs Annotation", type=str,
+                        help="Optional Observation annnotation")
+
+    parser.add_argument("--additionalKeys", action="store",
+                        default='imageType:groupId:reason:program:diameter:focalLength',
+                        type=str, help="Optional additionalKeys")
+    parser.add_argument("--additionalValues", action="store",
+                        default='BIAS:CALSET_XXXX_YYYY:No-good-reason:my_program:10:20',
+                        type=str, help="Optional additionalValues")
+
+    parser.add_argument("--sleeptime", action="store", default=1, type=float,
+                        help="Sleep Time between step, in seconds")
+    parser.add_argument("--delaytime", action="store", default=0, type=float,
+                        help="Extra delay time before endOfImageTelemetry in seconds")
+
+    args = parser.parse_args()
+    return args
+
+
+def get_tai_time():
+    """ Shortcut to get tai time now"""
+    return ts_utils.tai_from_utc(time.time())
+
+
+async def amain():
+
+    # Get the command line arguments
+    args = cmdline()
+
+    # Create handlers for the CSCs we want to simulate messages
+    cam = salobj.Controller(name="GenericCamera", index=1)
+    LOGGER = hutils.create_logger()
+
+    LOGGER.info("---Starting Image loop---")
+
+    # Loop over NSequence
+    for k in range(args.NSequence):
+
+        timeStamp = get_tai_time()
+        seqN = args.seqnum + k
+        LOGGER.info("----Starting Integration {}".format(seqN))
+
+        # We need to emulate this format from camera:
+        # AT_O_20190409_000008.header
+        if args.dayobs:
+            DAYOBS = args.dayobs
+        else:
+            DATE_OBS = hscalc.get_date(timeStamp)
+            DAYOBS = DATE_OBS.datetime.strftime('%Y%m%d')
+        imageName = "{}_{}_{}_{:06d}".format(args.camcode, args.controller, DAYOBS, seqN)
+
+        # Send the startIntegration for image: k
+        LOGGER.info("Sending simulated startIntegration")
+        kwInt = {'additionalKeys': args.additionalKeys,
+                 'additionalValues': args.additionalValues,
+                 'imagesInSequence': args.NSequence,
+                 'imageName': imageName,
+                 'imageIndex': k+1,
+                 'imageSource': args.camcode,
+                 'imageController': 'O',
+                 'imageDate': DAYOBS,
+                 'imageNumber': seqN,
+                 'timestampAcquisitionStart': timeStamp,
+                 'exposureTime': args.exptime,
+                 'force_output': True}
+
+        await cam.evt_startIntegration.set_write(**kwInt)
+        LOGGER.info("Sending simulated startIntergration: {}".format(kwInt))
+        LOGGER.info(f"Waiting for {args.exptime} sec")
+        time.sleep(args.exptime)
+
+        # Sending camera information
+        kwInfo = {'cameraMakeAndModel': 'Leica',
+                  'force_output': True}
+        LOGGER.info("Sending Camera Info")
+        await cam.evt_cameraInfo.set_write(**kwInfo)
+
+        # Send startReadout Event after integration is finished
+        LOGGER.info("Sending simulated startReadout")
+        kwSRO = kwInt
+        kwSRO['timestampStartOfReadout'] = get_tai_time()
+        await cam.evt_startReadout.set_write(**kwSRO)
+
+        LOGGER.info(f"---Sleeping for {args.sleeptime} s ---")
+        time.sleep(args.sleeptime)
+
+asyncio.run(amain())

@@ -1,0 +1,240 @@
+# Configuration file for Generic Camera
+
+# The name of the HeaderService
+hs_name: GCHeaderService
+hs_index: 1
+instrument: GenericCamera
+# Vendor names come from an GenericCamera Event, this is in case it does not
+vendor_names: ['DUMMY']
+section: GenericCamera-1
+segname: IMAGE
+
+# Default logging level
+loglevel: 'INFO'
+
+# Path to the log location and other log definitions
+logfile: 'www/GCHeaderService-1.log'
+log_format: '[%(asctime)s.%(msecs)03d][%(levelname)s][%(name)s][%(funcName)s] %(message)s'
+log_format_date: '%Y-%m-%d %H:%M:%S'
+
+# path to the web server logfile
+weblogfile: 'www/webserver.log'
+
+# port_number for webserver
+port_number: 8000
+
+# The URL format to be used for lfa_mode=http
+url_format: "http://{ip_address}:{port_number}/{filename_HDR}"
+
+# While we support both s3 and http LFA we need to define the mode [s3 or http]
+lfa_mode: http
+
+# The s3 instance (i.e.: nts, tuc, ls, cp)
+# s3instance: nts
+
+# Default write_mode (fits or string)
+write_mode: yaml
+
+# The event to get the timeout
+timeout_event:
+    device: GenericCamera
+    topic: startIntegration
+    value: timeout
+    device_index: 1
+
+# Timeout beyond the requested exposure time to wait for an end of Telemetry event (in seconds)
+timeout_exptime: 30
+# In case we don't read this from Camera
+timeout_keyword: 'EXPTIME'
+
+# The file naming event source and definitions
+filepath: 'www/DMHS_filerepo'
+format_HDR: "{}.yaml"
+format_FITS: "{}.fits"
+imageName_event:
+    device: GenericCamera
+    topic: startIntegration
+    value: imageName
+    device_index: 1
+
+# The Events that we use to define where we collect
+start_collection_event:
+    device: GenericCamera
+    topic: startIntegration
+    device_index: 1
+
+end_collection_event:
+    device: GenericCamera
+    topic: startReadout
+    device_index: 1
+
+# The event for the image readout paramters
+imageParam_event: False
+
+# Telemetry values for images meta-data
+# https://confluence.lsstcorp.org/pages/viewpage.action?spaceKey=LSSTCOM&title=Simulation+Camera+Header+Information+Topic+Mapping
+telemetry:
+
+# --- Date, night and basic information
+
+ DATE-OBS:
+  device: GenericCamera
+  Stype: Event
+  topic: startIntegration
+  value: timestampAcquisitionStart
+  device_index: 1
+  collect_after_event: start_collection_event
+
+ DATE-BEG:
+  device: GenericCamera
+  Stype: Event
+  topic: startIntegration
+  value: timestampAcquisitionStart
+  device_index: 1
+  collect_after_event: end_collection_event
+
+ DATE-END:
+  device: GenericCamera
+  Stype: Event
+  topic: startReadout
+  value: timestampStartOfReadout
+  device_index: 1
+  collect_after_event: end_collection_event
+
+ OBSID:
+  device: GenericCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageName
+  device_index: 1
+  collect_after_event: start_collection_event
+
+# -- Image Identifying Information
+
+ CAMCODE:
+  device: GenericCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageSource
+  device_index: 1
+  collect_after_event: start_collection_event
+
+ CONTRLLR:
+  device: GenericCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageController
+  device_index: 1
+  collect_after_event: start_collection_event
+
+ DAYOBS:
+  device: GenericCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageDate
+  device_index: 1
+  collect_after_event: start_collection_event
+
+ SEQNUM:
+  device: GenericCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageNumber
+  device_index: 1
+  collect_after_event: start_collection_event
+
+ GROUPID:
+  device: GenericCamera
+  Stype: Event
+  topic: startIntegration
+  value: additionalValues
+  device_index: 1
+  collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: groupId
+  array: keyed_array
+
+ IMGTYPE:
+  device: GenericCamera
+  Stype: Event
+  topic: startIntegration
+  value: additionalValues
+  device_index: 1
+  collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: imageType
+  array: keyed_array
+
+ CAMMM:
+  device: GenericCamera
+  Stype: Event
+  topic: cameraInfo
+  value: cameraMakeAndModel
+  device_index: 1
+  collect_after_event: start_collection_event
+
+ DIAMETER:
+  device: GenericCamera
+  Stype: Event
+  topic: startIntegration
+  value: additionalValues
+  device_index: 1
+  collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: diameter
+  array: keyed_array
+
+ FOCALLEN:
+  device: GenericCamera
+  Stype: Event
+  topic: startIntegration
+  value: additionalValues
+  device_index: 1
+  collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: focalLength
+  array: keyed_array
+
+ REASON:
+  device: GenericCamera
+  Stype: Event
+  topic: startIntegration
+  value: additionalValues
+  collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: reason
+  array: keyed_array
+
+ PROGRAM:
+  device: GenericCamera
+  Stype: Event
+  topic: startIntegration
+  value: additionalValues
+  collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: program
+  array: keyed_array
+
+ CURINDEX:
+  device: GenericCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageIndex
+  device_index: 1
+  collect_after_event: start_collection_event
+
+ MAXINDEX:
+  device: GenericCamera
+  Stype: Event
+  topic: startIntegration
+  value: imagesInSequence
+  device_index: 1
+  collect_after_event: start_collection_event
+
+ EXPTIME:
+  device: GenericCamera
+  Stype: Event
+  topic: startIntegration
+  value: exposureTime
+  device_index: 1
+  collect_after_event: start_collection_event
