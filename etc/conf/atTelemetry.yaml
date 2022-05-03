@@ -214,8 +214,8 @@ telemetry:
  SHUTTIME:
   device: ATCamera
   Stype: Event
-  topic: shutterMotionProfile
-  value: measuredExposureTime
+  topic: endOfImageTelemetry
+  value: measuredShutterOpenTime
   collect_after_event: end_collection_event
 
  TEMP_SET:
