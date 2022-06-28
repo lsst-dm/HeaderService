@@ -196,7 +196,6 @@ async def amain():
             'ra': args.ra,
             'declination': args.dec,
             'rotPA': args.rotpa,
-            'priority': 1,
             'targetName': args.object,
             'force_output': True}
     await ptg.evt_currentTarget.set_write(**kwTA)
@@ -204,7 +203,6 @@ async def amain():
 
     # The settingsApplied for ATSpectrograph
     kwSA = {'instrumentPort': args.instport,
-            'priority': 1,
             'force_output': True}
     await spec.evt_settingsAppliedValues.set_write(**kwSA)
     LOGGER.info("Sending simulated ATSpectrograph settingsApplied")
@@ -213,7 +211,6 @@ async def amain():
     kwFT = {'name': args.filtername,
             'band': args.filterband,
             'slot': args.filterslot,
-            'priority': 1,
             'force_output': True}
     await spec.evt_reportedFilterPosition.set_write(**kwFT)
     LOGGER.info("Sending simulated reportedFilterPosition")
@@ -222,14 +219,12 @@ async def amain():
     kwDP = {'name': args.gratingname,
             'band': args.gratingband,
             'slot': args.gratingslot,
-            'priority': 1,
             'force_output': True}
     await spec.evt_reportedDisperserPosition.set_write(**kwDP)
     LOGGER.info("Sending simulated reportedDisperserPosition")
 
     # Linear Stage position for ATSpectrograph
     kwLS = {'position': args.linpos,
-            'priority': 1,
             'force_output': True}
     await spec.evt_reportedLinearStagePosition.set_write(**kwLS)
     LOGGER.info("Sending simulated reportedLinearStagePosition")
@@ -246,7 +241,6 @@ async def amain():
 
     # The m3PortSelected from ATMCS
     kwM3 = {'selected': args.m3port,
-            'priority': 1,
             'force_output': True}
     await mcs.evt_m3PortSelected.set_write(**kwM3)
     LOGGER.info("Sending simulated m3PortSelected")
@@ -254,7 +248,6 @@ async def amain():
     # The target from ATMCS
     kwTarget = {'radesys': args.radesys,
                 'tracksys': args.tracksys,
-                'priority': 1,
                 'force_output': True}
     await mcs.evt_target.set_write(**kwTarget)
     LOGGER.info("Sending simulated ATMCS Target")
@@ -357,7 +350,6 @@ async def amain():
                  'timeout': args.exptime,
                  'additionalKeys': args.additionalKeys,
                  'additionalValues': args.additionalValues,
-                 'priority': 1,
                  'force_output': True}
 
         await cam.evt_startIntegration.set_write(**kwInt)
@@ -415,7 +407,6 @@ async def amain():
                  'imageTag': args.imagetag,
                  'measuredShutterOpenTime': shuttime,
                  'emulatedImage': args.emuimage,
-                 'priority': 1,
                  'force_output': True}
         if args.delaytime > 0:
             LOGGER.info(f"Delaying endOfImageTelemetry {args.delaytime}[s]")

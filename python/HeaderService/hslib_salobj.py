@@ -645,7 +645,6 @@ class HSWorker(salobj.BaseCsc):
               'url': url,
               'id': imageName,
               'version': 1,
-              'priority': 1,
               }
 
         await self.evt_largeFileObjectAvailable.set_write(**kw)

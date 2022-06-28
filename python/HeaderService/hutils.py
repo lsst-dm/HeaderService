@@ -262,7 +262,6 @@ def get_image_size_from_imageReadoutParameters(myData, array_key='ccdLocation', 
      preCols      # int
      preRows      # int
      postCols     # int
-     priority     # long
      '''
 
     geom = {
