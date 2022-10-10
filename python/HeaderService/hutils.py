@@ -430,7 +430,7 @@ class HDRTEMPL:
 
     def get_segment_extname(self, sensor, seg):
         """Get the right SEGMENT extension name used for a sensor/CCD"""
-        # Account for different formating for EXTNAME for LATISS
+        # Account for different formating for EXTNAME for Cameras
         if self.instrument == 'GenericCamera':
             extname = f"{self.segname}{seg}"
         else:

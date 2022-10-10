@@ -50,7 +50,7 @@ TSTAND  =                      / The Test Stand used
 
         ---- Information from Camera ----
 CAMMM   =                      / Camera Make and model
-DIAMETER=	                     / Lens diameter [mm]
+DIAMETER=                      / Lens diameter [mm]
 FOCALLEN=                      / Lens focal length [mm]
 
         ---- Exposure-related information ----
