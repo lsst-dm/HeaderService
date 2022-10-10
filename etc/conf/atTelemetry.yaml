@@ -6,6 +6,7 @@ instrument: LATISS
 # Vendor names come from an ATCamera Event, this is in case it does not
 vendor_names: ['ITL']
 section: LATISS
+segname: Segment
 
 # Default logging level
 loglevel: 'INFO'

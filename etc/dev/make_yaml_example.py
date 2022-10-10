@@ -64,3 +64,21 @@ print(type(d['value']))
 d = header_loaded['PRIMARY'][22]
 print(d['keyword'], d['value'])
 print(type(d['value']))
+
+
+# Now let's create a fitsio file (header only) with no data
+data = None
+filename = "file-from-yaml.fits"
+with fitsio.FITS(filename, 'rw', clobber=True, ignore_empty=True) as fits:
+    for extname in header_loaded.keys():
+        hdr = fitsio.FITSHDR()
+        for rec in header_loaded[extname]:
+            # Avoid undef comments and set them as empty strings
+            if 'comment' not in rec:
+                rec['comment'] = ''
+            new_rec = {'name': rec['keyword'],
+                       'value': rec['value'],
+                       'comment': rec['comment']}
+            hdr.add_record(new_rec)
+        # Write the hdr out
+        fits.write(data, header=hdr, extname=extname)

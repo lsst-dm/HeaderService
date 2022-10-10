@@ -6,6 +6,7 @@ instrument: ComCam
 # Vendor names come from a CCCamera Event, this is in case it does not
 vendor_names: ['ITL','ITL','ITL','ITL','ITL','ITL','ITL','ITL','ITL','ITL']
 section: ComCam
+segname: Segment
 
 # Default logging level
 loglevel: 'INFO'

@@ -5,7 +5,8 @@ import glob
 bin_files = glob.glob("bin/*")
 
 # Build the structure for etc folder
-etc_dirs = ['etc/LATISS', 'etc/ComCam', 'etc/TestCamera/E2V', 'etc/TestCamera/ITL', 'etc/conf']
+etc_dirs = ['etc/LATISS', 'etc/ComCam', 'etc/GenericCamera',
+            'etc/TestCamera/E2V', 'etc/TestCamera/ITL', 'etc/conf']
 data_files = [("", ["setpath.sh"])]
 for edir in etc_dirs:
     data_files.append((edir, glob.glob("{}/*".format(edir))))
@@ -13,7 +14,7 @@ for edir in etc_dirs:
 
 # The main call
 setup(name='HeaderService',
-      version='3.0.3',
+      version='3.1.0',
       license="GPL",
       description="LSST Meta-data aggregator for FITS header service",
       author="LSST, Felipe Menanteau",

@@ -306,6 +306,10 @@ def build_sensor_list(instrument, sep=""):
         sensor_names = [f"R{raft}{sep}SW{j}"]
         return sensor_names
 
+    if instrument == 'GenericCamera':
+        sensor_names = ['dummy']
+        return sensor_names
+
     for raft in raft_names:
         for i in range(3):
             for j in range(3):
@@ -334,12 +338,12 @@ class HDRTEMPL:
         self.vendor_names = vendor_names
         self.section = section
         self.instrument = instrument
-        self.segname = segname
         self.templ_path = templ_path
         self.templ_primary_name = templ_primary_name
         self.templ_primary_sensor_name = templ_primary_sensor_name
         self.templ_segment_name = templ_segment_name
         self.write_mode = write_mode
+        self.segname = segname
 
         # Figure out logging
         if logger:
@@ -352,8 +356,13 @@ class HDRTEMPL:
         # Set template file names
         self.set_template_filenames()
 
+        # The number of segments
+        if self.instrument == 'GenericCamera':
+            nsegments = 1
+        else:
+            nsegments = 16
         # Build the HDRLIST (PRIMARY, PRIMARY_COMMON, Segment01,...,Segment17)
-        self.build_hdrlist()
+        self.build_hdrlist(n=nsegments)
 
         # Load/Create CCDGEOM object per sensor
         self.load_CCDInfo()
@@ -371,7 +380,12 @@ class HDRTEMPL:
         self.templ_file = {}
         self.templ_file['PRIMARY'] = os.path.join(self.templ_path, self.templ_primary_name)
         self.templ_file['SEGMENT'] = os.path.join(self.templ_path, self.templ_segment_name)
-        self.templ_file['SENSOR'] = os.path.join(self.templ_path, self.templ_primary_sensor_name)
+        # Sensor is optional
+        sensor_file = os.path.join(self.templ_path, self.templ_primary_sensor_name)
+        if os.path.exists(sensor_file):
+            self.templ_file['SENSOR'] = sensor_file
+        else:
+            self.log.warning(f"No SENSOR template for {self.instrument}")
 
     def build_hdrlist(self, n=16):
         """
@@ -393,15 +407,9 @@ class HDRTEMPL:
             if 'SENSOR' in self.templ_file:
                 self.HDRLIST.append(f"{sensor}_PRIMARY")
             for hdu in range(1, n+1):
-                segment_name = camera_coords.SEGNAME[hdu]
+                segment_name = camera_coords.SEGNAME[self.instrument][hdu]
                 self.segment_names[sensor].append(segment_name)
-                # Account for different formating for EXTNAME for LATISS
-                if self.instrument == 'LATISS':
-                    # extname = f"{self.segname}{segment_name}"
-                    extname = f"{sensor}_{self.segname}{segment_name}"
-
-                else:
-                    extname = f"{sensor}_{self.segname}{segment_name}"
+                extname = self.get_segment_extname(sensor, segment_name)
                 self.HDRLIST.append(extname)
 
         self.log.debug("Build HDRLIST:")
@@ -422,7 +430,11 @@ class HDRTEMPL:
 
     def get_segment_extname(self, sensor, seg):
         """Get the right SEGMENT extension name used for a sensor/CCD"""
-        extname = f"{sensor}_{self.segname}{seg}"
+        # Account for different formating for EXTNAME for Cameras
+        if self.instrument == 'GenericCamera':
+            extname = f"{self.segname}{seg}"
+        else:
+            extname = f"{sensor}_{self.segname}{seg}"
         return extname
 
     def load_templates(self):
@@ -430,7 +442,9 @@ class HDRTEMPL:
         # Read in the primary and segment templates with fitsio
         self.header_primary = read_head_template(self.templ_file['PRIMARY'])
         self.header_segment = read_head_template(self.templ_file['SEGMENT'])
-        self.header_primary_sensor = read_head_template(self.templ_file['SENSOR'])
+        # Sensor is optional
+        if 'SENSOR' in self.templ_file:
+            self.header_primary_sensor = read_head_template(self.templ_file['SENSOR'])
 
         # Start loadin templates into the self.header object
         # 1. Load up the template for the PRIMARY header
@@ -443,12 +457,14 @@ class HDRTEMPL:
 
         # 2. Load up segments (and PRIMARY_SENSOR if needed)
         for sensor in self.sensor_names:
-            # Get the extname for the primary/sensor combo
-            extname = self.get_primary_extname(sensor)
-            self.header[extname] = copy.deepcopy(self.header_primary_sensor)
-            PRIMARY_DATA_SENSOR = self.CCDInfo[sensor].setup_primary_sensor()
-            self.log.info(f"Loading template for: {extname}")
-            self.update_records(PRIMARY_DATA_SENSOR, extname)
+
+            if 'SENSOR' in self.templ_file:
+                # Get the extname for the primary/sensor combo
+                extname = self.get_primary_extname(sensor)
+                self.header[extname] = copy.deepcopy(self.header_primary_sensor)
+                PRIMARY_DATA_SENSOR = self.CCDInfo[sensor].setup_primary_sensor()
+                self.log.info(f"Loading template for: {extname}")
+                self.update_records(PRIMARY_DATA_SENSOR, extname)
 
             # Loop over all segment in Sensor/CCD
             for seg in self.segment_names[sensor]:
