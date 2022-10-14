@@ -5,7 +5,7 @@ import glob
 bin_files = glob.glob("bin/*")
 
 # Build the structure for etc folder
-etc_dirs = ['etc/LATISS', 'etc/ComCam', 'etc/GenericCamera',
+etc_dirs = ['etc/LATISS', 'etc/ComCam', 'etc/GenericCamera-1',
             'etc/TestCamera/E2V', 'etc/TestCamera/ITL', 'etc/conf']
 data_files = [("", ["setpath.sh"])]
 for edir in etc_dirs:
