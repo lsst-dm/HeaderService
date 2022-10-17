@@ -3,6 +3,7 @@
 import os
 import logging
 import HeaderService.hslib_salobj as hslib_salobj
+import HeaderService.hsregex as hsregex
 import argparse
 import yaml
 import datetime
@@ -85,6 +86,8 @@ def cmdline():
     # Set the defaults of argparse using the values in the yaml config file
     parser.set_defaults(**conf_defaults)
     args = parser.parse_args(args=remaining_argv)
+    # Update  variables in config with actual values
+    args.__dict__ = hsregex.replace_variables_in_dict(args.__dict__)
     args.loglevel = getattr(logging, args.loglevel)
     return args
 
