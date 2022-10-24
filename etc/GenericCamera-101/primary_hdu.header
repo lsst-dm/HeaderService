@@ -19,8 +19,8 @@ BUNIT   = 'adu     '           / Brightness units for pixel array
 
         ---- Telescope info, location, observer ----
 FACILITY= 'Vera C. Rubin Observatory' / Facility name
-TELESCOP=                      / Telescope name
-INSTRUME= 'Simulation Camera'  / Instrument used
+TELESCOP= 'Simonyi Survey Telescope'  / Telescope name
+INSTRUME= 'StarTracker'        / Instrument used
 OBSERVER= 'LSST'               / Observer name(s)
 OBS-LONG=           -70.749417 / [deg] Observatory east longitude
 OBS-LAT =           -30.244639 / [deg] Observatory latitude

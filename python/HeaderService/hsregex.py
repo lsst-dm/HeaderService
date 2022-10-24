@@ -47,7 +47,7 @@ def update_var_dict(d, var_dict):
     """
     Updates the matches in dictionary with the new values
     """
-    # Loop over the items    # Loop over the items
+    # Loop over the items
     for key, val in d.items():
         if isinstance(val, dict):
             val = update_var_dict(val, var_dict)

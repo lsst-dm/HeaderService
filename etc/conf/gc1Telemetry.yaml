@@ -40,7 +40,7 @@ timeout_event:
     device: GenericCamera
     topic: startIntegration
     value: timeout
-    device_index: 1
+    device_index: ${hs_index}
 
 # Timeout beyond the requested exposure time to wait for an end of Telemetry event (in seconds)
 timeout_exptime: 30
@@ -55,18 +55,18 @@ imageName_event:
     device: GenericCamera
     topic: startIntegration
     value: imageName
-    device_index: 1
+    device_index: ${hs_index}
 
 # The Events that we use to define where we collect
 start_collection_event:
     device: GenericCamera
     topic: startIntegration
-    device_index: 1
+    device_index: ${hs_index}
 
 end_collection_event:
     device: GenericCamera
     topic: startReadout
-    device_index: 1
+    device_index: ${hs_index}
 
 # The event for the image readout paramters
 imageParam_event: False
@@ -82,7 +82,7 @@ telemetry:
   Stype: Event
   topic: startIntegration
   value: timestampAcquisitionStart
-  device_index: 1
+  device_index: ${hs_index}
   collect_after_event: start_collection_event
 
  DATE-BEG:
@@ -90,7 +90,7 @@ telemetry:
   Stype: Event
   topic: startIntegration
   value: timestampAcquisitionStart
-  device_index: 1
+  device_index: ${hs_index}
   collect_after_event: end_collection_event
 
  DATE-END:
@@ -98,7 +98,7 @@ telemetry:
   Stype: Event
   topic: startReadout
   value: timestampStartOfReadout
-  device_index: 1
+  device_index: ${hs_index}
   collect_after_event: end_collection_event
 
  OBSID:
@@ -106,7 +106,7 @@ telemetry:
   Stype: Event
   topic: startIntegration
   value: imageName
-  device_index: 1
+  device_index: ${hs_index}
   collect_after_event: start_collection_event
 
 # -- Image Identifying Information
@@ -116,7 +116,7 @@ telemetry:
   Stype: Event
   topic: startIntegration
   value: imageSource
-  device_index: 1
+  device_index: ${hs_index}
   collect_after_event: start_collection_event
 
  CONTRLLR:
@@ -124,7 +124,7 @@ telemetry:
   Stype: Event
   topic: startIntegration
   value: imageController
-  device_index: 1
+  device_index: ${hs_index}
   collect_after_event: start_collection_event
 
  DAYOBS:
@@ -132,7 +132,7 @@ telemetry:
   Stype: Event
   topic: startIntegration
   value: imageDate
-  device_index: 1
+  device_index: ${hs_index}
   collect_after_event: start_collection_event
 
  SEQNUM:
@@ -140,7 +140,7 @@ telemetry:
   Stype: Event
   topic: startIntegration
   value: imageNumber
-  device_index: 1
+  device_index: ${hs_index}
   collect_after_event: start_collection_event
 
  GROUPID:
@@ -148,7 +148,7 @@ telemetry:
   Stype: Event
   topic: startIntegration
   value: additionalValues
-  device_index: 1
+  device_index: ${hs_index}
   collect_after_event: start_collection_event
   array_keys: additionalKeys
   array_keyname: groupId
@@ -159,7 +159,7 @@ telemetry:
   Stype: Event
   topic: startIntegration
   value: additionalValues
-  device_index: 1
+  device_index: ${hs_index}
   collect_after_event: start_collection_event
   array_keys: additionalKeys
   array_keyname: imageType
@@ -172,7 +172,7 @@ telemetry:
   Stype: Event
   topic: cameraInfo
   value: cameraMakeAndModel
-  device_index: 1
+  device_index: ${hs_index}
   collect_after_event: start_collection_event
 
  DIAMETER:
@@ -180,7 +180,7 @@ telemetry:
   Stype: Event
   topic: startIntegration
   value: additionalValues
-  device_index: 1
+  device_index: ${hs_index}
   collect_after_event: start_collection_event
   array_keys: additionalKeys
   array_keyname: diameter
@@ -191,7 +191,7 @@ telemetry:
   Stype: Event
   topic: startIntegration
   value: additionalValues
-  device_index: 1
+  device_index: ${hs_index}
   collect_after_event: start_collection_event
   array_keys: additionalKeys
   array_keyname: focalLength
@@ -204,7 +204,7 @@ telemetry:
   Stype: Event
   topic: startIntegration
   value: additionalValues
-  device_index: 1
+  device_index: ${hs_index}
   collect_after_event: start_collection_event
   array_keys: additionalKeys
   array_keyname: reason
@@ -215,7 +215,7 @@ telemetry:
   Stype: Event
   topic: startIntegration
   value: additionalValues
-  device_index: 1  
+  device_index: ${hs_index}
   collect_after_event: start_collection_event
   array_keys: additionalKeys
   array_keyname: program
@@ -228,7 +228,7 @@ telemetry:
   Stype: Event
   topic: startIntegration
   value: imageIndex
-  device_index: 1
+  device_index: ${hs_index}
   collect_after_event: start_collection_event
 
  MAXINDEX:
@@ -236,7 +236,7 @@ telemetry:
   Stype: Event
   topic: startIntegration
   value: imagesInSequence
-  device_index: 1
+  device_index: ${hs_index}
   collect_after_event: start_collection_event
 
 # -- Exposure Information
@@ -246,5 +246,5 @@ telemetry:
   Stype: Event
   topic: startIntegration
   value: exposureTime
-  device_index: 1
+  device_index: ${hs_index}
   collect_after_event: start_collection_event
