@@ -30,10 +30,25 @@ OBSGEO-Y=          -5208470.95 / [m] Y-axis Geocentric coordinate
 OBSGEO-Z=          -3195172.08 / [m] Z-axis Geocentric coordinate
 
         ---- Pointing info, etc. ----
+RA      =                      / RA commanded from pointing component
+DEC     =                      / DEC commanded from pointing component
+RASTART =                      / RA of telescope from AZSTART and ELSTART
+DECSTART=                      / DEC of telescope from AZSTART and ELSTART
+RAEND   =                      / RA of telescope from AZEND and ELEND
+DECEND  =                      / DEC of telescope from AZEND and ELEND
+ROTPA   =                      / Rotation angle relative to the sky (deg)
+ROTCOORD= 'sky'                / Telescope Rotation Coordinates
+HASTART =                      / [HH:MM:SS] Telescope hour angle at start
 ELSTART =                      / [deg] MTMount elevation at image start
 AZSTART =                      / [deg] MTMount azimuth at image start
+AMSTART =                      / Airmass at start
+HAEND   =                      / [HH:MM:SS] Telescope hour angle at end
 ELEND   =                      / [deg] MTMount elevation at image end
 AZEND   =                      / [deg] MTMount azimuth at image end
+AMEND   =                      / Airmass at end
+TRACKSYS=                      / Tracking system RADEC, AZEL, PLANET, EPHEM
+RADESYS =                      / Equatorial coordinate system FK5 or ICRS
+FOCUSZ  =                      / Focus Z position
 
         ---- Image-identifying used to build OBS-ID ----
 CAMCODE =                      / The code for the camera
@@ -69,6 +84,16 @@ EXPTIME =                      / [s] Exposure time
         ---- Header information ----
 FILENAME=                      / Original file name
 HEADVER =                      / Version of header
+
+        ---- Hierarch information for CSC Simulatiom Mode ----
+HIERARCH SIMULATE MTMOUNT= / MTMount Simulation Mode (False=0)
+HIERARCH SIMULATE MTM1M3= / MTM1M3 Simulation Mode (False=0)
+HIERARCH SIMULATE MTM2= / MTM2 Simulation Mode (False=0)
+HIERARCH SIMULATE CAMHEXAPOD= / CAMHexapod Simulation Mode (False=0)
+HIERARCH SIMULATE M2HEXAPOD= / M2Hexapod Simulation Mode (False=0)
+HIERARCH SIMULATE MTROTATOR= / MTRotator Simulation Mode (False=0)
+HIERARCH SIMULATE MTDOME= / MTDome Simulation Mode (False=0)
+HIERARCH SIMULATE MTDOMETRAJECTORY= / MTDomeTrajectory Simulation Mode (False=0)
 
         ---- Checksums ----
 CHECKSUM=                      / checksum for the current HDU

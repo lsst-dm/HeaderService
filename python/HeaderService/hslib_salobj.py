@@ -626,7 +626,7 @@ class HSWorker(salobj.BaseCsc):
         if self.config.lfa_mode == 's3':
             key = self.s3bucket.make_key(
                 salname=self.config.hs_name,
-                salindexname=None,
+                salindexname=self.config.hs_index,
                 other=imageName,
                 generator='header',
                 date=self.metadata[imageName]['DATE-OBS'],

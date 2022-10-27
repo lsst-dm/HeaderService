@@ -16,6 +16,12 @@ def cmdline():
     parser = argparse.ArgumentParser(description="Send telemetry to Header Client")
 
     # The command-line arguments
+    parser.add_argument("--ra", action="store", default=30, type=float,
+                        help="The RA of the visit")
+    parser.add_argument("--dec", action="store", default=-75, type=float,
+                        help="The DEC of the visit")
+    parser.add_argument("--rotpa", action="store", default=0.0, type=float,
+                        help="The ROTPA for the visit")
 
     parser.add_argument("--gcindex", action="store", type=int, default=101,
                         help="The GenericCamera index [101/102/103]")
@@ -33,11 +39,20 @@ def cmdline():
 
     parser.add_argument("--exptime", action="store", default=15, type=float,
                         help="Exposure time in seconds")
-
+    parser.add_argument("--airmass", action="store", default=1.237, type=float,
+                        help="Airmass")
+    parser.add_argument("--ha", action="store", default='30.0', type=float,
+                        help="The HA")
     parser.add_argument("--el", action="store", default=75.0, type=float,
                         help="The elevation angle")
     parser.add_argument("--az", action="store", default=45.0, type=float,
                         help="The azimuth angle")
+    parser.add_argument("--focusz", action="store", default=13, type=float,
+                        help="Hexapod FocusZ position (mm)")
+    parser.add_argument("--tracksys", action="store", default=1, type=int,
+                        help="The tracking coordinate system [RADEC(1), AZEL(2), PLANET(3), EPHEM(4)].")
+    parser.add_argument("--radesys", action="store", default=2, type=int,
+                        help="The ra/dec track system value [FK5(1) or ICRS(2)].")
 
     parser.add_argument("--object", action="store", default="ElGordo", type=str,
                         help="The name of the object observed.")
@@ -76,12 +91,58 @@ async def amain():
 
     # Create handlers for the CSCs we want to simulate messages
     cam = salobj.Controller(name="GenericCamera", index=args.gcindex)
-    mtm = salobj.Controller(name="MTMount", index=0)
+    ptg = salobj.Controller(name="MTPtg", index=0)
+    hexa = salobj.Controller(name="MTHexapod", index=1)
+    hexa2 = salobj.Controller(name="MTHexapod", index=2)
+    mount = salobj.Controller(name="MTMount", index=0)
+    m1m3 = salobj.Controller(name="MTM1M3", index=0)
+    m2 = salobj.Controller(name="MTM2", index=0)
+    dome = salobj.Controller(name="MTDome", index=0)
+    rotator = salobj.Controller(name="MTRotator", index=0)
+    dometraj = salobj.Controller(name="MTDomeTrajectory", index=0)
 
     LOGGER = hutils.create_logger()
 
-    LOGGER.info("---Starting Image loop---")
+    # FocusZ positionZ for Hexapod
+    kwHexa = {'demand': [0.0, 0.1, 0.2, 0.3, 0.4, 0.5],
+              'position': [0, 1, 2, 3, 4, 5],
+              'error': [0.0, 0.01, 0.03, 0.03, 0.04, 0.05]
+              }
+    await hexa.tel_application.set_write(**kwHexa)
+    LOGGER.info("Sending simulated Hexapod application {}".format(kwHexa))
 
+    # Pointing information
+    # Send the pointing event -- here we populate only a few fields
+    kwTA = {'timestamp': get_tai_time(),
+            'ra': args.ra,
+            'declination': args.dec,
+            'rotPA': args.rotpa,
+            'targetName': args.object,
+            'targetType': args.tracksys,
+            'frame': args.radesys,
+            'force_output': True}
+    await ptg.evt_currentTarget.set_write(**kwTA)
+    LOGGER.info("Sending simulated Ptg currentTarget:{}".format(kwTA))
+
+    kwSim = {'mode': 1}
+    await m2.evt_simulationMode.set_write(**kwSim)
+    LOGGER.info("Sending simulationMode for MTM2 {}".format(kwSim))
+    await m1m3.evt_simulationMode.set_write(**kwSim)
+    LOGGER.info("Sending simulationMode for MTM1M3 {}".format(kwSim))
+    await mount.evt_simulationMode.set_write(**kwSim)
+    LOGGER.info("Sending simulationMode for MTMount {}".format(kwSim))
+    await hexa.evt_simulationMode.set_write(**kwSim)
+    LOGGER.info("Sending simulationMode for MTHexapod-1 {}".format(kwSim))
+    await hexa2.evt_simulationMode.set_write(**kwSim)
+    LOGGER.info("Sending simulationMode for MTHexapod-2 {}".format(kwSim))
+    await dome.evt_simulationMode.set_write(**kwSim)
+    LOGGER.info("Sending simulationMode for MTDome {}".format(kwSim))
+    await rotator.evt_simulationMode.set_write(**kwSim)
+    LOGGER.info("Sending simulationMode for MTRotator {}".format(kwSim))
+    await dometraj.evt_simulationMode.set_write(**kwSim)
+    LOGGER.info("Sending simulationMode for MTDomeTrajectory {}".format(kwSim))
+
+    LOGGER.info("---Starting Image loop---")
     # Loop over NSequence
     for k in range(args.NSequence):
 
@@ -98,12 +159,26 @@ async def amain():
             DAYOBS = DATE_OBS.datetime.strftime('%Y%m%d')
         imageName = "{}_{}_{}_{:06d}".format(args.camcode, args.controller, DAYOBS, seqN)
 
-        # The START telemetry for EL/AZ
-        kwMT = {'actualPosition': args.el}
-        await mtm.tel_elevation.set_write(**kwMT)
-        kwMT = {'actualPosition': args.az}
-        await mtm.tel_azimuth.set_write(**kwMT)
-        LOGGER.info("Sending simulated MTMount for EL/AZ Start")
+        # The START telemetry for Airmass using the MTPtg.currentTargetStatus
+        kwTA = {'timestamp': get_tai_time(),
+                'ha': args.ha,
+                'airmass': args.airmass}
+        await ptg.tel_currentTargetStatus.set_write(**kwTA)
+        LOGGER.info("Sending simulated currentTargetStatus HA/AIRMASS Start")
+
+        # The START telemetry for RA/DEC, EL/AZ from the MTPtg.mountPosition
+        kwMP = {'ra': args.ra,
+                'declination': args.dec,
+                'elevationActualPosition': args.el,
+                'azimuthActualPosition': args.az}
+        await ptg.tel_mountPosition.set_write(**kwMP)
+        LOGGER.info("Sending simulated mountPosition for RA/DEC EL/AZ Start")
+
+        kwEL = {'actualPosition': args.el}
+        await mount.tel_elevation.set_write(**kwEL)
+        kwAZ = {'actualPosition': args.az}
+        await mount.tel_azimuth.set_write(**kwAZ)
+        LOGGER.info("Sending simulated mount positions for EL/AZ Start")
 
         # Send the startIntegration for image: k
         LOGGER.info("Sending simulated startIntegration")
@@ -131,13 +206,26 @@ async def amain():
         LOGGER.info("Sending Camera Info")
         await cam.evt_cameraInfo.set_write(**kwInfo)
 
-        # The END telemetry for EL/AZ
-        kwMT = {'actualPosition': args.el*random.uniform(1, 1.01)}
-        await mtm.tel_elevation.set_write(**kwMT)
-        LOGGER.info("Sending simulated MTMount for EL End {}".format(kwMT))
-        kwMT = {'actualPosition': args.az*random.uniform(1, 1.01)}
-        await mtm.tel_azimuth.set_write(**kwMT)
-        LOGGER.info("Sending simulated MTMount for AZ End {}".format(kwMT))
+        # The END telemetry for RA/DEC, EL/AZ from the MTPtg.mountPosition
+        kwMP = {'ra': args.ra*random.uniform(0.95, 1.05),
+                'declination': args.dec*random.uniform(0.95, 1.05),
+                'elevationActualPosition': args.el*random.uniform(0.95, 1.05),
+                'azimuthActualPosition': args.az*random.uniform(0.95, 1.05)}
+        await ptg.tel_mountPosition.set_write(**kwMP)
+        LOGGER.info("Sending simulated mountPosition for RA/DEC EL/AZ END")
+
+        # The END telemetry for Airmass using the MTPtg.currentTargetStatus
+        kwTA = {'timestamp': get_tai_time(),
+                'ha': args.ha*random.uniform(0.95, 1.05),
+                'airmass': args.airmass*random.uniform(0.95, 1.05)}
+        await ptg.tel_currentTargetStatus.set_write(**kwTA)
+        LOGGER.info("Sending simulated currentTargetStatus HA/AIRMASS END")
+
+        kwEL = {'actualPosition': args.el*random.uniform(0.95, 1.05)}
+        await mount.tel_elevation.set_write(**kwEL)
+        kwAZ = {'actualPosition': args.az**random.uniform(0.95, 1.05)}
+        await mount.tel_azimuth.set_write(**kwAZ)
+        LOGGER.info("Sending simulated mount positions for EL/AZ END")
 
         # Send startReadout Event after integration is finished
         LOGGER.info("Sending simulated startReadout")
