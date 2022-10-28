@@ -1,0 +1,100 @@
+SIMPLE  =                    T /
+BITPIX  =                    8 / bits per data value
+NAXIS   =                    0 / number of axes
+EXTEND  =                    T / Extensions are permitted
+ORIGIN  = 'LSST DM Header Service'/ FITS file originator
+
+        ---- Date, night and basic image information ----
+TIMESYS = 'TAI'                / The time scale used
+DATE    =                      / Creation Date and Time of File
+DATE-OBS=                      / Date of observation (image acquisition)
+DATE-BEG=                      / Time at the start of integration
+DATE-END=                      / end date of the observation
+MJD     =                      / Modified Julian Date that the file was written
+MJD-OBS =                      / Modified Julian Date of observation
+MJD-BEG =                      / Modified Julian Date derived from DATE-BEG
+MJD-END =                      / Modified Julian Date derived from DATE-END
+OBSID   =                      / ImageName from Camera StartIntergration
+BUNIT   = 'adu     '           / Brightness units for pixel array
+
+        ---- Telescope info, location, observer ----
+FACILITY= 'Vera C. Rubin Observatory' / Facility name
+TELESCOP= 'Simonyi Survey Telescope'  / Telescope name
+INSTRUME= 'StarTracker'        / Instrument used
+OBSERVER= 'LSST'               / Observer name(s)
+OBS-LONG=           -70.749417 / [deg] Observatory east longitude
+OBS-LAT =           -30.244639 / [deg] Observatory latitude
+OBS-ELEV=               2663.0 / [m] Observatory elevation
+OBSGEO-X=           1818938.94 / [m] X-axis Geocentric coordinate
+OBSGEO-Y=          -5208470.95 / [m] Y-axis Geocentric coordinate
+OBSGEO-Z=          -3195172.08 / [m] Z-axis Geocentric coordinate
+
+        ---- Pointing info, etc. ----
+RA      =                      / RA commanded from pointing component
+DEC     =                      / DEC commanded from pointing component
+RASTART =                      / RA of telescope from AZSTART and ELSTART
+DECSTART=                      / DEC of telescope from AZSTART and ELSTART
+RAEND   =                      / RA of telescope from AZEND and ELEND
+DECEND  =                      / DEC of telescope from AZEND and ELEND
+ROTPA   =                      / Rotation angle relative to the sky (deg)
+ROTCOORD= 'sky'                / Telescope Rotation Coordinates
+HASTART =                      / [HH:MM:SS] Telescope hour angle at start
+ELSTART =                      / [deg] MTMount elevation at image start
+AZSTART =                      / [deg] MTMount azimuth at image start
+AMSTART =                      / Airmass at start
+HAEND   =                      / [HH:MM:SS] Telescope hour angle at end
+ELEND   =                      / [deg] MTMount elevation at image end
+AZEND   =                      / [deg] MTMount azimuth at image end
+AMEND   =                      / Airmass at end
+TRACKSYS=                      / Tracking system RADEC, AZEL, PLANET, EPHEM
+RADESYS =                      / Equatorial coordinate system FK5 or ICRS
+FOCUSZ  =                      / Focus Z position
+
+        ---- Image-identifying used to build OBS-ID ----
+CAMCODE =                      / The code for the camera
+CONTRLLR=                      / The controller (e.g. O for OCS, C for (A)CCS)
+DAYOBS  =                      / The observation day as defined by image name
+SEQNUM  =                      / The sequence number from the image name
+GROUPID =                      /
+IMGTYPE =                      / BIAS, DARK, FLAT, OBJECT
+
+        ---- Image sequence numbers
+CURINDEX=                      / Index number for exposure within the sequence
+MAXINDEX=                      / Number of requested images in sequence
+
+        ---- Additional Keys Information from Camera ----
+PROGRAM =                      / Name of the program
+REASON  =                      / Reason for observation
+
+        ---- Test Stand information ----
+TSTAND  =                      / The Test Stand used
+
+        ---- Information from Camera ----
+CAMMM   =                      / Camera Make and model
+APERTURE=                      / Aperture setting f-number
+DIAMETER=                      / Lens diameter [mm]
+FOCALLEN=                      / Lens focal length [mm]
+
+        ---- Camera Geometry ----
+SECPIX  =                      / [arcsec/pix] Image plate scale
+
+        ---- Exposure-related information ----
+EXPTIME =                      / [s] Exposure time
+
+        ---- Header information ----
+FILENAME=                      / Original file name
+HEADVER =                      / Version of header
+
+        ---- Hierarch information for CSC Simulatiom Mode ----
+HIERARCH SIMULATE MTMOUNT= / MTMount Simulation Mode (False=0)
+HIERARCH SIMULATE MTM1M3= / MTM1M3 Simulation Mode (False=0)
+HIERARCH SIMULATE MTM2= / MTM2 Simulation Mode (False=0)
+HIERARCH SIMULATE CAMHEXAPOD= / CAMHexapod Simulation Mode (False=0)
+HIERARCH SIMULATE M2HEXAPOD= / M2Hexapod Simulation Mode (False=0)
+HIERARCH SIMULATE MTROTATOR= / MTRotator Simulation Mode (False=0)
+HIERARCH SIMULATE MTDOME= / MTDome Simulation Mode (False=0)
+HIERARCH SIMULATE MTDOMETRAJECTORY= / MTDomeTrajectory Simulation Mode (False=0)
+
+        ---- Checksums ----
+CHECKSUM=                      / checksum for the current HDU
+DATASUM =                      / checksum of the data records

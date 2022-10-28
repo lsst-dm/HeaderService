@@ -20,9 +20,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 __author__ = "LSST/Felipe Menanteau"
-__version__ = "3.1.0"
+__version__ = "3.1.1"
 version = __version__
 
 from . import hutils
 from . import hslib_salobj
 from . import camera_coords
+from . import hsregex

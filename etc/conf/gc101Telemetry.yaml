@@ -2,7 +2,7 @@
 
 # The name of the HeaderService
 hs_name: GCHeaderService
-hs_index: 1
+hs_index: 101
 instrument: GenericCamera
 # Vendor names come from an GenericCamera Event, this is in case it does not
 vendor_names: ['DUMMY']
@@ -109,6 +109,143 @@ telemetry:
   device_index: ${hs_index}
   collect_after_event: start_collection_event
 
+# -- Pointing Information
+
+ RA:
+  device: MTPtg
+  Stype: Event
+  topic: currentTarget
+  value: ra
+  collect_after_event: start_collection_event
+  scale: 57.29577951308232
+
+ DEC:
+  device: MTPtg
+  Stype: Event
+  topic: currentTarget
+  value: declination
+  collect_after_event: start_collection_event
+  scale: 57.29577951308232
+
+ ROTPA:
+  device: MTPtg
+  Stype: Event
+  topic: currentTarget
+  value: rotPA
+  collect_after_event: start_collection_event
+
+ RASTART:
+  device: MTPtg
+  Stype: Telemetry
+  topic: mountPosition
+  value: ra
+  collect_after_event: start_collection_event
+
+ DECSTART:
+  device: MTPtg
+  Stype: Telemetry
+  topic: mountPosition
+  value: declination
+  collect_after_event: start_collection_event
+
+ HASTART:
+  device: MTPtg
+  Stype: Telemetry
+  topic: currentTargetStatus
+  value: ha
+  collect_after_event: start_collection_event
+
+ AMSTART:
+  device: MTPtg
+  Stype: Telemetry
+  topic: currentTargetStatus
+  value: airmass
+  collect_after_event: start_collection_event
+
+ ELSTART:
+  device: MTMount
+  Stype: Telemetry
+  topic: elevation
+  value: actualPosition
+  collect_after_event: start_collection_event
+
+ AZSTART:
+  device: MTMount
+  Stype: Telemetry
+  topic: azimuth
+  value: actualPosition
+  collect_after_event: start_collection_event
+
+ RAEND:
+  device: MTPtg
+  Stype: Telemetry
+  topic: mountPosition
+  value: ra
+  collect_after_event: end_collection_event
+
+ DECEND:
+  device: MTPtg
+  Stype: Telemetry
+  topic: mountPosition
+  value: declination
+  collect_after_event: end_collection_event
+
+ HAEND:
+  device: MTPtg
+  Stype: Telemetry
+  topic: currentTargetStatus
+  value: ha
+  collect_after_event: end_collection_event
+
+ AMEND:
+  device: MTPtg
+  Stype: Telemetry
+  topic: currentTargetStatus
+  value: airmass
+  collect_after_event: end_collection_event
+
+ ELEND:
+  device: MTMount
+  Stype: Telemetry
+  topic: elevation
+  value: actualPosition
+  collect_after_event: end_collection_event
+
+ AZEND:
+  device: MTMount
+  Stype: Telemetry
+  topic: azimuth
+  value: actualPosition
+  collect_after_event: end_collection_event
+
+ FOCUSZ:
+  device: MTHexapod
+  device_index: 1
+  Stype: Telemetry
+  topic: application
+  value: demand
+  collect_after_event: start_collection_event
+  array_index: 2
+  array: indexed_array
+
+ TRACKSYS:
+  device: MTPtg
+  Stype: Event
+  topic: currentTarget
+  value: targetType
+  collect_after_event: start_collection_event
+  array: enum
+  array_name: TargetTypes
+
+ RADESYS:
+  device: MTPtg
+  Stype: Event
+  topic: currentTarget
+  value: frame
+  collect_after_event: start_collection_event
+  array: enum
+  array_name: CoordFrame
+
 # -- Image Identifying Information
 
  CAMCODE:
@@ -165,38 +302,6 @@ telemetry:
   array_keyname: imageType
   array: keyed_array
 
-# -- Camera Information
-
- CAMMM:
-  device: GenericCamera
-  Stype: Event
-  topic: cameraInfo
-  value: cameraMakeAndModel
-  device_index: ${hs_index}
-  collect_after_event: start_collection_event
-
- DIAMETER:
-  device: GenericCamera
-  Stype: Event
-  topic: startIntegration
-  value: additionalValues
-  device_index: ${hs_index}
-  collect_after_event: start_collection_event
-  array_keys: additionalKeys
-  array_keyname: diameter
-  array: keyed_array
-
- FOCALLEN:
-  device: GenericCamera
-  Stype: Event
-  topic: startIntegration
-  value: additionalValues
-  device_index: ${hs_index}
-  collect_after_event: start_collection_event
-  array_keys: additionalKeys
-  array_keyname: focalLength
-  array: keyed_array
-
 # -- Additional Keywords from Camera
 
  REASON:
@@ -239,6 +344,62 @@ telemetry:
   device_index: ${hs_index}
   collect_after_event: start_collection_event
 
+# -- Camera Information
+
+ CAMMM:
+  device: GenericCamera
+  Stype: Event
+  topic: cameraInfo
+  value: cameraMakeAndModel
+  device_index: ${hs_index}
+  collect_after_event: start_collection_event
+
+ APERTURE:
+  device: GenericCamera
+  Stype: Event
+  topic: startIntegration
+  value: additionalValues
+  device_index: ${hs_index}
+  collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: aperture
+  array: keyed_array
+
+ DIAMETER:
+  device: GenericCamera
+  Stype: Event
+  topic: startIntegration
+  value: additionalValues
+  device_index: ${hs_index}
+  collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: diameter
+  array: keyed_array
+
+ FOCALLEN:
+  device: GenericCamera
+  Stype: Event
+  topic: startIntegration
+  value: additionalValues
+  device_index: ${hs_index}
+  collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: focalLength
+  array: keyed_array
+
+# -- Camera Geometry
+
+ SECPIX:
+  device: GenericCamera
+  Stype: Event
+  topic: startIntegration
+  value: additionalValues
+  device_index: ${hs_index}
+  collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: plateScale
+  array: keyed_array
+
 # -- Exposure Information
 
  EXPTIME:
@@ -248,3 +409,63 @@ telemetry:
   value: exposureTime
   device_index: ${hs_index}
   collect_after_event: start_collection_event
+
+# ------- Hierarch keywords --------
+
+ HIERARCH SIMULATE MTMOUNT:
+   device: MTMount
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE MTM1M3:
+   device: MTM1M3
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE MTM2:
+   device: MTM2
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE CAMHEXAPOD:
+   device: MTHexapod
+   device_index: 1
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE M2HEXAPOD:
+   device: MTHexapod
+   device_index: 2
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE MTROTATOR:
+   device: MTRotator
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE MTDOME:
+   device: MTDome
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE MTDOMETRAJECTORY:
+   device: MTDomeTrajectory
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event

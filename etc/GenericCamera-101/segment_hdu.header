@@ -1,0 +1,9 @@
+XTENSION= 'IMAGE   '           / marks beginning of new HDU
+BITPIX  =                   32 / bits per data value
+INHERIT =                    T / Inherits global header
+PCOUNT  =                    0 / Required value
+GCOUNT  =                    1 / Required value
+EXTNAME =
+DATASEC =
+DETSEC  =
+DETSIZE =
