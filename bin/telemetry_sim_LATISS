@@ -95,6 +95,9 @@ def cmdline():
                         type=str, help="Optional additionalValues")
     parser.add_argument("--seeing", action="store", default=1.2, type=float,
                         help="The Seeing from the DIMM monitor (arcsec).")
+    parser.add_argument("--seeing_expiresIn", action="store", default=300, type=float,
+                        help="The Seeing expiration time in seconds")
+
     parser.add_argument("--domeaz", action="store", default=45, type=float,
                         help="The Dome AZ position (deg).")
     parser.add_argument("--shutterlow", action="store", default=0, type=float,
@@ -253,8 +256,15 @@ async def amain():
     LOGGER.info("Sending simulated ATMCS Target")
 
     # Seeing
-    kwSeeing = {'fwhm': args.seeing}
+    timestamp_now = time.time()
+    expiresAt = timestamp_now + args.seeing_expiresIn
+    kwSeeing = {'fwhm': args.seeing,
+                'timestamp': timestamp_now,
+                'expiresIn': args.seeing_expiresIn,
+                'expiresAt': expiresAt,
+                'force_output': True}
     await dimm.evt_dimmMeasurement.set_write(**kwSeeing)
+    LOGGER.info("Sending simulated Dimm Information {}".format(kwSeeing))
 
     # Sending Dome information
     kwDome = {'azimuthPosition': args.domeaz,
