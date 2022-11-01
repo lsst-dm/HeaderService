@@ -737,11 +737,7 @@ class HSWorker(salobj.BaseCsc):
         # Check if it has the expiresAt attribute
         if hasattr(myData, 'expiresAt'):
             expiresAt = getattr(myData, 'expiresAt')
-            expiresIn = getattr(myData, 'expiresIn')
-            timestamp = getattr(myData, 'timestamp')
             self.log.info(f"Found expiresAt: {expiresAt} in payload")
-            self.log.info(f"Found expiresIn: {expiresIn} in payload")
-            self.log.info(f"Found timestamp: {timestamp} in payload")
             timestamp_now = time.time()  # unix UTC time
             if timestamp_now > expiresAt:
                 has_expired = True
