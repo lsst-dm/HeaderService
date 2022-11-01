@@ -712,6 +712,10 @@ class HSWorker(salobj.BaseCsc):
             # Access data payload only once
             if name not in myData:
                 myData[name] = self.Remote_get[name]()
+                self.log.info(f"Checking expiration for {name}")
+                if self.check_telemetry_expired(myData[name]):
+                    self.log.warning(f"Expired telemetry for {name} -- will ignore")
+                    myData[name] = None
             # Only update metadata if myData is defined (not None)
             if myData[name] is None:
                 self.log.warning(f"Cannot get keyword: {keyword} from topic: {name}")
@@ -726,6 +730,22 @@ class HSWorker(salobj.BaseCsc):
                 except KeyError:
                     self.log.warning(f"Cannot extract keyword: {keyword} from topic: {name}")
         return metadata
+
+    def check_telemetry_expired(self, myData):
+        """ Check is telemetry has expired using expiresAt parameter"""
+        has_expired = False
+        # Check if it has the expiresAt attribute
+        if hasattr(myData, 'expiresAt'):
+            expiresAt = getattr(myData, 'expiresAt')
+            expiresIn = getattr(myData, 'expiresIn')
+            timestamp = getattr(myData, 'timestamp')
+            self.log.info(f"Found expiresAt: {expiresAt} in payload")
+            self.log.info(f"Found expiresIn: {expiresIn} in payload")
+            self.log.info(f"Found timestamp: {timestamp} in payload")
+            timestamp_now = time.time()  # unix UTC time
+            if timestamp_now > expiresAt:
+                has_expired = True
+        return has_expired
 
     def extract_from_myData(self, keyword, myData, sep=":"):
 
