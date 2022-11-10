@@ -326,7 +326,8 @@ async def amain():
         await cam.tel_focal_plane_Ccd.set_write(**kwCCD)
 
         # Send CCD temperature Setpoint telemetry using a random generator
-        kwCCD = {'tempCCDSetPoint': random.uniform(-50, -40)}
+        kwCCD = {'tempCCDSetPoint': random.uniform(-100, -90),
+                 'tempCCD': random.uniform(-100, -90)}
         await cam.tel_vacuum.set_write(**kwCCD)
         LOGGER.info("Sending simulated vacuum")
 
