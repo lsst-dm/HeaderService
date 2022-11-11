@@ -320,7 +320,7 @@ async def amain():
 
         # Send CCD temperature telemetry using a random generator
         kwCCD = {'location': ':'.join(ccdLocation),
-                 'temp': [random.uniform(-30, 0)]*Nsensors
+                 'temp': [random.uniform(-100, -90)]*Nsensors
                  }
         LOGGER.info("Sending simulated fp_Ccd {}".format(kwCCD))
         await cam.tel_focal_plane_Ccd.set_write(**kwCCD)

@@ -245,9 +245,11 @@ telemetry:
  CCDTEMP:
   device: ATCamera
   Stype: Telemetry
-  topic: vacuum
-  value: tempCCD
+  topic: focal_plane_Ccd
+  value: temp
   collect_after_event: start_collection_event
+  array: CCD_array
+  array_keys: location
 
  CCD_MANU:
   device: ATCamera
