@@ -506,13 +506,20 @@ class HSWorker(salobj.BaseCsc):
             self.write(imageName)
             # Announce/upload LFO
             await self.announce(imageName)
-            # Clean up
-            self.clean(imageName)
 
-        self.log.info(f"-------- Done: {imageName} -------------------")
-        self.log.info("-------- Ready for next image -----")
+        if self.completed_OK[imageName] is True:
+            self.log.info(f"-------- Done: {imageName} -------------------")
+        else:
+            self.log.error(f"-------- Failed: {imageName} -------------------")
+
+        # Clean up
+        self.clean(imageName)
+
+        if self.summary_state == salobj.State.ENABLED:
+            self.log.info("-------- Ready for next image -----")
         # Cancel timed out tasks
         self.cancel_timeout_tasks()
+        self.log.info(f"Current state is: {self.summary_state.name}")
 
     def read_camera_vendors(self, sep=":"):
         """ Read the vendor/ccdLocation from camera event """
@@ -640,7 +647,13 @@ class HSWorker(salobj.BaseCsc):
             url = f"{self.s3conn.meta.client.meta.endpoint_url}/{self.s3bucket.name}/{key}"
             t0 = time.time()
             with open(self.filename_HDR[imageName], "rb") as f:
-                await self.s3bucket.upload(fileobj=f, key=key)
+                s3upload = await self.upload_to_s3(f, key, imageName, nt=2)
+
+            if s3upload is False:
+                await self.fault(code=9, report=f"Failed s3 bucket upload for: {imageName}")
+                self.completed_OK[imageName] = False
+                return
+
             self.log.info(f"Header s3 upload time: {hutils.elapsed_time(t0)}")
             self.log.info(f"Will use s3 key: {key}")
             self.log.info(f"Will use s3 url: {url}")
@@ -671,11 +684,26 @@ class HSWorker(salobj.BaseCsc):
 
         await self.evt_largeFileObjectAvailable.set_write(**kw)
         self.log.info(f"Sent {self.config.hs_name} largeFileObjectAvailable: {kw}")
+        self.completed_OK[imageName] = True
+
+    async def upload_to_s3(self, fileobj, key, imageName, nt=2):
+        """Loop call to salobj.s3bucket.upload with a number of tries."""
+        s3upload = False
+        k = 1
+        while k <= nt and s3upload is False:
+            try:
+                await self.s3bucket.upload(fileobj=fileobj, key=key)
+                s3upload = True
+            except Exception as e:
+                self.log.error(f"Failed s3bucket.upload attempt # {k}/{nt} for: {imageName}")
+                self.log.exception(str(e))
+            k += 1
+        return s3upload
 
     def write(self, imageName):
         """ Function to call to write the header"""
         self.HDR[imageName].write_header(self.filename_HDR[imageName])
-        self.log.info("Wrote header to: {}".format(self.filename_HDR[imageName]))
+        self.log.info("Wrote header to filesystem: {}".format(self.filename_HDR[imageName]))
 
     def clean(self, imageName):
         """ Clean up imageName data structures"""
@@ -685,6 +713,7 @@ class HSWorker(salobj.BaseCsc):
         del self.HDR[imageName]
         del self.filename_HDR[imageName]
         del self.filename_FITS[imageName]
+        del self.completed_OK[imageName]
 
     def create_dicts(self):
         """
@@ -697,6 +726,7 @@ class HSWorker(salobj.BaseCsc):
         self.HDR = {}
         self.filename_FITS = {}
         self.filename_HDR = {}
+        self.completed_OK = {}
 
     def collect(self, keys):
         """ Collect meta-data from the telemetry-connected channels
