@@ -873,35 +873,6 @@ class HSWorker(salobj.BaseCsc):
         if self.tstand:
             metadata['TSTAND'] = self.tstand
 
-        # If not LATISS stop here
-        if self.config.instrument != 'LATISS':
-            # Update the imageName metadata with new dict
-            self.metadata[imageName].update(metadata)
-            return
-
-        # ---------------------------------------------------------------------
-        # This functions will only be used for LATISS
-
-        if set(('RA', 'DEC', 'ROTPA', 'RADESYS')).issubset(metadata):
-            sensor = self.sensors[0]
-            self.log.info(f"Computing WCS-TAN from RA/DEC/ROTPA for {sensor}")
-            wcs_TAN = self.HDR[imageName].CCDInfo[sensor].wcs_TAN(metadata['RA'],
-                                                                  metadata['DEC'],
-                                                                  metadata['ROTPA'],
-                                                                  metadata['RADESYS'])
-            # Update the metadata
-            metadata.update(wcs_TAN)
-        else:
-            if 'RA' not in metadata:
-                self.log.info("No 'RA' needed to compute WCS")
-            if 'DEC' not in metadata:
-                self.log.info("No 'DEC' needed to compute WCS")
-            if 'ROTPA' not in metadata:
-                self.log.info("No 'ROTPA' needed to compute WCS")
-            if 'RADESYS' not in metadata:
-                self.log.info("No 'RADESYS' needed to compute WCS")
-        # ---------------------------------------------------------------------
-
         # Update the imageName metadata with new dict
         self.metadata[imageName].update(metadata)
 
