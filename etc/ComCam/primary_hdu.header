@@ -88,6 +88,14 @@ EXPTIME =                      / Exposure time in seconds
 SHUTTIME=                      / Shutter exposure time in seconds
 DARKTIME=                      / Dark time in seconds
 
+        ---- Weather information ----
+AIRTEMP =                      / [degC] Air Temperature
+PRESSURE=                      / [Pascals] Atmospheric Pressure
+HUMIDITY=                      / Percentage of Relative Humidity
+WINDSPD =                      / [m/s] Wind Speed
+WINDDIR =                      / [deg] Wind Direction
+SEEING  =                      / [arcsec] Seeing from FWHM DIMM measurement
+
         ---- Header information ----
 FILENAME=                      / Original file name
 HEADVER =                      / Version of header
