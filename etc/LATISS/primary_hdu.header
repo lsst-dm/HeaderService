@@ -58,23 +58,6 @@ DOMEAZ  =                      / [deg] Dome Azimuth Position
 SHUTLOWR=                      / Dome Dropout Door Opening Percentage
 SHUTUPPR=                      / Dome Main Door Opening Percentage
 
-        ---- TAN Projection ----
-WCSAXES =                    2 / WCS Dimensionality
-CTYPE1  = 'RA---TAN'           / Coordinate type
-CTYPE2  = 'DEC--TAN'           / Coordinate type
-CUNIT1  = 'deg     '
-CUNIT2  = 'deg     '
-CRVAL1  =                      / [deg] WCS Reference Coordinate (RA)
-CRVAL2  =                      / [deg] WCS Reference Coordinate (DEC)
-CRPIX1  =                      / Reference pixel axis 1
-CRPIX2  =                      / Reference pixel axis 2
-CD1_1   =                      / DL/DX World coordinate transformation matrix
-CD1_2   =                      / DL/DY World coordinate transformation matrix
-CD2_1   =                      / DM/DX World coordinate transformation matrix
-CD2_2   =                      / DM/DY World coordinate transformation matrix
-EQUINOX =             2000.00  / Equinox of coordinates
-RADESYS =                      / Telescope coordinate system
-
         ---- Image-identifying used to build OBS-ID ----
 CAMCODE =                      / The code for the camera (AT/CC/MC)
 CONTRLLR=                      / The controller (e.g. O for OCS, C for (A)CCS)

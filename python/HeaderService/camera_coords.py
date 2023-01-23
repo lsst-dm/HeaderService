@@ -20,7 +20,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import HeaderService
-import math
 import logging
 LOGGER = logging.getLogger(__name__)
 
@@ -330,26 +329,3 @@ class CCDInfo:
         EXTENSION_DATA['DTV2'] = (2*self.dimv + 1)*(1 - Sx)
         EXTENSION_DATA['DETSEC'] = "[{:d}:{:d},{:d}:{:d}]".format(dsx1, dsx2, dsy1, dsy2)
         return EXTENSION_DATA
-
-    def wcs_TAN(self, ra, dec, rot_angle, radesys):
-
-        """
-        Compute the common section of the WCS Tangential projection matrix
-        See for a definition http://danmoser.github.io/notes/gai_fits-imgs.html
-        """
-
-        wcs = {'CTYPE1': 'RA---TAN',
-               'CTYPE2': 'DEC--TAN',
-               'CUNIT1': 'deg',
-               'CUNIT2': 'deg',
-               'CRVAL1': ra,
-               'CRVAL2': dec,
-               'CRPIX1': self.CRPIX1,
-               'CRPIX2': self.CRPIX2,
-               'CD1_1': self.CDELT1*math.cos(rot_angle),
-               'CD1_2': -self.CDELT2*math.sin(rot_angle),
-               'CD2_1': self.CDELT1*math.sin(rot_angle),
-               'CD2_2': self.CDELT2*math.cos(rot_angle),
-               'RADESYS': radesys,
-               }
-        return wcs
