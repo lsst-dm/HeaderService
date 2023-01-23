@@ -87,6 +87,21 @@ def cmdline():
     parser.add_argument("--additionalValues", action="store",
                         default='BIAS:CALSET_XXXX_YYYY:SIMTEST_ABCD:No-good-reason:my_program',
                         type=str, help="Optional additionalValues")
+    parser.add_argument("--seeing", action="store", default=1.2, type=float,
+                        help="The Seeing from the DIMM monitor (arcsec).")
+    parser.add_argument("--seeing_expiresIn", action="store", default=300, type=float,
+                        help="The Seeing expiration time in seconds")
+
+    parser.add_argument("--ambient_temp", action="store", default=12.5, type=float,
+                        help="The Ambient Temperature in degC.")
+    parser.add_argument("--pressure", action="store", default=101325, type=float,
+                        help="Atmospheric Pressure in Pascals.")
+    parser.add_argument("--humidity", action="store", default=20.5, type=float,
+                        help="Percentage of Relative Humidity.")
+    parser.add_argument("--windSpeed", action="store", default=8.5, type=float,
+                        help="Wind Speed in m/s.")
+    parser.add_argument("--windDirection", action="store", default=32.5, type=float,
+                        help="Wind Direction in degrees.")
 
     parser.add_argument("--sleeptime", action="store", default=1, type=float,
                         help="Sleep Time between step, in seconds")
@@ -125,6 +140,8 @@ async def amain():
     dome = salobj.Controller(name="MTDome", index=0)
     rotator = salobj.Controller(name="MTRotator", index=0)
     dometraj = salobj.Controller(name="MTDomeTrajectory", index=0)
+    dimm = salobj.Controller(name="DIMM", index=1)
+    env = salobj.Controller(name="WeatherStation", index=1)
 
     LOGGER = hutils.create_logger()
 
@@ -194,6 +211,34 @@ async def amain():
                 'filterSlot': args.filterslot}
     await cam.evt_endSetFilter.set_write(**kwFilter)
     LOGGER.info("Sending simulated Camera endSetFilter:{}".format(kwFilter))
+
+    # Seeing
+    timestamp_now = time.time()
+    expiresAt = timestamp_now + args.seeing_expiresIn
+    kwSeeing = {'fwhm': args.seeing,
+                'timestamp': timestamp_now,
+                'expiresIn': args.seeing_expiresIn,
+                'expiresAt': expiresAt,
+                'force_output': True}
+    await dimm.evt_dimmMeasurement.set_write(**kwSeeing)
+    LOGGER.info("Sending simulated Dimm Information {}".format(kwSeeing))
+
+    # Weather/Env Information
+    kwWeather = {'ambient_temp': args.ambient_temp,
+                 'pressure': args.pressure,
+                 'humidity': args.humidity}
+    await env.tel_weather.set_write(**kwWeather)
+    LOGGER.info("Sending simulated Temp/pressure/humidity")
+
+    # Wind Speed
+    kwWindSpeed = {'value': args.windSpeed}
+    await env.tel_windSpeed.set_write(**kwWindSpeed)
+    LOGGER.info("Sending simulated Wind Speed")
+
+    # Wind Direction
+    kwWindDir = {'value': args.windDirection}
+    await env.tel_windDirection.set_write(**kwWindDir)
+    LOGGER.info("Sending simulated Wind Direction")
 
     kwSim = {'mode': 1}
     await m2.evt_simulationMode.set_write(**kwSim)

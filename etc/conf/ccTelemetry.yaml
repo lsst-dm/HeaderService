@@ -551,6 +551,55 @@ telemetry:
   value: filterPosition
   collect_after_event: start_collection_event
 
+# ---- Weather information -----------------------------
+ AIRTEMP:
+  device: WeatherStation
+  device_index: 1
+  Stype: Telemetry
+  topic: weather
+  value: ambient_temp
+  collect_after_event: start_collection_event
+
+ PRESSURE:
+  device: WeatherStation
+  device_index: 1
+  Stype: Telemetry
+  topic: weather
+  value: pressure
+  collect_after_event: start_collection_event
+
+ HUMIDITY:
+  device: WeatherStation
+  device_index: 1
+  Stype: Telemetry
+  topic: weather
+  value: humidity
+  collect_after_event: start_collection_event
+
+ WINDSPD:
+  device: WeatherStation
+  device_index: 1
+  Stype: Telemetry
+  topic: windSpeed
+  value: value
+  collect_after_event: start_collection_event
+
+ WINDDIR:
+  device: WeatherStation
+  device_index: 1
+  Stype: Telemetry
+  topic: windDirection
+  value: value
+  collect_after_event: start_collection_event
+
+ SEEING:
+  device: DIMM
+  device_index: 1
+  Stype: Event
+  topic: dimmMeasurement
+  value: fwhm
+  collect_after_event: start_collection_event
+
 # ------- Hierarch keywords --------
 
  HIERARCH SIMULATE MTMOUNT:
