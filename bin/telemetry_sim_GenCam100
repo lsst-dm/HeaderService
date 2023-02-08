@@ -174,12 +174,6 @@ async def amain():
         await ptg.tel_mountPosition.set_write(**kwMP)
         LOGGER.info("Sending simulated mountPosition for RA/DEC EL/AZ Start")
 
-        kwEL = {'actualPosition': args.el}
-        await mount.tel_elevation.set_write(**kwEL)
-        kwAZ = {'actualPosition': args.az}
-        await mount.tel_azimuth.set_write(**kwAZ)
-        LOGGER.info("Sending simulated mount positions for EL/AZ Start")
-
         # Send the startIntegration for image: k
         LOGGER.info("Sending simulated startIntegration")
         kwInt = {'additionalKeys': args.additionalKeys,
@@ -220,12 +214,6 @@ async def amain():
                 'airmass': args.airmass*random.uniform(0.95, 1.05)}
         await ptg.tel_currentTargetStatus.set_write(**kwTA)
         LOGGER.info("Sending simulated currentTargetStatus HA/AIRMASS END")
-
-        kwEL = {'actualPosition': args.el*random.uniform(0.95, 1.05)}
-        await mount.tel_elevation.set_write(**kwEL)
-        kwAZ = {'actualPosition': args.az**random.uniform(0.95, 1.05)}
-        await mount.tel_azimuth.set_write(**kwAZ)
-        LOGGER.info("Sending simulated mount positions for EL/AZ END")
 
         # Send startReadout Event after integration is finished
         LOGGER.info("Sending simulated startReadout")

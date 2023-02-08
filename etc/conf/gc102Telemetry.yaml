@@ -163,17 +163,17 @@ telemetry:
   collect_after_event: start_collection_event
 
  ELSTART:
-  device: MTMount
+  device: MTPtg
   Stype: Telemetry
-  topic: elevation
-  value: actualPosition
+  topic: mountPosition
+  value: elevationActualPosition
   collect_after_event: start_collection_event
 
  AZSTART:
-  device: MTMount
+  device: MTPtg
   Stype: Telemetry
-  topic: azimuth
-  value: actualPosition
+  topic: mountPosition
+  value: azimuthActualPosition
   collect_after_event: start_collection_event
 
  RAEND:
@@ -205,17 +205,17 @@ telemetry:
   collect_after_event: end_collection_event
 
  ELEND:
-  device: MTMount
+  device: MTPtg
   Stype: Telemetry
-  topic: elevation
-  value: actualPosition
+  topic: mountPosition
+  value: elevationActualPosition
   collect_after_event: end_collection_event
 
  AZEND:
-  device: MTMount
+  device: MTPtg
   Stype: Telemetry
-  topic: azimuth
-  value: actualPosition
+  topic: mountPosition
+  value: azimuthActualPosition
   collect_after_event: end_collection_event
 
  FOCUSZ:
