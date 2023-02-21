@@ -24,12 +24,12 @@ FACILITY= 'Vera C. Rubin Observatory' / Facility name
 TELESCOP= 'LSST AuxTelescope'  / Telescope name
 INSTRUME= 'LATISS'             / Instrument used to obtain these data
 OBSERVER= 'LSST'               / Observer name(s)
-OBS-LONG=           -70.749417 / [deg] Observatory east longitude
-OBS-LAT =           -30.244639 / [deg] Observatory latitude
+OBS-LONG=          -70.7476862 / [deg] Observatory east longitude
+OBS-LAT =          -30.2447889 / [deg] Observatory latitude
 OBS-ELEV=               2663.0 / [m] Observatory elevation
-OBSGEO-X=           1818938.94 / [m] X-axis Geocentric coordinate
-OBSGEO-Y=          -5208470.95 / [m] Y-axis Geocentric coordinate
-OBSGEO-Z=          -3195172.08 / [m] Z-axis Geocentric coordinate
+OBSGEO-X=           1819093.52 / [m] X-axis Geocentric coordinate
+OBSGEO-Y=          -5208408.10 / [m] Y-axis Geocentric coordinate
+OBSGEO-Z=           3195186.45 / [m] Z-axis Geocentric coordinate
 
         ---- Pointing info, etc. ----
 RA      =                      / RA commanded from pointing component
