@@ -757,8 +757,10 @@ class HSWorker(salobj.BaseCsc):
                     if 'scale' in self.config.telemetry[keyword]:
                         metadata[keyword] = metadata[keyword]*self.config.telemetry[keyword]['scale']
                         self.log.info(f"Scaled key: {keyword} by: {self.config.telemetry[keyword]['scale']}")
-                except KeyError:
-                    self.log.warning(f"Cannot extract keyword: {keyword} from topic: {name}")
+                except Exception as err:
+                    self.log.error(f"Error while extracting keyword: {keyword} from topic: {name}")
+                    self.log.error(f"{err.__class__.__name__}: {err}")
+
         return metadata
 
     def check_telemetry_expired(self, myData):
