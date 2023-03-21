@@ -127,13 +127,6 @@ telemetry:
   collect_after_event: start_collection_event
   scale: 57.29577951308232
 
- ROTPA:
-  device: MTPtg
-  Stype: Event
-  topic: currentTarget
-  value: rotPA
-  collect_after_event: start_collection_event
-
  RASTART:
   device: MTPtg
   Stype: Telemetry
