@@ -100,7 +100,7 @@ def cmdline():
                         help="Percentage of Relative Humidity.")
     parser.add_argument("--windSpeed", action="store", default=8.5, type=float,
                         help="Wind Speed in m/s.")
-    parser.add_argument("--windDirection", action="store", default=32.5, type=float,
+    parser.add_argument("--windDirection", action="store", default=90, type=float,
                         help="Wind Direction in degrees.")
 
     parser.add_argument("--sleeptime", action="store", default=1, type=float,
@@ -141,7 +141,7 @@ async def amain():
     rotator = salobj.Controller(name="MTRotator", index=0)
     dometraj = salobj.Controller(name="MTDomeTrajectory", index=0)
     dimm = salobj.Controller(name="DIMM", index=1)
-    env = salobj.Controller(name="WeatherStation", index=1)
+    ess = salobj.Controller(name="ESS", index=301)
 
     LOGGER = hutils.create_logger()
 
@@ -224,21 +224,24 @@ async def amain():
     LOGGER.info("Sending simulated Dimm Information {}".format(kwSeeing))
 
     # Weather/Env Information
-    kwWeather = {'ambient_temp': args.ambient_temp,
-                 'pressure': args.pressure,
-                 'humidity': args.humidity}
-    await env.tel_weather.set_write(**kwWeather)
-    LOGGER.info("Sending simulated Temp/pressure/humidity")
+    # Temperature
+    kwtemp = {'temperature': [args.ambient_temp]*16}
+    await ess.tel_temperature.set_write(**kwtemp)
+    LOGGER.info("Sending simulated Temperature")
 
-    # Wind Speed
-    kwWindSpeed = {'value': args.windSpeed}
-    await env.tel_windSpeed.set_write(**kwWindSpeed)
-    LOGGER.info("Sending simulated Wind Speed")
+    # Pressure
+    kwpress = {'pressure': [args.pressure]*8}
+    await ess.tel_pressure.set_write(**kwpress)
 
-    # Wind Direction
-    kwWindDir = {'value': args.windDirection}
-    await env.tel_windDirection.set_write(**kwWindDir)
-    LOGGER.info("Sending simulated Wind Direction")
+    # Humidity
+    kwhumid = {'relativeHumidity': args.humidity}
+    await ess.tel_relativeHumidity.set_write(**kwhumid)
+
+    # Wind Speed/Direcction
+    kwairFlow = {'speed': args.windSpeed,
+                 'direction': args.windDirection}
+    await ess.tel_airFlow.set_write(**kwairFlow)
+    LOGGER.info("Sending simulated Wind Speed and Direction")
 
     kwSim = {'mode': 1}
     await m2.evt_simulationMode.set_write(**kwSim)
