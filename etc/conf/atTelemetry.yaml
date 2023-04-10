@@ -618,43 +618,47 @@ telemetry:
 
 # ---- Weather information -----------------------------
  AIRTEMP:
-  device: WeatherStation
-  device_index: 1
+  device: ESS
+  device_index: 301
   Stype: Telemetry
-  topic: weather
-  value: ambient_temp
+  topic: temperature
+  value: temperature
   collect_after_event: start_collection_event
+  array_index: 0
+  array: indexed_array
 
  PRESSURE:
-  device: WeatherStation
-  device_index: 1
+  device: ESS
+  device_index: 301
   Stype: Telemetry
-  topic: weather
+  topic: pressure
   value: pressure
   collect_after_event: start_collection_event
+  array_index: 0
+  array: indexed_array
 
  HUMIDITY:
-  device: WeatherStation
-  device_index: 1
+  device: ESS
+  device_index: 301
   Stype: Telemetry
-  topic: weather
-  value: humidity
+  topic: relativeHumidity
+  value: relativeHumidity
   collect_after_event: start_collection_event
 
  WINDSPD:
-  device: WeatherStation
-  device_index: 1
+  device: ESS
+  device_index: 301
   Stype: Telemetry
-  topic: windSpeed
-  value: value
+  topic: airFlow
+  value: speed
   collect_after_event: start_collection_event
 
  WINDDIR:
-  device: WeatherStation
-  device_index: 1
+  device: ESS
+  device_index: 301
   Stype: Telemetry
-  topic: windDirection
-  value: value
+  topic: airFlow
+  value: direction
   collect_after_event: start_collection_event
 
  SEEING:
