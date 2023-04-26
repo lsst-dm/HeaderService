@@ -350,35 +350,26 @@ telemetry:
  APERTURE:
   device: GenericCamera
   Stype: Event
-  topic: startIntegration
-  value: additionalValues
+  topic: cameraInfo
+  value: lensAperture
   device_index: ${hs_index}
   collect_after_event: start_collection_event
-  array_keys: additionalKeys
-  array_keyname: aperture
-  array: keyed_array
 
  DIAMETER:
   device: GenericCamera
   Stype: Event
-  topic: startIntegration
-  value: additionalValues
+  topic: cameraInfo
+  value: lensDiameter
   device_index: ${hs_index}
   collect_after_event: start_collection_event
-  array_keys: additionalKeys
-  array_keyname: diameter
-  array: keyed_array
 
  FOCALLEN:
   device: GenericCamera
   Stype: Event
-  topic: startIntegration
-  value: additionalValues
+  topic: cameraInfo
+  value: lensFocalLength
   device_index: ${hs_index}
   collect_after_event: start_collection_event
-  array_keys: additionalKeys
-  array_keyname: focalLength
-  array: keyed_array
 
 # -- Camera Geometry
 
