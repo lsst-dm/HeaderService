@@ -41,10 +41,10 @@ def cmdline():
                         help="Optional Observation annnotation")
 
     parser.add_argument("--additionalKeys", action="store",
-                        default='imageType:groupId:reason:program:diameter:focalLength',
+                        default='imageType:groupId:reason:program',
                         type=str, help="Optional additionalKeys")
     parser.add_argument("--additionalValues", action="store",
-                        default='BIAS:CALSET_XXXX_YYYY:No-good-reason:my_program:10:20',
+                        default='BIAS:CALSET_XXXX_YYYY:No-good-reason:my_program',
                         type=str, help="Optional additionalValues")
 
     parser.add_argument("--sleeptime", action="store", default=1, type=float,
@@ -70,8 +70,16 @@ async def amain():
     cam = salobj.Controller(name="GenericCamera", index=1)
     LOGGER = hutils.create_logger()
 
-    LOGGER.info("---Starting Image loop---")
+    # Sending camera information
+    kwInfo = {'cameraMakeAndModel': 'Leica',
+              'lensFocalLength': 10,
+              'lensDiameter': 5,
+              'force_output': True}
+    LOGGER.info("Sending Camera Info")
+    await cam.evt_cameraInfo.set_write(**kwInfo)
+    LOGGER.info("Sending simulated cameraInfo: {}".format(kwInfo))
 
+    LOGGER.info("---Starting Image loop---")
     # Loop over NSequence
     for k in range(args.NSequence):
 
@@ -107,12 +115,6 @@ async def amain():
         LOGGER.info("Sending simulated startIntergration: {}".format(kwInt))
         LOGGER.info(f"Waiting for {args.exptime} sec")
         time.sleep(args.exptime)
-
-        # Sending camera information
-        kwInfo = {'cameraMakeAndModel': 'Leica',
-                  'force_output': True}
-        LOGGER.info("Sending Camera Info")
-        await cam.evt_cameraInfo.set_write(**kwInfo)
 
         # Send startReadout Event after integration is finished
         LOGGER.info("Sending simulated startReadout")
