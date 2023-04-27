@@ -376,13 +376,10 @@ telemetry:
  SECPIX:
   device: GenericCamera
   Stype: Event
-  topic: startIntegration
-  value: additionalValues
+  topic: cameraInfo
+  value: plateScale
   device_index: ${hs_index}
   collect_after_event: start_collection_event
-  array_keys: additionalKeys
-  array_keyname: plateScale
-  array: keyed_array
 
 # -- Exposure Information
 

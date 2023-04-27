@@ -64,10 +64,10 @@ def cmdline():
                         help="Optional Observation annnotation")
 
     parser.add_argument("--additionalKeys", action="store",
-                        default='imageType:groupId:reason:program:plateScale',
+                        default='imageType:groupId:reason:program',
                         type=str, help="Optional additionalKeys")
     parser.add_argument("--additionalValues", action="store",
-                        default='BIAS:CALSET_XXXX_YYYY:No-good-reason:my_program:0.77',
+                        default='BIAS:CALSET_XXXX_YYYY:No-good-reason:my_program',
                         type=str, help="Optional additionalValues")
 
     parser.add_argument("--sleeptime", action="store", default=1, type=float,
@@ -147,6 +147,7 @@ async def amain():
               'lensAperture': "1.4",
               'lensFocalLength': 10,
               'lensDiameter': 5,
+              'plateScale': 0.77,
               'force_output': True}
     LOGGER.info("Sending Camera Info")
     await cam.evt_cameraInfo.set_write(**kwInfo)
