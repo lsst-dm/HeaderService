@@ -229,13 +229,20 @@ class HSWorker(salobj.BaseCsc):
 
         # 2. Use AsyncS3Bucket to make bucket + S3 connection
         self.s3bucket = salobj.AsyncS3Bucket(name=self.s3bucket_name, domock=False)
-        self.log.info(f"Connection established to: {self.s3bucket_name}")
+        self.log.info(f"Defined AsyncS3Bucket: {self.s3bucket_name}")
+
         # We will re-use the connection made by salobj
         self.s3conn = self.s3bucket.service_resource
         self.log.info(f"Will use s3 endpoint_url: {self.s3conn.meta.client.meta.endpoint_url}")
 
         # 3. Make sure the bucket exists in the list of bucket names:
-        bucket_names = [b.name for b in self.s3conn.buckets.all()]
+        try:
+            bucket_names = [b.name for b in self.s3conn.buckets.all()]
+            self.log.info(f"Found s3 buckets: {bucket_names}")
+        except Exception as e:
+            self.log.error(f"Cannot connect to bucket: {self.s3bucket_name}")
+            self.log.exception(str(e))
+            raise e
         if self.s3bucket_name not in bucket_names:
             self.s3conn.create_bucket(Bucket=self.s3bucket_name)
             self.log.info(f"Created Bucket: {self.s3bucket_name}")
