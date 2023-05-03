@@ -510,9 +510,14 @@ class HSWorker(salobj.BaseCsc):
             # Update header object with metadata dictionary
             self.update_header(imageName)
             # Write the header
-            self.write(imageName)
-            # Announce/upload LFO
-            await self.announce(imageName)
+            write_OK = self.write(imageName)
+            if write_OK is False:
+                self.completed_OK[imageName] = False
+                self.log.warning("Sending the system to FAULT state")
+                await self.fault(code=9, report=f"Cannot write header for: {imageName}")
+            else:
+                # Announce/upload LFO if write_OK is True
+                await self.announce(imageName)
 
         if self.completed_OK[imageName] is True:
             self.log.info(f"-------- Done: {imageName} -------------------")
@@ -709,8 +714,17 @@ class HSWorker(salobj.BaseCsc):
 
     def write(self, imageName):
         """ Function to call to write the header"""
-        self.HDR[imageName].write_header(self.filename_HDR[imageName])
-        self.log.info("Wrote header to filesystem: {}".format(self.filename_HDR[imageName]))
+
+        try:
+            self.HDR[imageName].write_header(self.filename_HDR[imageName])
+            self.log.info(f"Wrote header to filesystem: {self.filename_HDR[imageName]}")
+            write_OK = True
+        except Exception as e:
+            self.log.error(f"Cannot write header to filesystem {self.filename_HDR[imageName]}")
+            self.log.error(f"{e.__class__.__name__}: {e}")
+            self.log.exception(str(e))
+            write_OK = False
+        return write_OK
 
     def clean(self, imageName):
         """ Clean up imageName data structures"""
