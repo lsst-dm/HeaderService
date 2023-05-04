@@ -39,6 +39,9 @@ class HSWorker(salobj.BaseCsc):
 
     def __init__(self, **keys):
 
+        # initialize current state to None
+        self.current_state = None
+
         # Load the configurarion
         self.config = types.SimpleNamespace(**keys)
 
@@ -83,9 +86,24 @@ class HSWorker(salobj.BaseCsc):
             self.end_evt_timeout_task[imageName].cancel()
 
     async def handle_summary_state(self):
-        self.log.info(f"Current state is: {self.summary_state.name}")
+
+        # if current_state hasn't been set, and the summary_state is STANDBY,
+        # we're just starting up, so don't do anything but set the current
+        # state to STANBY
+        if (self.current_state is None) and (self.summary_state == salobj.State.STANDBY):
+            self.current_state = self.summary_state
+
+        self.log.info(f"Current state is: {self.current_state.name}; transition to {self.summary_state.name}")
+
         if self.summary_state != salobj.State.ENABLED:
             self.cancel_timeout_tasks()
+
+        if (self.current_state == salobj.State.DISABLED) and (self.summary_state == salobj.State.ENABLED):
+            self.check_services()
+
+        self.log.info(f"Current state is: {self.summary_state.name}")
+        # Save the current_state for next
+        self.current_state = self.summary_state
 
     def define_evt_callbacks(self):
         """Set the callback functions based on configuration"""
@@ -397,6 +415,18 @@ class HSWorker(salobj.BaseCsc):
             os.makedirs(filepath)
             self.log.info(f"Created dirname:{filepath}")
 
+    def check_services(self):
+        """ Check that services needed s3/web are working"""
+
+        self.log.info("Checking for services")
+        # Define/check s3 buckets
+        if self.config.lfa_mode == 's3':
+            self.define_s3bucket()
+        # Start the web server
+        elif self.config.lfa_mode == 'http':
+            self.start_web_server(self.config.weblogfile)
+        self.log.info("Checking for services -- completed")
+
     def prepare(self):
         """
         Non-SAL/salobj related task that need to be prepared
@@ -408,14 +438,11 @@ class HSWorker(salobj.BaseCsc):
         # Make sure that we have a place to put the files
         self.check_outdir(self.config.filepath)
 
-        # Start the web server
-        if self.config.lfa_mode == 's3':
-            self.define_s3bucket()
-        elif self.config.lfa_mode == 'http':
-            self.start_web_server(self.config.weblogfile)
-
         # Get the TSTAND
         self.get_tstand()
+
+        # Check that services needed are running
+        self.check_services()
 
         # Create dictionaries keyed to imageName
         self.create_dicts()
