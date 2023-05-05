@@ -31,6 +31,7 @@ from . import hscalc
 from lsst.ts import salobj
 import HeaderService
 import importlib
+import copy
 
 
 class HSWorker(salobj.BaseCsc):
@@ -82,8 +83,10 @@ class HSWorker(salobj.BaseCsc):
 
     def cancel_timeout_tasks(self):
         """Cancel the per-image timeout tasks"""
-        for imageName in self.end_evt_timeout_task:
+        list_to_cancel = copy.deepcopy(self.end_evt_timeout_task)
+        for imageName in list_to_cancel:
             self.end_evt_timeout_task[imageName].cancel()
+            self.clean(imageName)
 
     async def handle_summary_state(self):
 
@@ -98,8 +101,9 @@ class HSWorker(salobj.BaseCsc):
         if self.summary_state != salobj.State.ENABLED:
             self.cancel_timeout_tasks()
 
+        # Check that services are running -- if not will go into FAULT
         if (self.current_state == salobj.State.DISABLED) and (self.summary_state == salobj.State.ENABLED):
-            self.check_services()
+            await self.check_services()
 
         self.log.info(f"Current state is: {self.summary_state.name}")
         # Save the current_state for next
@@ -260,12 +264,15 @@ class HSWorker(salobj.BaseCsc):
         except Exception as e:
             self.log.error(f"Cannot connect to bucket: {self.s3bucket_name}")
             self.log.exception(str(e))
-            raise e
+            s3bucket_OK = False
+            return s3bucket_OK
         if self.s3bucket_name not in bucket_names:
             self.s3conn.create_bucket(Bucket=self.s3bucket_name)
             self.log.info(f"Created Bucket: {self.s3bucket_name}")
         else:
             self.log.info(f"Bucket Name: {self.s3bucket_name} already exists")
+        s3bucket_OK = True
+        return s3bucket_OK
 
     def start_web_server(self, logfile, httpserver="http.server"):
 
@@ -415,17 +422,32 @@ class HSWorker(salobj.BaseCsc):
             os.makedirs(filepath)
             self.log.info(f"Created dirname:{filepath}")
 
-    def check_services(self):
+    async def check_services(self):
         """ Check that services needed s3/web are working"""
 
         self.log.info("Checking for services")
+        s3bucket_OK = True
+        webserver_OK = True
         # Define/check s3 buckets
         if self.config.lfa_mode == 's3':
-            self.define_s3bucket()
+            s3bucket_OK = self.define_s3bucket()
         # Start the web server
         elif self.config.lfa_mode == 'http':
-            self.start_web_server(self.config.weblogfile)
-        self.log.info("Checking for services -- completed")
+            try:
+                self.start_web_server(self.config.weblogfile)
+                webserver_OK = True
+            except Exception as e:
+                self.log.error("Cannot start webserver")
+                self.log.exception(str(e))
+                webserver_OK = False
+
+        # if start is not okay, we go to fault
+        if s3bucket_OK is False or webserver_OK is False:
+            self.log.error("Checking for services -- failed")
+            await self.fault(code=9, report="Checking for services -- failed")
+        else:
+            self.log.info("Checking for services -- completed")
+            self.check_services_OK = True
 
     def prepare(self):
         """
@@ -440,9 +462,6 @@ class HSWorker(salobj.BaseCsc):
 
         # Get the TSTAND
         self.get_tstand()
-
-        # Check that services needed are running
-        self.check_services()
 
         # Create dictionaries keyed to imageName
         self.create_dicts()
