@@ -1,7 +1,9 @@
-TAGNAME=ts-c0031
+TAGNAME=c0032
 DOCKER_IMA=ts-dockerhub.lsst.org/headerservice:$TAGNAME
 NAME=tssheaderservice
 HSUSER=saluser
+
+
 
 
 hostname="`hostname -s`-docker"
