@@ -466,6 +466,19 @@ class HSWorker(salobj.BaseCsc):
         # Create dictionaries keyed to imageName
         self.create_dicts()
 
+        # Define if we need sensor infornation in templates
+        # For LSSTCam, MTCamera is charge the Camera metadata
+        if self.config.instrument == 'LSSTCam':
+            self.nosensors = True
+        else:
+            self.nosensors = False
+
+        # Check for segment name in configuration
+        if not hasattr(self.config, 'segname'):
+            self.config.segname = None
+
+        self.log.info(f"Setting nosensors to: {self.nosensors} for {self.config.instrument}")
+
     async def complete_tasks_START(self, imageName):
         """
         Update data objects at START with asyncio lock
@@ -482,24 +495,14 @@ class HSWorker(salobj.BaseCsc):
             # when loading the templates we get a HDR.header object
             self.log.info(f"Creating header object for : {imageName}")
 
-            # Try to get the list of sensor from the Camera Configuration event
-            try:
-                self.vendor_names, self.sensors = self.read_camera_vendors()
-                self.log.info("Extracted vendors/ccdnames from Camera Configuration")
-            except Exception:
-                # In the absense of a message from camera to provide the list
-                # of sensors and vendors, we build the list using a function
-                # in hutils
-                self.log.warning("Cannot read camera vendor list from event")
-                self.log.warning("Will use defaults from config file instead")
-                self.sensors = hutils.build_sensor_list(self.config.instrument)
-                self.vendor_names = self.config.vendor_names
-
+            # Get the self.vendors and self.sensors
+            self.get_vendors_and_sensors()
             self.log.info(f"Will use vendors: {self.vendor_names}")
-            self.log.info(f"Will use sensors:{self.sensors}")
+            self.log.info(f"Will use sensors: {self.sensors}")
             self.HDR[imageName] = hutils.HDRTEMPL(logger=self.log,
                                                   section=self.config.section,
                                                   instrument=self.config.instrument,
+                                                  nosensors=self.nosensors,
                                                   segname=self.config.segname,
                                                   vendor_names=self.vendor_names,
                                                   sensor_names=self.sensors,
@@ -579,6 +582,29 @@ class HSWorker(salobj.BaseCsc):
         self.cancel_timeout_tasks()
         self.log.info(f"Current state is: {self.summary_state.name}")
 
+    def get_vendors_and_sensors(self):
+
+        if self.nosensors:
+            self.log.info(f"Will not get vendors/ccdnames for {self.config.instrument}")
+            self.vendor_names = []
+            self.sensors = []
+            return
+
+        # Try to get the list of sensor from the Camera Configuration event
+        try:
+            self.vendor_names, self.sensors = self.read_camera_vendors()
+            self.log.info("Extracted vendors/ccdnames from Camera Configuration")
+        except Exception:
+            # In the absense of a message from camera to provide the list
+            # of sensors and vendors, we build the list using a function
+            # in hutils
+            self.log.warning("Cannot read camera vendor list from event")
+            self.log.warning("Will use defaults from config file instead")
+            self.sensors = hutils.build_sensor_list(self.config.instrument)
+            self.vendor_names = self.config.vendor_names
+
+        return
+
     def read_camera_vendors(self, sep=":"):
         """ Read the vendor/ccdLocation from camera event """
         name = get_channel_name(self.config.cameraConf_event)
@@ -647,7 +673,6 @@ class HSWorker(salobj.BaseCsc):
 
         """Update FITSIO header object using the captured metadata"""
         for keyword, value in self.metadata[imageName].items():
-
             # Check if dictionary with per-sensor values
             if isinstance(value, dict):
                 for sensor in value.keys():

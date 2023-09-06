@@ -315,6 +315,7 @@ def build_sensor_list(instrument, sep=""):
             for j in range(3):
                 sensor_name = f"R{raft}{sep}S{i}{j}"
                 sensor_names.append(sensor_name)
+
     return sensor_names
 
 
@@ -330,6 +331,7 @@ class HDRTEMPL:
                  segname='Segment',
                  write_mode='yaml',
                  templ_path=None,
+                 nosensors=False,
                  templ_primary_name='primary_hdu.header',
                  templ_primary_sensor_name='primary_sensor_hdu.header',
                  templ_segment_name='segment_hdu.header'):
@@ -344,11 +346,12 @@ class HDRTEMPL:
         self.templ_segment_name = templ_segment_name
         self.write_mode = write_mode
         self.segname = segname
+        self.nosensors = nosensors
 
         # Figure out logging
         if logger:
             self.log = logger
-            self.log.info("Will recycle logger object")
+            self.log.debug("Will recycle logger object")
         else:
             self.log = create_logger()
             self.log.info("Logger created")
@@ -379,8 +382,15 @@ class HDRTEMPL:
         # Templates present in LATIIS and ComCam/LSSTCam
         self.templ_file = {}
         self.templ_file['PRIMARY'] = os.path.join(self.templ_path, self.templ_primary_name)
-        self.templ_file['SEGMENT'] = os.path.join(self.templ_path, self.templ_segment_name)
-        # Sensor is optional
+
+        # Segment is not present on LSSTCam
+        segment_file = os.path.join(self.templ_path, self.templ_segment_name)
+        if os.path.exists(segment_file):
+            self.templ_file['SEGMENT'] = segment_file
+        else:
+            self.log.warning(f"No SEGMENT template for {self.instrument}")
+
+        # Sensor is also optional
         sensor_file = os.path.join(self.templ_path, self.templ_primary_sensor_name)
         if os.path.exists(sensor_file):
             self.templ_file['SENSOR'] = sensor_file
@@ -396,6 +406,14 @@ class HDRTEMPL:
 
         self.log.info(f"Building HDRlist for {self.instrument}")
         self.HDRLIST = ['PRIMARY']
+
+        # Check if we'll use per-sensor templates
+        if self.nosensors:
+            self.log.info(f"No extra EXTNAME for {self.instrument}")
+            self.log.debug("Build HDRLIST:")
+            self.log.debug('\n\t'.join(self.HDRLIST))
+            return
+
         # Loop over list of sensors
         # Here we need to add the PRIMARY_SENSOR_NAME
         self.segment_names = {}
@@ -441,7 +459,10 @@ class HDRTEMPL:
 
         # Read in the primary and segment templates with fitsio
         self.header_primary = read_head_template(self.templ_file['PRIMARY'])
-        self.header_segment = read_head_template(self.templ_file['SEGMENT'])
+
+        # Ignore SEGMENT and SENSOR if files are not there
+        if 'SEGMENT' in self.templ_file:
+            self.header_segment = read_head_template(self.templ_file['SEGMENT'])
         # Sensor is optional
         if 'SENSOR' in self.templ_file:
             self.header_primary_sensor = read_head_template(self.templ_file['SENSOR'])
