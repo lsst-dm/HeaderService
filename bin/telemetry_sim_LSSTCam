@@ -23,15 +23,6 @@ def cmdline():
     parser.add_argument("--rotpa", action="store", default=0.0, type=float,
                         help="The ROTPA for the visit")
 
-    parser.add_argument("--filterband", action="store", default='r',
-                        help="The filter band name (i.e. r)")
-    parser.add_argument("--filtername", action="store", default='U-001',
-                        help="Name of the physical filter (i.e. U-001)")
-    parser.add_argument("--filterslot", action="store", default=0,
-                        help="Filter slot (1-indexed)")
-    parser.add_argument("--filterpos", action="store", default=666.0,
-                        help="The filter measured position of slide (i.e.: 666.0)")
-
     # Control imageName
     parser.add_argument("--camcode", action="store", default='MT',
                         help="The code for the telecope")
@@ -54,11 +45,7 @@ def cmdline():
                         help="The elevation angle")
     parser.add_argument("--az", action="store", default=45.0, type=float,
                         help="The azimuth angle")
-    parser.add_argument("--focusz", action="store", default=13, type=float,
-                        help="Hexapod FocusZ position (mm)")
 
-    parser.add_argument("--instport", action="store", default=1, type=int,
-                        help="The instrument port where LATISS is installed")
     parser.add_argument("--m3port", action="store", default=1, type=int,
                         help="Port the M3 is directing light into")
     parser.add_argument("--tracksys", action="store", default=1, type=int,
@@ -154,14 +141,6 @@ async def amain():
             'force_output': True}
     await ptg.evt_currentTarget.set_write(**kwTA)
     LOGGER.info("Sending simulated Ptg currentTarget:{}".format(kwTA))
-
-    # Set the filter names
-    kwFilter = {'filterType': args.filterband,
-                'filterName': args.filtername,
-                'filterPosition': args.filterpos,
-                'filterSlot': args.filterslot}
-    await cam.evt_endSetFilter.set_write(**kwFilter)
-    LOGGER.info("Sending simulated Camera endSetFilter:{}".format(kwFilter))
 
     # Seeing
     timestamp_now = time.time()

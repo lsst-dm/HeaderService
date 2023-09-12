@@ -475,7 +475,13 @@ class HSWorker(salobj.BaseCsc):
 
         # Check for segment name in configuration
         if not hasattr(self.config, 'segname'):
+            self.log.info("Setting segname to None")
             self.config.segname = None
+
+        # Check for imageParam_event
+        if not hasattr(self.config, 'imageParam_event'):
+            self.log.info("Setting imageParam_event to None")
+            self.config.imageParam_event = None
 
         self.log.info(f"Setting nosensors to: {self.nosensors} for {self.config.instrument}")
 
@@ -951,18 +957,25 @@ class HSWorker(salobj.BaseCsc):
         # transformed to TAI by the function hscalc.get_date()
         # Store the creation date of the header file -- i.e. now!!
         DATE = hscalc.get_date(time.time())
-        DATE_OBS = hscalc.get_date(metadata['DATE-OBS'])
-        DATE_BEG = hscalc.get_date(metadata['DATE-BEG'])
-        DATE_END = hscalc.get_date(metadata['DATE-END'])
         metadata['DATE'] = DATE.isot
-        metadata['DATE-OBS'] = DATE_OBS.isot
-        metadata['DATE-BEG'] = DATE_BEG.isot
-        metadata['DATE-END'] = DATE_END.isot
         # Need to force MJD dates to floats for yaml header
         metadata['MJD'] = float(DATE.mjd)
-        metadata['MJD-OBS'] = float(DATE_OBS.mjd)
-        metadata['MJD-BEG'] = float(DATE_BEG.mjd)
-        metadata['MJD-END'] = float(DATE_END.mjd)
+
+        if 'DATE-OBS' in metadata:
+            DATE_OBS = hscalc.get_date(metadata['DATE-OBS'])
+            metadata['DATE-OBS'] = DATE_OBS.isot
+            metadata['MJD-OBS'] = float(DATE_OBS.mjd)
+
+        if 'DATE-BEG' in metadata:
+            DATE_BEG = hscalc.get_date(metadata['DATE-BEG'])
+            metadata['DATE-BEG'] = DATE_BEG.isot
+            metadata['MJD-BEG'] = float(DATE_BEG.mjd)
+
+        if 'DATE-END' in metadata:
+            DATE_END = hscalc.get_date(metadata['DATE-END'])
+            metadata['DATE-END'] = DATE_END.isot
+            metadata['MJD-END'] = float(DATE_END.mjd)
+
         metadata['FILENAME'] = self.filename_FITS[imageName]
         if self.tstand:
             metadata['TSTAND'] = self.tstand

@@ -58,172 +58,15 @@ end_collection_event:
     device: MTCamera
     topic: endOfImageTelemetry
 
-# The event for the image readout paramters
-imageParam_event:
-    device: MTCamera
-    topic: imageReadoutParameters
-    array_keys: ccdLocation
+## The event for the image readout paramters
+#imageParam_event:
+#    device: MTCamera
+#    topic: imageReadoutParameters
+#    array_keys: ccdLocation
 
 # Telemetry values for images meta-data
 # https://confluence.lsstcorp.org/display/SYSENG/ComCam+Header+Information+Topic+Mapping
 telemetry:
-
- DATE-OBS:
-  device: MTCamera
-  Stype: Event
-  topic: endOfImageTelemetry
-  value: timestampDateObs
-  collect_after_event: end_collection_event
-
- DATE-BEG:
-  device: MTCamera
-  Stype: Event
-  topic: endOfImageTelemetry
-  value: timestampDateObs
-  collect_after_event: end_collection_event
-
- DATE-END:
-  device: MTCamera
-  Stype: Event
-  topic: endOfImageTelemetry
-  value: timestampDateEnd
-  collect_after_event: end_collection_event
-
- OBSID:
-  device: MTCamera
-  Stype: Event
-  topic: startIntegration
-  value: imageName
-  collect_after_event: start_collection_event
-
- CAMCODE:
-  device: MTCamera
-  Stype: Event
-  topic: startIntegration
-  value: imageSource
-  collect_after_event: start_collection_event
-
- CONTRLLR:
-  device: MTCamera
-  Stype: Event
-  topic: startIntegration
-  value: imageController
-  collect_after_event: start_collection_event
-
- DAYOBS:
-  device: MTCamera
-  Stype: Event
-  topic: startIntegration
-  value: imageDate
-  collect_after_event: start_collection_event
-
- SEQNUM:
-  device: MTCamera
-  Stype: Event
-  topic: startIntegration
-  value: imageNumber
-  collect_after_event: start_collection_event
-
- GROUPID:
-  device: MTCamera
-  Stype: Event
-  topic: startIntegration
-  value: additionalValues
-  collect_after_event: start_collection_event
-  array_keys: additionalKeys
-  array_keyname: groupId
-  array: keyed_array
-
- IMGTYPE:
-  device: MTCamera
-  Stype: Event
-  topic: startIntegration
-  value: additionalValues
-  collect_after_event: start_collection_event
-  array_keys: additionalKeys
-  array_keyname: imageType
-  array: keyed_array
-
- TESTTYPE:
-  device: MTCamera
-  Stype: Event
-  topic: startIntegration
-  value: additionalValues
-  collect_after_event: start_collection_event
-  array_keys: additionalKeys
-  array_keyname: testType
-  array: keyed_array
-
- REASON:
-  device: MTCamera
-  Stype: Event
-  topic: startIntegration
-  value: additionalValues
-  collect_after_event: start_collection_event
-  array_keys: additionalKeys
-  array_keyname: reason
-  array: keyed_array
-
- PROGRAM:
-  device: MTCamera
-  Stype: Event
-  topic: startIntegration
-  value: additionalValues
-  collect_after_event: start_collection_event
-  array_keys: additionalKeys
-  array_keyname: program
-  array: keyed_array
-
- EMUIMAGE:
-  device: MTCamera
-  Stype: Event
-  topic: endOfImageTelemetry
-  value: emulatedImage
-  collect_after_event: end_collection_event
-
- EXPTIME:
-  device: MTCamera
-  Stype: Event
-  topic: startIntegration
-  value: exposureTime
-  collect_after_event: start_collection_event
-
- DARKTIME:
-  device: MTCamera
-  Stype: Event
-  topic: endOfImageTelemetry
-  value: darkTime
-  collect_after_event: end_collection_event
-
- OBSANNOT:
-  device: MTCamera
-  Stype: Event
-  topic: imageReadoutParameters
-  value: daqAnnotation
-  collect_after_event: end_collection_event
-
- SHUTTIME:
-  device: MTCamera
-  Stype: Event
-  topic: endOfImageTelemetry
-  value: measuredShutterOpenTime
-  collect_after_event: end_collection_event
-
- CURINDEX:
-  device: MTCamera
-  Stype: Event
-  topic: startIntegration
-  value: imageIndex
-  collect_after_event: start_collection_event
-
- MAXINDEX:
-  device: MTCamera
-  Stype: Event
-  topic: startIntegration
-  value: imagesInSequence
-  collect_after_event: start_collection_event
-
-# --- Camera Sensor information
 
 # --- Pointing Information ---------------
  OBJECT:
@@ -367,8 +210,6 @@ telemetry:
   collect_after_event: start_collection_event
   array: enum
   array_name: CoordFrame
-
-# ----- Filter information from MTCamera ----------
 
 # ---- Weather information -----------------------------
  AIRTEMP:

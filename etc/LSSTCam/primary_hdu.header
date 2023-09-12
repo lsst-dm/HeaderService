@@ -1,22 +1,11 @@
 SIMPLE  =                    T /
 BITPIX  =                    8 / bits per data value
 NAXIS   =                    0 / number of axes
-EXTEND  =                    T / Extensions are permitted
-ORIGIN  = 'LSST DM Header Service'/ FITS file originator
 
         ---- Date, night and basic image information ----
 TIMESYS = 'TAI'                / The time scale used
 DATE    =                      / Creation Date and Time of File
-DATE-OBS=                      / Date of the observation (image acquisition)
-DATE-BEG=                      / Time at the start of integration
-DATE-END=                      / end date of the observation
 MJD     =                      / Modified Julian Date that the file was written
-MJD-OBS =                      / Modified Julian Date of observation
-MJD-BEG =                      / Modified Julian Date derived from DATE-BEG
-MJD-END =                      / Modified Julian Date derived from DATE-END
-OBSID   =                      / ImageName from Camera StartIntergration
-GROUPID =                      / imageSequenceName from StartIntergration
-IMGTYPE =                      / BIAS, DARK, FLAT, OBJECT
 BUNIT   = 'adu     '           / Brightness units for pixel array
 
         ---- Telescope info, location, observer ----
@@ -52,41 +41,6 @@ TRACKSYS=                      / Tracking system RADEC, AZEL, PLANET, EPHEM
 RADESYS =                      / Equatorial coordinate system FK5 or ICRS
 FOCUSZ  =                      / Focus Z position
 OBJECT  =                      / Name of the observed object
-
-        ---- Image-identifying used to build OBS-ID ----
-CAMCODE =                      / The code for the camera (AT/CC/MC)
-CONTRLLR=                      / The controller (e.g. O for OCS, C for (A)CCS)
-DAYOBS  =                      / The observation day as defined by image name
-SEQNUM  =                      / The sequence number from the image name
-GROUPID =                      /
-TESTTYPE=                      / Test Type: BIAS:DARK:FLAT:OBS:PPUMP:QE:SFLAT
-EMUIMAGE=                      / Image being emulated
-
-        ---- Image sequence numbers
-CURINDEX=                      / Index number for exposure within the sequence
-MAXINDEX=                      / Number of requested images in sequence
-
-        ---- Additional Keys Information from Camera ----
-PROGRAM =                      / Name of the program
-REASON  =                      / Reason for observation
-
-        ---- Test Stand information ----
-TSTAND  =                      / The Test Stand used
-
-        ---- Information from Camera (Common block) ----
-IMAGETAG=                      / DAQ Image id
-OBSANNOT=                      / Observing annotation
-
-        ---- Filter/grating information ----
-FILTBAND=                      / Name of the filter band
-FILTER  =                      / Name of the physical filter
-FILTSLOT=                      / Filter home slot
-FILTPOS =                      / Filter measured position of slide
-
-        ---- Exposure-related information ----
-EXPTIME =                      / Exposure time in seconds
-SHUTTIME=                      / Shutter exposure time in seconds
-DARKTIME=                      / Dark time in seconds
 
         ---- Weather information ----
 AIRTEMP =                      / [degC] Air Temperature
