@@ -1,0 +1,325 @@
+# Configuration file for the ComCam
+
+# The name of the HeaderService
+hs_name: MTHeaderService
+instrument: LSSTCam
+section: LSSTCam
+
+# Default logging level
+loglevel: 'INFO'
+
+# Path to the log location and other log definitions
+logfile: 'www/MTHeaderService.log'
+log_format: '[%(asctime)s.%(msecs)03d][%(levelname)s][%(name)s][%(funcName)s] %(message)s'
+log_format_date: '%Y-%m-%d %H:%M:%S'
+
+# path to the web server logfile
+weblogfile: 'www/webserver.log'
+
+# port_number for webserver
+port_number: 8000
+
+# The URL format to be used for lfa_mode=http
+url_format: "http://{ip_address}:{port_number}/{filename_HDR}"
+
+# While we support both s3 and http LFA we need to define the mode [s3 or http]
+lfa_mode: http
+
+# The s3 instance (i.e.: nts, tuc, ls, cp)
+# s3instance: nts
+
+# Default write_mode (fits or string)
+write_mode: yaml
+
+# The event to get the timeout
+timeout_event:
+    device: MTCamera
+    topic: startIntegration
+    value: timeout
+
+# Timeout beyond the requested exposure time to wait for an end of Telemetry event (in seconds)
+timeout_exptime: 30
+
+# The file naming event source and definitions
+filepath: 'www/DMHS_filerepo'
+format_HDR: "{}.yaml"
+format_FITS: "{}.fits"
+imageName_event:
+    device: MTCamera
+    topic: startIntegration
+    value: imageName
+
+# The Events that we use to define where we collect
+start_collection_event:
+    device: MTCamera
+    topic: startIntegration
+
+end_collection_event:
+    device: MTCamera
+    topic: endOfImageTelemetry
+
+## The event for the image readout paramters
+#imageParam_event:
+#    device: MTCamera
+#    topic: imageReadoutParameters
+#    array_keys: ccdLocation
+
+# Telemetry values for images meta-data
+# https://confluence.lsstcorp.org/display/SYSENG/MT+Header+Information+Topic+Mapping
+telemetry:
+
+# --- Pointing Information ---------------
+ OBJECT:
+  device: MTPtg
+  Stype: Event
+  topic: currentTarget
+  value: targetName
+  collect_after_event: start_collection_event
+
+ RA:
+  device: MTPtg
+  Stype: Event
+  topic: currentTarget
+  value: ra
+  collect_after_event: start_collection_event
+  scale: 57.29577951308232
+
+ DEC:
+  device: MTPtg
+  Stype: Event
+  topic: currentTarget
+  value: declination
+  collect_after_event: start_collection_event
+  scale: 57.29577951308232
+
+ ROTPA:
+  device: MTPtg
+  Stype: Event
+  topic: currentTarget
+  value: rotPA
+  collect_after_event: start_collection_event
+
+ RASTART:
+  device: MTPtg
+  Stype: Telemetry
+  topic: mountPosition
+  value: ra
+  collect_after_event: start_collection_event
+
+ DECSTART:
+  device: MTPtg
+  Stype: Telemetry
+  topic: mountPosition
+  value: declination
+  collect_after_event: start_collection_event
+
+ HASTART:
+  device: MTPtg
+  Stype: Telemetry
+  topic: currentTargetStatus
+  value: ha
+  collect_after_event: start_collection_event
+
+ AMSTART:
+  device: MTPtg
+  Stype: Telemetry
+  topic: currentTargetStatus
+  value: airmass
+  collect_after_event: start_collection_event
+
+ ELSTART:
+  device: MTMount
+  Stype: Telemetry
+  topic: elevation
+  value: actualPosition
+  collect_after_event: start_collection_event
+
+ AZSTART:
+  device: MTMount
+  Stype: Telemetry
+  topic: azimuth
+  value: actualPosition
+  collect_after_event: start_collection_event
+
+ RAEND:
+  device: MTPtg
+  Stype: Telemetry
+  topic: mountPosition
+  value: ra
+  collect_after_event: end_collection_event
+
+ DECEND:
+  device: MTPtg
+  Stype: Telemetry
+  topic: mountPosition
+  value: declination
+  collect_after_event: end_collection_event
+
+ HAEND:
+  device: MTPtg
+  Stype: Telemetry
+  topic: currentTargetStatus
+  value: ha
+  collect_after_event: end_collection_event
+
+ AMEND:
+  device: MTPtg
+  Stype: Telemetry
+  topic: currentTargetStatus
+  value: airmass
+  collect_after_event: end_collection_event
+
+ ELEND:
+  device: MTMount
+  Stype: Telemetry
+  topic: elevation
+  value: actualPosition
+  collect_after_event: end_collection_event
+
+ AZEND:
+  device: MTMount
+  Stype: Telemetry
+  topic: azimuth
+  value: actualPosition
+  collect_after_event: end_collection_event
+
+ FOCUSZ:
+  device: MTHexapod
+  device_index: 1
+  Stype: Telemetry
+  topic: application
+  value: demand
+  collect_after_event: start_collection_event
+  array_index: 2
+  array: indexed_array
+
+ TRACKSYS:
+  device: MTPtg
+  Stype: Event
+  topic: currentTarget
+  value: targetType
+  collect_after_event: start_collection_event
+  array: enum
+  array_name: TargetTypes
+
+ RADESYS:
+  device: MTPtg
+  Stype: Event
+  topic: currentTarget
+  value: frame
+  collect_after_event: start_collection_event
+  array: enum
+  array_name: CoordFrame
+
+# ---- Weather information -----------------------------
+ AIRTEMP:
+  device: ESS
+  device_index: 301
+  Stype: Telemetry
+  topic: temperature
+  value: temperature
+  collect_after_event: start_collection_event
+  array_index: 0
+  array: indexed_array
+
+ PRESSURE:
+  device: ESS
+  device_index: 301
+  Stype: Telemetry
+  topic: pressure
+  value: pressure
+  collect_after_event: start_collection_event
+  array_index: 0
+  array: indexed_array
+
+ HUMIDITY:
+  device: ESS
+  device_index: 301
+  Stype: Telemetry
+  topic: relativeHumidity
+  value: relativeHumidity
+  collect_after_event: start_collection_event
+
+ WINDSPD:
+  device: ESS
+  device_index: 301
+  Stype: Telemetry
+  topic: airFlow
+  value: speed
+  collect_after_event: start_collection_event
+
+ WINDDIR:
+  device: ESS
+  device_index: 301
+  Stype: Telemetry
+  topic: airFlow
+  value: direction
+  collect_after_event: start_collection_event
+
+ SEEING:
+  device: DIMM
+  device_index: 1
+  Stype: Event
+  topic: dimmMeasurement
+  value: fwhm
+  collect_after_event: start_collection_event
+
+# ------- Hierarch keywords --------
+
+ HIERARCH SIMULATE MTMOUNT:
+   device: MTMount
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE MTM1M3:
+   device: MTM1M3
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE MTM2:
+   device: MTM2
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE CAMHEXAPOD:
+   device: MTHexapod
+   device_index: 1
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE M2HEXAPOD:
+   device: MTHexapod
+   device_index: 2
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE MTROTATOR:
+   device: MTRotator
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE MTDOME:
+   device: MTDome
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
+
+ HIERARCH SIMULATE MTDOMETRAJECTORY:
+   device: MTDomeTrajectory
+   Stype: Event
+   topic: simulationMode
+   value: mode
+   collect_after_event: start_collection_event
