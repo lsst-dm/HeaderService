@@ -20,7 +20,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 __author__ = "LSST/Felipe Menanteau"
-__version__ = "3.2.0"
+__version__ = "3.3.0"
 version = __version__
 
 from . import hutils
