@@ -65,7 +65,7 @@ end_collection_event:
 #    array_keys: ccdLocation
 
 # Telemetry values for images meta-data
-# https://confluence.lsstcorp.org/display/SYSENG/ComCam+Header+Information+Topic+Mapping
+# https://confluence.lsstcorp.org/display/SYSENG/MT+Header+Information+Topic+Mapping
 telemetry:
 
 # --- Pointing Information ---------------

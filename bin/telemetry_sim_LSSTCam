@@ -46,8 +46,6 @@ def cmdline():
     parser.add_argument("--az", action="store", default=45.0, type=float,
                         help="The azimuth angle")
 
-    parser.add_argument("--m3port", action="store", default=1, type=int,
-                        help="Port the M3 is directing light into")
     parser.add_argument("--tracksys", action="store", default=1, type=int,
                         help="The tracking coordinate system [RADEC(1), AZEL(2), PLANET(3), EPHEM(4)].")
     parser.add_argument("--radesys", action="store", default=2, type=int,
