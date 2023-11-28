@@ -15,7 +15,7 @@ for edir in etc_dirs:
 
 # The main call
 setup(name='HeaderService',
-      version='3.3.0',
+      version='3.3.1',
       license="GPL",
       description="LSST Meta-data aggregator for FITS header service",
       author="LSST, Felipe Menanteau",
