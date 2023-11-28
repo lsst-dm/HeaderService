@@ -153,16 +153,16 @@ async def amain():
 
     # Weather/Env Information
     # Temperature
-    kwtemp = {'temperature': [args.ambient_temp]*16}
+    kwtemp = {'temperatureItem': [args.ambient_temp]*16}
     await ess.tel_temperature.set_write(**kwtemp)
     LOGGER.info("Sending simulated Temperature")
 
     # Pressure
-    kwpress = {'pressure': [args.pressure]*8}
+    kwpress = {'pressureItem': [args.pressure]*8}
     await ess.tel_pressure.set_write(**kwpress)
 
     # Humidity
-    kwhumid = {'relativeHumidity': args.humidity}
+    kwhumid = {'relativeHumidityItem': args.humidity}
     await ess.tel_relativeHumidity.set_write(**kwhumid)
 
     # Wind Speed/Direcction

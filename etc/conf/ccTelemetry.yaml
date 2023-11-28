@@ -557,7 +557,7 @@ telemetry:
   device_index: 301
   Stype: Telemetry
   topic: temperature
-  value: temperature
+  value: temperatureItem
   collect_after_event: start_collection_event
   array_index: 0
   array: indexed_array
@@ -567,7 +567,7 @@ telemetry:
   device_index: 301
   Stype: Telemetry
   topic: pressure
-  value: pressure
+  value: pressureItem
   collect_after_event: start_collection_event
   array_index: 0
   array: indexed_array
@@ -577,7 +577,7 @@ telemetry:
   device_index: 301
   Stype: Telemetry
   topic: relativeHumidity
-  value: relativeHumidity
+  value: relativeHumidityItem
   collect_after_event: start_collection_event
 
  WINDSPD:
