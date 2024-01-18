@@ -32,6 +32,12 @@ from lsst.ts import salobj
 import HeaderService
 import importlib
 import copy
+import json
+
+try:
+    HEADERSERVICE_DIR = os.environ['HEADERSERVICE_DIR']
+except KeyError:
+    HEADERSERVICE_DIR = __file__.split('python')[0]
 
 
 class HSWorker(salobj.BaseCsc):
@@ -564,6 +570,13 @@ class HSWorker(salobj.BaseCsc):
 
             # Update header object with metadata dictionary
             self.update_header(imageName)
+
+            # In case of playback mode, heere is a good place to overide the
+            # self.metadata[imageName] dictionary, we want to do at the
+            # last stage
+            if self.config.playback:
+                self.update_header_emuimage(imageName)
+
             # Write the header
             write_OK = self.write(imageName)
             if write_OK is False:
@@ -610,6 +623,32 @@ class HSWorker(salobj.BaseCsc):
             self.vendor_names = self.config.vendor_names
 
         return
+
+    def update_header_emuimage(self, imageName):
+        """
+        Read in the json file for emulatedImage and update the metadata
+        dictionary for selected keywords
+        """
+        emuimage = self.metadata[imageName]['EMUIMAGE']
+        self.log.info(f"Playback mode emulatedImage: {emuimage}")
+        emuimage_file = os.path.join(HEADERSERVICE_DIR, "etc/playback/lib/ComCam", emuimage+".json")
+        self.log.info(f"Reading json file: {emuimage_file}")
+        with open(emuimage_file) as f:
+            emuimage_dict = json.load(f)
+
+        # In case we have a __COMMON__ section in the dictionary
+        if '__COMMON__' in emuimage_dict.keys():
+            emuimage_values = emuimage_dict['__COMMON__']
+        else:
+            emuimage_values = emuimage_dict
+
+        # Now we update the metadata in the json emulated file
+        for keyword in emuimage_values:
+            if keyword in self.config.playback_keywords:
+                self.log.info(f"EMUIMAGE -- updating {keyword:8s} = {emuimage_values[keyword]}")
+                self.metadata[imageName][keyword] = emuimage_values[keyword]
+            else:
+                self.log.debug(f"EMUIMAGE -- ignoring {keyword} from emulatedImage")
 
     def read_camera_vendors(self, sep=":"):
         """ Read the vendor/ccdLocation from camera event """

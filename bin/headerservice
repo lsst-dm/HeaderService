@@ -82,6 +82,10 @@ def cmdline():
     parser.add_argument("--hs_initial_state", action="store", default='STANDBY',
                         help="Initial start State of device")
 
+    # Playback Mode
+    parser.add_argument("--playback", action="store_true", default=False,
+                        help="Run in playback mode for simulated data")
+
     # args = parser.parse_args()
     # Set the defaults of argparse using the values in the yaml config file
     parser.set_defaults(**conf_defaults)
