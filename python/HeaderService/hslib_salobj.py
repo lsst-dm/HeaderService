@@ -367,6 +367,10 @@ class HSWorker(salobj.BaseCsc):
         self.log.info(f"Setting softwareVersions Event with version: {HeaderService.__version__}")
         self.evt_softwareVersions.set(cscVersion=HeaderService.__version__)
 
+        # Set the simulation Mode using the event simulationMode
+        self.log.info(f"Setting simulationMode Event with mode: {self.config.hs_simulation_mode}")
+        self.evt_simulationMode.set(mode=self.config.hs_simulation_mode)
+
     def create_Remotes(self):
         """
         Create the Remotes to collect telemetry/Events for channels as
