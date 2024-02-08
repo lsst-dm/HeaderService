@@ -43,6 +43,9 @@ timeout_event:
 # Timeout beyond the requested exposure time to wait for an end of Telemetry event (in seconds)
 timeout_exptime: 30
 
+# Playback Mode
+playback: False
+
 # The file naming event source and definitions
 filepath: 'www/DMHS_filerepo'
 format_HDR: "{}.yaml"
@@ -663,3 +666,43 @@ telemetry:
    topic: simulationMode
    value: mode
    collect_after_event: start_collection_event
+
+
+# --- Keywords from playback ---------------
+playback_keywords:
+# --- Telescope information ---------
+ - OBJECT
+ - RA
+ - DEC
+ - ROTPA
+ - RASTART
+ - DECSTART
+ - HASTART
+ - AMSTART
+ - ELSTART
+ - AZSTART
+ - RAEND
+ - DECEND
+ - HAEND
+ - AMEND
+ - ELEND
+ - AZEND
+ - FOCUSZ
+ - TRACKSYS
+ - RADESYS
+# ---- Weather information -----------------------------
+ - AIRTEMP
+ - PRESSURE
+ - HUMIDITY
+ - WINDSPD
+ - WINDDIR
+ - SEEING
+# ------- Hierarch keywords --------
+ - HIERARCH SIMULATE MTMOUNT
+ - HIERARCH SIMULATE MTM1M3
+ - HIERARCH SIMULATE MTM2
+ - HIERARCH SIMULATE CAMHEXAPOD
+ - HIERARCH SIMULATE M2HEXAPOD
+ - HIERARCH SIMULATE MTROTATOR
+ - HIERARCH SIMULATE MTDOME
+ - HIERARCH SIMULATE MTDOMETRAJECTORY

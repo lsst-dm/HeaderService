@@ -32,6 +32,12 @@ from lsst.ts import salobj
 import HeaderService
 import importlib
 import copy
+import json
+
+try:
+    HEADERSERVICE_DIR = os.environ['HEADERSERVICE_DIR']
+except KeyError:
+    HEADERSERVICE_DIR = __file__.split('python')[0]
 
 
 class HSWorker(salobj.BaseCsc):
@@ -343,9 +349,11 @@ class HSWorker(salobj.BaseCsc):
         """
 
         self.version = HeaderService.__version__
+        self.valid_simulation_modes = (0, 1)
 
         super().__init__(name=self.config.hs_name, index=self.config.hs_index,
-                         initial_state=getattr(salobj.State, self.config.hs_initial_state))
+                         initial_state=getattr(salobj.State, self.config.hs_initial_state),
+                         simulation_mode=self.config.hs_simulation_mode)
         # Logging
         self.setup_logging()
         # Version information
@@ -353,10 +361,15 @@ class HSWorker(salobj.BaseCsc):
         self.log.info(f"Creating worker for: {self.config.hs_name}")
         self.log.info(f"Running salobj version: {salobj.__version__}")
         self.log.info(f"Starting in State:{self.summary_state.name}")
+        self.log.info(f"Starting in simulation_mode: {self.config.hs_simulation_mode}")
 
         # Set the CSC version using softwareVersions
         self.log.info(f"Setting softwareVersions Event with version: {HeaderService.__version__}")
         self.evt_softwareVersions.set(cscVersion=HeaderService.__version__)
+
+        # Set the simulation Mode using the event simulationMode
+        self.log.info(f"Setting simulationMode Event with mode: {self.config.hs_simulation_mode}")
+        self.evt_simulationMode.set(mode=self.config.hs_simulation_mode)
 
     def create_Remotes(self):
         """
@@ -564,6 +577,13 @@ class HSWorker(salobj.BaseCsc):
 
             # Update header object with metadata dictionary
             self.update_header(imageName)
+
+            # In case of playback mode, heere is a good place to overide the
+            # self.metadata[imageName] dictionary, we want to do at the
+            # last stage
+            if self.config.playback:
+                self.update_header_emuimage(imageName)
+
             # Write the header
             write_OK = self.write(imageName)
             if write_OK is False:
@@ -610,6 +630,32 @@ class HSWorker(salobj.BaseCsc):
             self.vendor_names = self.config.vendor_names
 
         return
+
+    def update_header_emuimage(self, imageName):
+        """
+        Read in the json file for emulatedImage and update the metadata
+        dictionary for selected keywords
+        """
+        emuimage = self.metadata[imageName]['EMUIMAGE']
+        self.log.info(f"Playback mode emulatedImage: {emuimage}")
+        emuimage_file = os.path.join(HEADERSERVICE_DIR, "etc/playback/lib/ComCam", emuimage+".json")
+        self.log.info(f"Reading json file: {emuimage_file}")
+        with open(emuimage_file) as f:
+            emuimage_dict = json.load(f)
+
+        # In case we have a __COMMON__ section in the dictionary
+        if '__COMMON__' in emuimage_dict.keys():
+            emuimage_values = emuimage_dict['__COMMON__']
+        else:
+            emuimage_values = emuimage_dict
+
+        # Now we update the metadata in the json emulated file
+        for keyword in emuimage_values:
+            if keyword in self.config.playback_keywords:
+                self.log.info(f"EMUIMAGE -- updating {keyword:8s} = {emuimage_values[keyword]}")
+                self.metadata[imageName][keyword] = emuimage_values[keyword]
+            else:
+                self.log.debug(f"EMUIMAGE -- ignoring {keyword} from emulatedImage")
 
     def read_camera_vendors(self, sep=":"):
         """ Read the vendor/ccdLocation from camera event """

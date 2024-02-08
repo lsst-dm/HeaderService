@@ -81,6 +81,12 @@ def cmdline():
                         help="BaseCsC index [default=0]")
     parser.add_argument("--hs_initial_state", action="store", default='STANDBY',
                         help="Initial start State of device")
+    parser.add_argument("--hs_simulation_mode", action="store", default=0,
+                        choices=[0, 1],
+                        help="Simulation Mode (0: do not simulate)")
+    # Playback Mode
+    parser.add_argument("--playback", action="store_true", default=False,
+                        help="Run in playback mode for simulated data")
 
     # args = parser.parse_args()
     # Set the defaults of argparse using the values in the yaml config file
@@ -89,6 +95,11 @@ def cmdline():
     # Update  variables in config with actual values
     args.__dict__ = hsregex.replace_variables_in_dict(args.__dict__)
     args.loglevel = getattr(logging, args.loglevel)
+
+    # Playback overides sumulation mode to: 1
+    if args.playback and args.hs_simulation_mode == 0:
+        args.hs_simulation_mode = 1
+
     return args
 
 
