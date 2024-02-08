@@ -349,9 +349,11 @@ class HSWorker(salobj.BaseCsc):
         """
 
         self.version = HeaderService.__version__
+        self.valid_simulation_modes = (0, 1)
 
         super().__init__(name=self.config.hs_name, index=self.config.hs_index,
-                         initial_state=getattr(salobj.State, self.config.hs_initial_state))
+                         initial_state=getattr(salobj.State, self.config.hs_initial_state),
+                         simulation_mode=self.config.hs_simulation_mode)
         # Logging
         self.setup_logging()
         # Version information
@@ -359,6 +361,7 @@ class HSWorker(salobj.BaseCsc):
         self.log.info(f"Creating worker for: {self.config.hs_name}")
         self.log.info(f"Running salobj version: {salobj.__version__}")
         self.log.info(f"Starting in State:{self.summary_state.name}")
+        self.log.info(f"Starting in simulation_mode: {self.config.hs_simulation_mode}")
 
         # Set the CSC version using softwareVersions
         self.log.info(f"Setting softwareVersions Event with version: {HeaderService.__version__}")
