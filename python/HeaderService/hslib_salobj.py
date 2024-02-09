@@ -31,7 +31,6 @@ from . import hscalc
 from lsst.ts import salobj
 import HeaderService
 import importlib
-import copy
 import json
 
 try:
@@ -89,7 +88,7 @@ class HSWorker(salobj.BaseCsc):
 
     def cancel_timeout_tasks(self):
         """Cancel the per-image timeout tasks"""
-        list_to_cancel = copy.deepcopy(self.end_evt_timeout_task)
+        list_to_cancel = self.end_evt_timeout_task.copy()
         for imageName in list_to_cancel:
             self.end_evt_timeout_task[imageName].cancel()
             self.clean(imageName)
@@ -559,6 +558,10 @@ class HSWorker(salobj.BaseCsc):
         """
         async with self.dlock:
 
+            # Flag to carry completion of tasks and signal FAULT.
+            # We start as True
+            self.completed_OK[imageName] = True
+
             # Collect metadata at end of integration
             self.log.info(f"Collecting Metadata END: {self.name_end} Event")
             self.metadata[imageName].update(self.collect(self.keywords_end))
@@ -575,36 +578,40 @@ class HSWorker(salobj.BaseCsc):
                 self.log.warning("Failed call to update_header_geometry")
                 self.log.warning(e)
 
-            # Update header object with metadata dictionary
-            self.update_header(imageName)
-
-            # In case of playback mode, heere is a good place to overide the
+            # In case of playback mode, this is a good place to overide the
             # self.metadata[imageName] dictionary, we want to do at the
             # last stage
             if self.config.playback:
-                self.update_header_emuimage(imageName)
+                try:
+                    # Update the metadata dictionary with json values
+                    self.update_header_emuimage(imageName)
+                except Exception as e:
+                    self.completed_OK[imageName] = False
+                    self.log.error(e)
+                    self.log.error("Failed call to update_header_emuimage")
 
-            # Write the header
-            write_OK = self.write(imageName)
-            if write_OK is False:
-                self.completed_OK[imageName] = False
+            # Update header object with metadata dictionary
+            if self.completed_OK[imageName]:
+                self.update_header(imageName)
+
+            # Write the header only if so far if completed_OK is True
+            if self.completed_OK[imageName]:
+                self.write(imageName)
+
+            # if completed_OK is False we go to FAULT
+            if self.completed_OK[imageName] is False:
                 self.log.warning("Sending the system to FAULT state")
                 await self.fault(code=9, report=f"Cannot write header for: {imageName}")
+                self.log.error(f"-------- Failed: {imageName} -------------------")
             else:
                 # Announce/upload LFO if write_OK is True
+                self.completed_OK[imageName] = True
                 await self.announce(imageName)
-
-        if self.completed_OK[imageName] is True:
-            self.log.info(f"-------- Done: {imageName} -------------------")
-        else:
-            self.log.error(f"-------- Failed: {imageName} -------------------")
-
-        # Clean up
-        self.clean(imageName)
+                self.log.info(f"-------- Done: {imageName} -------------------")
 
         if self.summary_state == salobj.State.ENABLED:
             self.log.info("-------- Ready for next image -----")
-        # Cancel timed out tasks
+        # Cancel timed out tasks and clean
         self.cancel_timeout_tasks()
         self.log.info(f"Current state is: {self.summary_state.name}")
 
@@ -841,13 +848,11 @@ class HSWorker(salobj.BaseCsc):
         try:
             self.HDR[imageName].write_header(self.filename_HDR[imageName])
             self.log.info(f"Wrote header to filesystem: {self.filename_HDR[imageName]}")
-            write_OK = True
         except Exception as e:
             self.log.error(f"Cannot write header to filesystem {self.filename_HDR[imageName]}")
             self.log.error(f"{e.__class__.__name__}: {e}")
             self.log.exception(str(e))
-            write_OK = False
-        return write_OK
+            self.completed_OK[imageName] = False
 
     def clean(self, imageName):
         """ Clean up imageName data structures"""
