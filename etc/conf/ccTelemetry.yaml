@@ -709,3 +709,15 @@ playback_keywords:
  - HIERARCH SIMULATED MJD-OBS
  - HIERARCH SIMULATED DATE-OBS
  - HIERARCH SIMULATED DATE-END
+
+# Keywords not to ignore from telemetry in playback mode
+playback_keywords_keep:
+  - EMUIMAGE
+  - DATE-OBS
+  - DATE-BEG
+  - DATE-END
+  - CAMCODE
+  - CONTRLLR
+  - DAYOBS
+  - SEQNUM
+  - OBSID

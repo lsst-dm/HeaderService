@@ -373,11 +373,11 @@ class HSWorker(salobj.BaseCsc):
         # Only for playback mode we remove all but one entry from the
         # self.config.telemetry to block the HS from listeing to other CSCs
         if self.config.playback:
-            keywords_keep = ['EMUIMAGE', 'DATE-OBS', 'DATE-BEG', 'DATE-END']
+            # keywords_keep = ['EMUIMAGE', 'DATE-OBS', 'DATE-BEG', 'DATE-END']
             self.log.info("Playback mode, unsubscribing from telemetry")
             telemetry_copy = self.config.telemetry.copy()
             for keyword in telemetry_copy:
-                if keyword not in keywords_keep:
+                if keyword not in self.config.playback_keywords_keep:
                     del self.config.telemetry[keyword]
                     self.log.info(f"Removing keyword: {keyword} from subscribed telemetry")
 
