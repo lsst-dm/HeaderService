@@ -370,6 +370,17 @@ class HSWorker(salobj.BaseCsc):
         self.log.info(f"Setting simulationMode Event with mode: {self.config.hs_simulation_mode}")
         self.evt_simulationMode.set(mode=self.config.hs_simulation_mode)
 
+        # Only for playback mode we remove all but one entry from the
+        # self.config.telemetry to block the HS from listeing to other CSCs
+        if self.config.playback:
+            keywords_keep = ['EMUIMAGE', 'DATE-OBS', 'DATE-BEG', 'DATE-END']
+            self.log.info("Playback mode, unsubscribing from telemetry")
+            telemetry_copy = self.config.telemetry.copy()
+            for keyword in telemetry_copy:
+                if keyword not in keywords_keep:
+                    del self.config.telemetry[keyword]
+                    self.log.info(f"Removing keyword: {keyword} from subscribed telemetry")
+
     def create_Remotes(self):
         """
         Create the Remotes to collect telemetry/Events for channels as
