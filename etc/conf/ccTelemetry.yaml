@@ -721,3 +721,4 @@ playback_keywords_keep:
   - DAYOBS
   - SEQNUM
   - OBSID
+  - FILTER
