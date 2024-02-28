@@ -70,6 +70,7 @@ EMUIMAGE=                      / Image being emulated
         ---- Additional Keys Information from Camera ----
 PROGRAM =                      / Name of the program
 REASON  =                      / Reason for observation
+OBSANNOT=                      / Observing annotation
 
         ---- Image sequence numbers
 CURINDEX=                      / Index number for exposure within the sequence
@@ -80,7 +81,6 @@ TSTAND  =                      / The Test Stand used
 
         ---- Information from Camera (Common block) ----
 IMAGETAG=                      / DAQ Image id
-OBSANNOT=                      / Observing annotation
 
         ---- Information from Camera ----
 TEMP_SET=                      / Temperature set point (deg C)
