@@ -69,13 +69,13 @@ MAXINDEX=                      / Number of requested images in sequence
         ---- Additional Keys Information from Camera ----
 PROGRAM =                      / Name of the program
 REASON  =                      / Reason for observation
+OBSANNOT=                      / Observing annotation
 
         ---- Test Stand information ----
 TSTAND  =                      / The Test Stand used
 
         ---- Information from Camera (Common block) ----
 IMAGETAG=                      / DAQ Image id
-OBSANNOT=                      / Observing annotation
 
         ---- Filter/grating information ----
 FILTBAND=                      / Name of the filter band
