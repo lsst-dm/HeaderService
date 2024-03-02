@@ -85,6 +85,14 @@ EXPTIME =                      / [s] Exposure time
 FILENAME=                      / Original file name
 HEADVER =                      / Version of header
 
+        ---- Weather information ----
+AIRTEMP =                      / [degC] Air Temperature
+PRESSURE=                      / [Pascals] Atmospheric Pressure
+HUMIDITY=                      / Percentage of Relative Humidity
+WINDSPD =                      / [m/s] Wind Speed
+WINDDIR =                      / [deg] Wind Direction
+SEEING  =                      / [arcsec] Seeing from FWHM DIMM measurement
+
         ---- Hierarch information for CSC Simulatiom Mode ----
 HIERARCH SIMULATE MTMOUNT= / MTMount Simulation Mode (False=0)
 HIERARCH SIMULATE MTM1M3= / MTM1M3 Simulation Mode (False=0)
