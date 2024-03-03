@@ -391,6 +391,59 @@ telemetry:
   device_index: ${hs_index}
   collect_after_event: start_collection_event
 
+# ---- Weather information -----------------------------
+ AIRTEMP:
+  device: ESS
+  device_index: 301
+  Stype: Telemetry
+  topic: temperature
+  value: temperatureItem
+  collect_after_event: start_collection_event
+  array_index: 0
+  array: indexed_array
+
+ PRESSURE:
+  device: ESS
+  device_index: 301
+  Stype: Telemetry
+  topic: pressure
+  value: pressureItem
+  collect_after_event: start_collection_event
+  array_index: 0
+  array: indexed_array
+
+ HUMIDITY:
+  device: ESS
+  device_index: 301
+  Stype: Telemetry
+  topic: relativeHumidity
+  value: relativeHumidityItem
+  collect_after_event: start_collection_event
+
+ WINDSPD:
+  device: ESS
+  device_index: 301
+  Stype: Telemetry
+  topic: airFlow
+  value: speed
+  collect_after_event: start_collection_event
+
+ WINDDIR:
+  device: ESS
+  device_index: 301
+  Stype: Telemetry
+  topic: airFlow
+  value: direction
+  collect_after_event: start_collection_event
+
+ SEEING:
+  device: DIMM
+  device_index: 1
+  Stype: Event
+  topic: dimmMeasurement
+  value: fwhm
+  collect_after_event: start_collection_event
+
 # ------- Hierarch keywords --------
 
  HIERARCH SIMULATE MTMOUNT:
