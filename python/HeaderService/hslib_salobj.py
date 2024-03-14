@@ -32,6 +32,7 @@ from lsst.ts import salobj
 import HeaderService
 import importlib
 import json
+import copy
 
 try:
     HEADERSERVICE_DIR = os.environ['HEADERSERVICE_DIR']
@@ -88,10 +89,13 @@ class HSWorker(salobj.BaseCsc):
 
     def cancel_timeout_tasks(self):
         """Cancel the per-image timeout tasks"""
-        list_to_cancel = self.end_evt_timeout_task.copy()
-        for imageName in list_to_cancel:
-            self.end_evt_timeout_task[imageName].cancel()
-            self.clean(imageName)
+        # Get the imageName to cancel
+        list_to_cancel = copy.deepcopy(list(self.end_evt_timeout_task.keys()))
+        if list_to_cancel:
+            self.log.info(f"Will cancel tasks: {list_to_cancel}")
+            for imageName in list_to_cancel:
+                self.end_evt_timeout_task[imageName].cancel()
+                self.clean(imageName)
 
     async def handle_summary_state(self):
 
@@ -132,17 +136,16 @@ class HSWorker(salobj.BaseCsc):
     def start_collection_event_callback(self, myData):
         """ The callback function for the START collection event"""
 
+        # Extract the key to match start/end events
+        imageName = self.get_imageName(myData)
+
         # If not in ENABLED mode we do nothing
         if self.summary_state != salobj.State.ENABLED:
-            self.log.info(f"Received: {self.name_start} Event")
+            self.log.info(f"Received: {self.name_start} Event for {imageName}")
             self.log.info(f"Ignoring as current state is {self.summary_state.name}")
             return
 
-        sys.stdout.flush()
-        self.log.info(f"---------- Received: {self.name_start} Event -----------------")
-
-        # Extract the key to match start/end events
-        imageName = self.get_imageName(myData)
+        self.log.info(f"---------- Received: {self.name_start} Event for {imageName} ----------")
         self.log.info(f"Starting callback for imageName: {imageName}")
 
         # Update header object and metadata dictionaries with lock and wait
@@ -151,24 +154,25 @@ class HSWorker(salobj.BaseCsc):
     def end_collection_event_callback(self, myData):
         """ The callback function for the END collection event"""
 
-        # If not in ENABLED mode we do nothing
-        if self.summary_state != salobj.State.ENABLED:
-            self.log.info(f"Received: {self.name_end} Event")
-            self.log.info(f"Ignoring as current state is {self.summary_state.name}")
-            return
-
         # Extract the key to match start/end events
         imageName = self.get_imageName(myData)
 
-        # Check for rogue end collection events
-        self.log.info(f"Received: {self.name_end} Event for {imageName}")
+        # If not in ENABLED mode we do nothing
+        if self.summary_state != salobj.State.ENABLED:
+            self.log.info(f"Received: {self.name_end} Event for {imageName}")
+            self.log.info(f"Ignoring as current state is {self.summary_state.name}")
+            return
+
         if imageName not in self.end_evt_timeout_task:
             self.log.warning(f"Received orphan {self.name_end} Event without a timeout task")
             self.log.warning(f"{self.name_end} will be ignored for: {imageName}")
             self.log.info(f"Current State is {self.summary_state.name}")
             return
 
+        # Check for rogue end collection events
+        self.log.info(f"---------- Received: {self.name_end} Event for {imageName} ----------")
         # Cancel/stop the timeout task because we got the END callback
+        self.log.info(f"Calling cancel() timeout_task for: {imageName}")
         self.end_evt_timeout_task[imageName].cancel()
 
         # Final collection using asyncio lock, will call functions that
@@ -557,6 +561,8 @@ class HSWorker(salobj.BaseCsc):
             self.log.info(f"Setting timeout: {timeout_camera} + {self.config.timeout_exptime} [s]")
             self.log.info(f"Using timeout: {timeout} [s]")
 
+            # Store completed_OK
+            self.completed_OK[imageName] = False
             # Create timeout_task per imageName
             self.end_evt_timeout_task[imageName] = asyncio.ensure_future(self.end_evt_timeout(imageName,
                                                                                               timeout))
@@ -569,10 +575,6 @@ class HSWorker(salobj.BaseCsc):
         """
         async with self.dlock:
 
-            # Flag to carry completion of tasks and signal FAULT.
-            # We start as True
-            self.completed_OK[imageName] = True
-
             # Collect metadata at end of integration
             self.log.info(f"Collecting Metadata END: {self.name_end} Event")
             self.metadata[imageName].update(self.collect(self.keywords_end))
@@ -580,18 +582,22 @@ class HSWorker(salobj.BaseCsc):
             self.log.info("Collecting Metadata from HeaderService")
             # Update header with information from HS
             self.collect_from_HeaderService(imageName)
+            # We set completed_OK to True, and only change to False later in
+            # case we get an exception
+            self.completed_OK[imageName] = True
 
             # Update header using the information from the camera geometry
             self.log.info("Updating Header with Camera information")
             try:
                 self.update_header_geometry(imageName)
             except Exception as e:
+                # We still want to write a header if we fail to update geometry
                 self.log.warning("Failed call to update_header_geometry")
                 self.log.warning(e)
 
-            # In case of playback mode, this is a good place to overide the
-            # self.metadata[imageName] dictionary, we want to do at the
-            # last stage
+            # In case of playback mode, we want to override any metadata
+            # collected in self.metadata[imageName] dictionary. We want to do
+            # this after all collection is done
             if self.config.playback:
                 try:
                     # Update the metadata dictionary with json values
@@ -605,7 +611,8 @@ class HSWorker(salobj.BaseCsc):
             if self.completed_OK[imageName]:
                 self.update_header(imageName)
 
-            # Write the header only if so far if completed_OK is True
+            # Write the header only if so far if completed_OK is True, if write
+            # fails it will set self.completed_OK to False
             if self.completed_OK[imageName]:
                 self.write(imageName)
 
@@ -620,10 +627,12 @@ class HSWorker(salobj.BaseCsc):
                 await self.announce(imageName)
                 self.log.info(f"-------- Done: {imageName} -------------------")
 
+                # Clean up
+                self.clean(imageName)
+
         if self.summary_state == salobj.State.ENABLED:
             self.log.info("-------- Ready for next image -----")
-        # Cancel timed out tasks and clean
-        self.cancel_timeout_tasks()
+
         self.log.info(f"Current state is: {self.summary_state.name}")
 
     def get_vendors_and_sensors(self):
