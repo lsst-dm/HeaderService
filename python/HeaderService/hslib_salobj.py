@@ -179,6 +179,22 @@ class HSWorker(salobj.BaseCsc):
         # take care of updating data structures. We also write the header file.
         asyncio.ensure_future(self.complete_tasks_END(imageName))
 
+    def get_playlist_dir(self):
+        """Figure the location for the playlist folder"""
+        if 'HEADERSERVICE_PLAYLIST_DIR' in os.environ:
+            self.playlist_dir = os.path.join(os.environ['HEADERSERVICE_PLAYLIST_DIR'],
+                                             self.config.instrument)
+        else:
+            self.playlist_dir = os.path.join(HEADERSERVICE_DIR,
+                                             "etc/playback/lib", self.config.instrument)
+        # Make sure that the directory exists
+        if not os.path.exists(self.playlist_dir):
+            msg = f"Directory: {self.playlist_dir} not found"
+            self.log.error(msg)
+            raise FileNotFoundError(msg)
+        else:
+            self.log.info(f"Will use: {self.playlist_dir} for playback folder")
+
     def get_tstand(self):
         """Figure the Test Stand in use"""
         # Check if definced in self.config or the environment
@@ -490,6 +506,10 @@ class HSWorker(salobj.BaseCsc):
         # Get the TSTAND
         self.get_tstand()
 
+        # Get the playlist directory
+        if self.config.playback:
+            self.get_playlist_dir()
+
         # Create dictionaries keyed to imageName
         self.create_dicts()
 
@@ -665,7 +685,7 @@ class HSWorker(salobj.BaseCsc):
         """
         emuimage = self.metadata[imageName]['EMUIMAGE']
         self.log.info(f"Playback mode emulatedImage: {emuimage}")
-        emuimage_file = os.path.join(HEADERSERVICE_DIR, "etc/playback/lib/ComCam", emuimage+".json")
+        emuimage_file = os.path.join(self.playlist_dir, emuimage+".json")
         self.log.info(f"Reading json file: {emuimage_file}")
         with open(emuimage_file) as f:
             emuimage_dict = json.load(f)
