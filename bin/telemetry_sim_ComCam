@@ -61,7 +61,8 @@ def cmdline():
                         help="The azimuth angle")
     parser.add_argument("--focusz", action="store", default=13, type=float,
                         help="Hexapod FocusZ position (mm)")
-
+    parser.add_argument("--vignetted", action="store", default=1, type=int,
+                        help="Is the telescope vignetted 0:UNKNOWN, 1: NO, 2: PARTTIALLY, 3: FULLY")
     parser.add_argument("--instport", action="store", default=1, type=int,
                         help="The instrument port where LATISS is installed")
     parser.add_argument("--m3port", action="store", default=1, type=int,
@@ -260,6 +261,14 @@ async def amain():
     LOGGER.info("Sending simulationMode for MTRotator {}".format(kwSim))
     await dometraj.evt_simulationMode.set_write(**kwSim)
     LOGGER.info("Sending simulationMode for MTDomeTrajectory {}".format(kwSim))
+
+    # Send VIGNETTE value for all params
+    kwVignette = {'vignetted': args.vignetted,
+                  'azimuth': args.vignetted,
+                  'elevation': args.vignetted,
+                  'shutter': args.vignetted}
+    await dometraj.evt_telescopeVignetted.set_write(**kwVignette)
+    LOGGER.info("Sending telescopeVignetted for MTDomeTrajectory {}".format(kwVignette))
 
     # Loop over NSequence
     for k in range(args.NSequence):
