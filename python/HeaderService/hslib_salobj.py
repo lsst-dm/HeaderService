@@ -1152,7 +1152,7 @@ class HSWorker(salobj.BaseCsc):
                 latest_value = getattr(device_lib, latest_value).numerator
                 current_value = getattr(device_lib, current_value).numerator
             else:
-                msg = f"arraty: {self.config.telemetry[keyword]['array']} not supported for monitor"
+                msg = f"array: {self.config.telemetry[keyword]['array']} not supported for monitor"
                 self.log.error(msg)
                 raise ValueError(msg)
 
