@@ -133,6 +133,50 @@ class HSWorker(salobj.BaseCsc):
         getattr(self.Remote[devname], f"evt_{topic}").callback = self.end_collection_event_callback
         self.log.info(f"Defining callback for {devname} {topic}")
 
+        # Store the callback for the events we want to monitor
+        if len(self.monitor_event_channels) > 0:
+            self.monitor_callback = {}
+            for name, c in self.monitor_event_channels.items():
+                devname = get_channel_devname(c)
+                topic = c['topic']
+                # Get the name of the callback function
+                self.monitor_callback[name] = self.callback_builder(name)
+                self.log.info(f"Created callback function for: {name}")
+                getattr(self.Remote[devname], f"evt_{topic}").callback = self.monitor_callback[name]
+                self.log.info(f"Defining callback for {devname} {topic}")
+
+    def callback_builder(self, monitor_event_name):
+        """Function builder for callbacks"""
+        def generic_callback(myData):
+            """
+            The generic callback function for the monitor collection event
+            """
+            setattr(generic_callback, '__monitor_event_name__', monitor_event_name)
+            setattr(generic_callback, '__name__', monitor_event_name)
+
+            # If not in ENABLED mode we do nothing
+            if self.summary_state != salobj.State.ENABLED:
+                self.log.info(f"Received: {monitor_event_name}")
+                self.log.info(f"Ignoring as current state is {self.summary_state.name}")
+                return
+
+            # Extract the list of imageNames to update metadata
+            imageName_list = self.metadata.keys()
+            # If list is empty we do nothing
+            if len(imageName_list) == 0:
+                self.log.info(f"Ignoring event: {monitor_event_name} -- no imageName present")
+                return
+
+            # The keywords we want to update
+            keywords = self.monitor_event_channels_keys[monitor_event_name]
+            self.log.info(f"Collecting metadata for: {monitor_event_name} and keys: {keywords}")
+            # Update the imageName metadata with new dict
+            for imageName in self.metadata.keys():
+                self.log.info(f"Updating monitored metadata for: {imageName}")
+                self.update_monitor_metadata(imageName, keywords)
+
+        return generic_callback
+
     def start_collection_event_callback(self, myData):
         """ The callback function for the START collection event"""
 
@@ -458,6 +502,15 @@ class HSWorker(salobj.BaseCsc):
                                if value['collect_after_event'] == 'start_collection_event']
         self.keywords_end = [key for key, value in self.config.telemetry.items()
                              if value['collect_after_event'] == 'end_collection_event']
+
+        # Get the events we want to monitor
+        self.log.info("Extracting Telemetry channels to monitor from telemetry dictionary")
+
+        (self.monitor_event_channels,
+         self.monitor_event_channels_names,
+         self.monitor_event_channels_keys) = get_monitor_channels(self.config.telemetry)
+        if len(self.monitor_event_channels) > 0:
+            self.log.info(f"Extracted channels to monitor: {self.monitor_event_channels_names}")
 
     def check_outdir(self, filepath):
         """ Make sure that we have a place to put the files"""
@@ -1074,6 +1127,62 @@ class HSWorker(salobj.BaseCsc):
         # Update the imageName metadata with new dict
         self.metadata[imageName].update(metadata)
 
+    def update_monitor_metadata(self, imageName, keywords):
+
+        # Collect new metadata for keywords
+        metadata = self.collect(keywords)
+        # Apply rule for each keyword
+        for keyword in keywords:
+
+            latest_value = metadata[keyword]
+            current_value = self.metadata[imageName][keyword]
+
+            if 'array' not in self.config.telemetry[keyword]:
+                self.log.info(f"keyword:{keyword} not an array")
+                isenum = False
+                pass
+            # Check if keyword is enum type and transform back to numerator
+            elif self.config.telemetry[keyword]['array'] == 'enum':
+                isenum = True
+                latest_value = metadata[keyword]
+                current_value = self.metadata[imageName][keyword]
+                device = self.config.telemetry[keyword]['device']
+                array_name = self.config.telemetry[keyword]['array_name']
+                device_lib = getattr(self.idl_lib[device], array_name)
+                latest_value = getattr(device_lib, latest_value).numerator
+                current_value = getattr(device_lib, current_value).numerator
+            else:
+                msg = f"array: {self.config.telemetry[keyword]['array']} not supported for monitor"
+                self.log.error(msg)
+                raise ValueError(msg)
+
+            # Make sure that we have a rule defined to extract for the keyword
+            if 'rule' not in self.config.telemetry[keyword]:
+                self.log.warning(f"rule not defined for {keyword} -- will use current value")
+                updated_value = latest_value
+            elif self.config.telemetry[keyword]['rule'] == 'latest':
+                updated_value = latest_value
+            elif self.config.telemetry[keyword]['rule'] == 'max':
+                updated_value = max(current_value, latest_value)
+            elif self.config.telemetry[keyword]['rule'] == 'min':
+                updated_value = min(current_value, latest_value)
+            else:
+                msg = f"rule: {self.config.telemetry[keyword]['rule']} not supported"
+                self.log.error(msg)
+                raise ValueError(msg)
+
+            # Translate to enun name string
+            if isenum:
+                updated_value = device_lib(updated_value).name
+                current_value = device_lib(current_value).name
+
+            self.metadata[imageName][keyword] = updated_value
+            self.log.info(f"Monitor updated {keyword} value from {current_value} --> {updated_value}")
+
+        return
+
+# --- end of class ----
+
 
 def get_channel_name(c):
     """ Standard formatting for the name of a channel across modules"""
@@ -1104,6 +1213,40 @@ def get_enum_cscs(telem):
             if telem[key]['device'] not in enum_cscs:
                 enum_cscs.append(telem[key]['device'])
     return enum_cscs
+
+
+def get_monitor_channels(telem):
+    """
+    Get only events that we need to monitor
+    in the telemetry section of the config
+    """
+
+    # The allowed rules for monitored telemetry
+    valid_rules = frozenset(["min", "max", "latest"])
+
+    monitor_event_channels_names = []
+    monitor_event_channels_keys = {}
+    monitor_event_channels = {}
+    for key in telem:
+        if 'monitor' in telem[key] and telem[key]['monitor'] is True:
+            # Extract rule and set to default value if not defined
+            if 'rule' not in telem[key]:
+                rule = 'latest'
+            else:
+                rule = telem[key]['rule']
+
+            if rule not in valid_rules:
+                msg = f"Wrong rule definition:{rule} for keyword:{key}"
+                raise ValueError(msg)
+
+            channel_name = get_channel_name(telem[key])
+            if channel_name not in monitor_event_channels_names:
+                monitor_event_channels_names.append(channel_name)
+                monitor_event_channels[channel_name] = telem[key]
+                monitor_event_channels_keys[channel_name] = [key]
+            else:
+                monitor_event_channels_keys[channel_name].append(key)
+    return monitor_event_channels, monitor_event_channels_names, monitor_event_channels_keys
 
 
 def extract_telemetry_channels(telem, start_collection_event=None,

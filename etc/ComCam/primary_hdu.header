@@ -52,6 +52,7 @@ TRACKSYS=                      / Tracking system RADEC, AZEL, PLANET, EPHEM
 RADESYS =                      / Equatorial coordinate system FK5 or ICRS
 FOCUSZ  =                      / Focus Z position
 OBJECT  =                      / Name of the observed object
+VIGNETTE=                      / Is the telescope vignetted?
 
         ---- Image-identifying used to build OBS-ID ----
 CAMCODE =                      / The code for the camera (AT/CC/MC)

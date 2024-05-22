@@ -77,9 +77,12 @@ cameraConf_event:
     value: ccdManufacturer
     array_keys: ccdLocation
 
+
 # Telemetry values for images meta-data
 # https://confluence.lsstcorp.org/display/SYSENG/ComCam+Header+Information+Topic+Mapping
 telemetry:
+
+# -------------------------------
 
  DATE-OBS:
   device: CCCamera
@@ -523,6 +526,17 @@ telemetry:
   collect_after_event: start_collection_event
   array: enum
   array_name: CoordFrame
+
+ VIGNETTE:
+  device: MTDomeTrajectory
+  Stype: Event
+  topic: telescopeVignetted
+  value: vignetted
+  collect_after_event: start_collection_event
+  array: enum
+  array_name: TelescopeVignetted
+  monitor: True
+  rule: max
 
 # ----- Filter information from CCCamera ----------
 
