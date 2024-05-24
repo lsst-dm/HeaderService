@@ -57,6 +57,7 @@ OBJECT  =                      / Name of the observed object
 DOMEAZ  =                      / [deg] Dome Azimuth Position
 SHUTLOWR=                      / Dome Dropout Door Opening Percentage
 SHUTUPPR=                      / Dome Main Door Opening Percentage
+VIGNETTE=                      / Is the telescope vignetted?
 
         ---- Image-identifying used to build OBS-ID ----
 CAMCODE =                      / The code for the camera (AT/CC/MC)

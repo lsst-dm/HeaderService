@@ -104,6 +104,8 @@ def cmdline():
                         help="Dome Dropout Door Opening Percertage.")
     parser.add_argument("--shutterupp", action="store", default=100, type=float,
                         help="Dome Main Door Opening Percentage.")
+    parser.add_argument("--vignetted", action="store", default=1, type=int,
+                        help="Is the telescope vignetted 0:UNKNOWN, 1: NO, 2: PARTTIALLY, 3: FULLY")
 
     parser.add_argument("--ambient_temp", action="store", default=12.5, type=float,
                         help="The Ambient Temperature in degC.")
@@ -151,6 +153,7 @@ async def amain():
     ess = salobj.Controller(name="ESS", index=301)
     hexa = salobj.Controller(name="ATHexapod", index=0)
     pneumatics = salobj.Controller(name="ATPneumatics", index=0)
+    dometraj = salobj.Controller(name="ATDomeTrajectory", index=0)
 
     LOGGER = hutils.create_logger()
 
@@ -304,6 +307,13 @@ async def amain():
     LOGGER.info("Sending simulationMode for ATDome {}".format(kwSim))
     await spec.evt_simulationMode.set_write(**kwSim)
     LOGGER.info("Sending simulationMode for ATSpectrograph {}".format(kwSim))
+
+    # Send VIGNETTE value for all params
+    kwVignette = {'vignetted': args.vignetted,
+                  'azimuth': args.vignetted,
+                  'shutter': args.vignetted}
+    await dometraj.evt_telescopeVignetted.set_write(**kwVignette)
+    LOGGER.info("Sending telescopeVignetted for ATDomeTrajectory {}".format(kwVignette))
 
     # Loop over NSequence
     for k in range(args.NSequence):

@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+
+import HeaderService.hutils as hutils
+import lsst.ts.salobj as salobj
+import asyncio
+import sys
+
+try:
+    newvalue = int(sys.argv[1])
+except IndexError:
+    newvalue = 3
+
+
+async def amain():
+
+    LOGGER = hutils.create_logger()
+    dometraj = salobj.Controller(name="ATDomeTrajectory", index=0)
+    # Send VIGNETTE Value
+    kwVignette = {'vignetted': newvalue, 'azimuth': newvalue, 'shutter': newvalue}
+    await dometraj.evt_telescopeVignetted.set_write(**kwVignette)
+    LOGGER.info("Sending telescopeVignetted for ATDomeTrajectory {}".format(kwVignette))
+
+asyncio.run(amain())
