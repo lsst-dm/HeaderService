@@ -536,6 +536,17 @@ telemetry:
   value: mainDoorOpeningPercentage
   collect_after_event: start_collection_event
 
+ VIGNETTE:
+  device: ATDomeTrajectory
+  Stype: Event
+  topic: telescopeVignetted
+  value: vignetted
+  collect_after_event: start_collection_event
+  array: enum
+  array_name: TelescopeVignetted
+  monitor: True
+  rule: max
+
 # ----- Filter/Grating information from ATSpectrograph ---------
 
  FILTBAND:
