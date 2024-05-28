@@ -53,6 +53,7 @@ RADESYS =                      / Equatorial coordinate system FK5 or ICRS
 FOCUSZ  =                      / Focus Z position
 OBJECT  =                      / Name of the observed object
 VIGNETTE=                      / Is the telescope vignetted?
+VIGN_MIN=                      / Minimum vignetting
 
         ---- Image-identifying used to build OBS-ID ----
 CAMCODE =                      / The code for the camera (AT/CC/MC)
