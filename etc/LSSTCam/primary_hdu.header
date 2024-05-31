@@ -41,6 +41,8 @@ TRACKSYS=                      / Tracking system RADEC, AZEL, PLANET, EPHEM
 RADESYS =                      / Equatorial coordinate system FK5 or ICRS
 FOCUSZ  =                      / Focus Z position
 OBJECT  =                      / Name of the observed object
+VIGNETTE=                      / Is the telescope vignetted?
+VIGN_MIN=                      / Minimum vignetting
 
         ---- Weather information ----
 AIRTEMP =                      / [degC] Air Temperature

@@ -211,6 +211,28 @@ telemetry:
   array: enum
   array_name: CoordFrame
 
+ VIGNETTE:
+  device: MTDomeTrajectory
+  Stype: Event
+  topic: telescopeVignetted
+  value: vignetted
+  collect_after_event: start_collection_event
+  array: enum
+  array_name: TelescopeVignetted
+  monitor: True
+  rule: max
+
+ VIGN_MIN:
+  device: MTDomeTrajectory
+  Stype: Event
+  topic: telescopeVignetted
+  value: vignetted
+  collect_after_event: start_collection_event
+  array: enum
+  array_name: TelescopeVignetted
+  monitor: True
+  rule: min
+
 # ---- Weather information -----------------------------
  AIRTEMP:
   device: ESS
