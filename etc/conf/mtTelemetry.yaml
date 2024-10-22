@@ -192,6 +192,7 @@ telemetry:
   collect_after_event: start_collection_event
   array_index: 2
   array: indexed_array
+  scale: -0.001
 
  TRACKSYS:
   device: MTPtg
