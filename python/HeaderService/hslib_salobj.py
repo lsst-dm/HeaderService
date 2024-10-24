@@ -865,13 +865,15 @@ class HSWorker(salobj.BaseCsc):
         # Upload header file and get key/url
         # key should be like:
         # CCHeaderService/header/2020/05/21/CCHeaderService_header_CC_O_20200521_000008.yaml
+        # For date we use 'DATE' in the metadata dictionary as this should
+        # always be available beacuse is created by the HeaderService
         if self.config.lfa_mode == 's3':
             key = self.s3bucket.make_key(
                 salname=self.config.hs_name,
                 salindexname=self.config.hs_index,
                 other=imageName,
                 generator='header',
-                date=self.metadata[imageName]['DATE-OBS'],
+                date=self.metadata[imageName]['DATE'],
                 suffix=".yaml"
             )
             # In case we want to go back to an s3 url
