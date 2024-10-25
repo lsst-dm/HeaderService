@@ -197,7 +197,6 @@ async def amain():
     kwTA = {'timestamp': get_tai_time(),
             'ra': args.ra,
             'declination': args.dec,
-            'rotPA': args.rotpa,
             'targetName': args.object,
             'targetType': args.tracksys,
             'frame': args.radesys,
@@ -307,6 +306,7 @@ async def amain():
         # The START telemetry for RA/DEC, EL/AZ from the MTPtg.mountPosition
         kwMP = {'ra': args.ra,
                 'declination': args.dec,
+                'skyAngle': args.rotpa,
                 'elevationActualPosition': args.el,
                 'azimuthActualPosition': args.az}
         await ptg.tel_mountPosition.set_write(**kwMP)
@@ -353,6 +353,7 @@ async def amain():
         # The END telemetry for RA/DEC, EL/AZ from the MTPtg.mountPosition
         kwMP = {'ra': args.ra*random.uniform(0.95, 1.05),
                 'declination': args.dec*random.uniform(0.95, 1.05),
+                'skyAngle': args.rotpa*random.uniform(0.95, 1.05),
                 'elevationActualPosition': args.el*random.uniform(0.95, 1.05),
                 'azimuthActualPosition': args.az*random.uniform(0.95, 1.05)}
         await ptg.tel_mountPosition.set_write(**kwMP)
