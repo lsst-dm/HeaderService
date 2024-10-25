@@ -94,9 +94,9 @@ telemetry:
 
  ROTPA:
   device: MTPtg
-  Stype: Event
-  topic: currentTarget
-  value: rotPA
+  Stype: Telemetry
+  topic: mountPosition
+  value: skyAngle
   collect_after_event: start_collection_event
 
  RASTART:
