@@ -1,4 +1,4 @@
-TAGNAME=c0035
+TAGNAME=c0039
 DOCKER_IMA=ts-dockerhub.lsst.org/headerservice:$TAGNAME
 NAME=tssheaderservice
 HSUSER=saluser
