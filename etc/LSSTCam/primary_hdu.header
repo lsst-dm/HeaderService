@@ -7,6 +7,7 @@ TIMESYS = 'TAI'                / The time scale used
 DATE    =                      / Creation Date and Time of File
 MJD     =                      / Modified Julian Date that the file was written
 BUNIT   = 'adu     '           / Brightness units for pixel array
+OBSID   =                      / ImageName from Camera StartIntergration
 
         ---- Telescope info, location, observer ----
 FACILITY= 'Vera C. Rubin Observatory' / Facility name
@@ -43,6 +44,12 @@ FOCUSZ  =                      / [mm] Focus Z position from MTHexapod
 OBJECT  =                      / Name of the observed object
 VIGNETTE=                      / Is the telescope vignetted?
 VIGN_MIN=                      / Minimum vignetting
+
+---- Image-identifying used to build OBS-ID ----
+CAMCODE =                      / The code for the camera (AT/CC/MC)
+CONTRLLR=                      / The controller (e.g. O for OCS, C for (A)CCS)
+DAYOBS  =                      / The observation day as defined by image name
+SEQNUM  =                      / The sequence number from the image name
 
         ---- Weather information ----
 AIRTEMP =                      / [degC] Air Temperature

@@ -67,6 +67,42 @@ end_collection_event:
 # Telemetry values for images meta-data
 # https://confluence.lsstcorp.org/display/SYSENG/MT+Header+Information+Topic+Mapping
 telemetry:
+# -------------------------------
+
+ OBSID:
+  device: MTCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageName
+  collect_after_event: start_collection_event
+
+ CAMCODE:
+  device: MTCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageSource
+  collect_after_event: start_collection_event
+
+ CONTRLLR:
+  device: MTCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageController
+  collect_after_event: start_collection_event
+
+ DAYOBS:
+  device: MTCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageDate
+  collect_after_event: start_collection_event
+
+ SEQNUM:
+  device: MTCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageNumber
+  collect_after_event: start_collection_event
 
 # --- Pointing Information ---------------
  OBJECT:
