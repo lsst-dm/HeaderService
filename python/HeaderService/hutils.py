@@ -26,7 +26,6 @@ import sys
 import time
 import fitsio
 import yaml
-import numpy
 import logging
 from logging.handlers import RotatingFileHandler
 import hashlib
@@ -582,36 +581,6 @@ class HDRTEMPL:
             for extname in self.HDRLIST:
                 hdr = copy.deepcopy(self.header[extname])
                 fits.write(data, header=hdr, extname=extname)
-
-    def write_dummy_fits(self, filename, dtype='random', naxis1=None, naxis2=None, btype='int32'):
-
-        """
-        Write a dummy fits file filled with random or zeros
-        -- use for testing only
-        """
-
-        t0 = time.time()
-        with fitsio.FITS(filename, 'rw', clobber=True, ignore_empty=True) as fits:
-
-            # Write the PRIMARY First, with no data
-            data = None
-            hdr = copy.deepcopy(self.header['PRIMARY'])
-            fits.write(data, header=hdr, extname='PRIMARY')
-
-            # Loop over the extensions
-            for extname in self.HDRLIST[1:]:
-                if dtype == 'random':
-                    data = numpy.random.uniform(1, 2**18-1, size=(naxis2, naxis1)).astype(btype)
-                elif dtype == 'zero' or dtype == 'zeros':
-                    data = numpy.zeros((naxis2, naxis1)).astype(btype)
-                elif dtype == 'seq' or dtype == 'sequence':
-                    data = numpy.zeros((naxis2, naxis1)).astype(btype) + int(extname[-2:])
-                else:
-                    raise NameError(f"Data Type: '{dtype}' not implemented")
-                hdr = copy.deepcopy(self.header[extname])
-                self.log.debug(f"Writing: {extname}".format(extname))
-                fits.write(data, extname=extname, header=hdr)
-        self.log.info("FITS write time:{}".format(elapsed_time(t0)))
 
     def write_header(self, filename):
         """
