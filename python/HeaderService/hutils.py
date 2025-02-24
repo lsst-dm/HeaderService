@@ -212,11 +212,18 @@ def get_obsnite(date=None, thresh_hour=14, format='{year}{month:02d}{day:02d}'):
 def repack_dict_list(mydict, masterkey):
     # Repack dictionary with list, keys to a give key
     newdict = dict()
+    k = 1
     for newkey in mydict[masterkey]:
         newdict[newkey] = dict()
+        print(f"{newkey}, newdict[{newkey}]")
+        print(newkey, newdict[newkey])
         indx = mydict[masterkey].index(newkey)
+        k = k + 1
         for key in mydict.keys():
+            print(f"key:{key} -- indx: {indx}")
             newdict[newkey][key] = mydict[key][indx]
+            print(f"{newkey}, newdict[{newkey}]")
+
     return newdict
 
 
@@ -310,8 +317,13 @@ def build_sensor_list(instrument, sep=""):
         return sensor_names
 
     for raft in raft_names:
-        for i in range(3):
-            for j in range(3):
+        xn = 3
+        yn = 3
+        for i in range(xn):
+            # Corner raft only 2 ccds
+            if raft in ('44', '40', '04', '00'):
+                yn = 1
+            for j in range(yn):
                 sensor_name = f"R{raft}{sep}S{i}{j}"
                 sensor_names.append(sensor_name)
 
@@ -483,14 +495,14 @@ class HDRTEMPL:
                 extname = self.get_primary_extname(sensor)
                 self.header[extname] = copy.deepcopy(self.header_primary_sensor)
                 PRIMARY_DATA_SENSOR = self.CCDInfo[sensor].setup_primary_sensor()
-                self.log.info(f"Loading template for: {extname}")
+                self.log.debug(f"Loading template for: {extname}")
                 self.update_records(PRIMARY_DATA_SENSOR, extname)
 
             # Loop over all segment in Sensor/CCD
             for seg in self.segment_names[sensor]:
                 # Get the right extnamme for sensor/segment combination
                 extname = self.get_segment_extname(sensor, seg)
-                self.log.info(f"Loading template for: {extname}")
+                self.log.debug(f"Loading template for: {extname}")
                 self.header[extname] = copy.deepcopy(self.header_segment)
                 # Now get the new values for the SEGMENT
                 self.log.debug(f"Updating DATA in template for: {extname}")

@@ -568,10 +568,11 @@ class HSWorker(salobj.BaseCsc):
 
         # Define if we need sensor infornation in templates
         # For LSSTCam, MTCamera is charge the Camera metadata
-        if self.config.instrument == 'LSSTCam':
-            self.nosensors = True
-        else:
-            self.nosensors = False
+        # if self.config.instrument == 'LSSTCam':
+        #    self.nosensors = False
+        # else:
+        # Will try sensors for LSSTCam
+        self.nosensors = False
 
         # Check for segment name in configuration
         if not hasattr(self.config, 'segname'):

@@ -161,11 +161,11 @@ RAFTS = {}
 RAFTS['LATISS'] = ['22']
 RAFTS['GenericCamera'] = ['']  # Making this up for now
 RAFTS['ComCam'] = ['22']
-RAFTS['LSSTCam'] = ['34', '24', '14',
+RAFTS['LSSTCam'] = ['44', '34', '24', '14', '04',
                     '43', '33', '23', '13', '03',
                     '42', '32', '22', '12', '02',
                     '41', '31', '21', '11', '01',
-                    '30', '20', '10']
+                    '40', '30', '20', '10', '00']
 
 
 def setup_primary():
