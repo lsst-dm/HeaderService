@@ -485,10 +485,10 @@ class HSWorker(salobj.BaseCsc):
         # Get the list of enum enum_csc
         self.log.info("Extracting enum CSC's from telemetry dictionary")
         self.enum_csc = get_enum_cscs(self.config.telemetry)
-        self.idl_lib = {}
+        self.xml_lib = {}
         for csc in self.enum_csc:
             self.log.info(f"importing lsst.ts.idl.enums.{csc}")
-            self.idl_lib[csc] = importlib.import_module("lsst.ts.idl.enums.{}".format(csc))
+            self.xml_lib[csc] = importlib.import_module("lsst.ts.xml.enums.{}".format(csc))
 
     def get_channels(self):
         """Extract the unique channels by topic/device"""
@@ -1060,7 +1060,7 @@ class HSWorker(salobj.BaseCsc):
         elif self.config.telemetry[keyword]['array'] == 'enum':
             device = self.config.telemetry[keyword]['device']
             array_name = self.config.telemetry[keyword]['array_name']
-            extracted_payload = getattr(self.idl_lib[device], array_name)(payload).name
+            extracted_payload = getattr(self.xml_lib[device], array_name)(payload).name
         # If some kind of array take first element
         elif hasattr(payload, "__len__") and not isinstance(payload, str):
             self.log.debug(f"{keyword} is just an array")
@@ -1150,7 +1150,7 @@ class HSWorker(salobj.BaseCsc):
                 current_value = self.metadata[imageName][keyword]
                 device = self.config.telemetry[keyword]['device']
                 array_name = self.config.telemetry[keyword]['array_name']
-                device_lib = getattr(self.idl_lib[device], array_name)
+                device_lib = getattr(self.xml_lib[device], array_name)
                 latest_value = getattr(device_lib, latest_value).numerator
                 current_value = getattr(device_lib, current_value).numerator
             else:
