@@ -3,6 +3,8 @@
 # The name of the HeaderService
 hs_name: MTHeaderService
 instrument: LSSTCam
+# Vendor names come from a MTCamera Event, this is in case it does not
+# vendor_names: ['ITL','ITL','ITL','ITL','ITL','ITL','ITL','ITL','ITL','ITL']
 section: LSSTCam
 
 # Default logging level
@@ -40,6 +42,9 @@ timeout_event:
 # Timeout beyond the requested exposure time to wait for an end of Telemetry event (in seconds)
 timeout_exptime: 30
 
+# Playback Mode
+playback: False
+
 # The file naming event source and definitions
 filepath: 'www/DMHS_filerepo'
 format_HDR: "{}.yaml"
@@ -58,16 +63,39 @@ end_collection_event:
     device: MTCamera
     topic: endOfImageTelemetry
 
-## The event for the image readout paramters
-#imageParam_event:
-#    device: MTCamera
-#    topic: imageReadoutParameters
-#    array_keys: ccdLocation
+# The event for the camera vendor and CCD names configuration
+cameraConf_event:
+    device: MTCamera
+    topic: focalPlaneSummaryInfo
+    value: ccdManufacturer
+    array_keys: ccdLocation
 
 # Telemetry values for images meta-data
-# https://confluence.lsstcorp.org/display/SYSENG/MT+Header+Information+Topic+Mapping
+# https://confluence.lsstcorp.org/display/SYSENG/ComCam+Header+Information+Topic+Mapping
 telemetry:
+
 # -------------------------------
+
+ DATE-OBS:
+  device: MTCamera
+  Stype: Event
+  topic: endOfImageTelemetry
+  value: timestampDateObs
+  collect_after_event: end_collection_event
+
+ DATE-BEG:
+  device: MTCamera
+  Stype: Event
+  topic: endOfImageTelemetry
+  value: timestampDateObs
+  collect_after_event: end_collection_event
+
+ DATE-END:
+  device: MTCamera
+  Stype: Event
+  topic: endOfImageTelemetry
+  value: timestampDateEnd
+  collect_after_event: end_collection_event
 
  OBSID:
   device: MTCamera
@@ -103,6 +131,222 @@ telemetry:
   topic: startIntegration
   value: imageNumber
   collect_after_event: start_collection_event
+
+ GROUPID:
+  device: MTCamera
+  Stype: Event
+  topic: startIntegration
+  value: additionalValues
+  collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: groupId
+  array: keyed_array
+
+ IMGTYPE:
+  device: MTCamera
+  Stype: Event
+  topic: startIntegration
+  value: additionalValues
+  collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: imageType
+  array: keyed_array
+
+ TESTTYPE:
+  device: MTCamera
+  Stype: Event
+  topic: startIntegration
+  value: additionalValues
+  collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: testType
+  array: keyed_array
+
+ REASON:
+  device: MTCamera
+  Stype: Event
+  topic: startIntegration
+  value: additionalValues
+  collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: reason
+  array: keyed_array
+
+ PROGRAM:
+  device: MTCamera
+  Stype: Event
+  topic: startIntegration
+  value: additionalValues
+  collect_after_event: start_collection_event
+  array_keys: additionalKeys
+  array_keyname: program
+  array: keyed_array
+
+ EMUIMAGE:
+  device: MTCamera
+  Stype: Event
+  topic: endOfImageTelemetry
+  value: emulatedImage
+  collect_after_event: end_collection_event
+
+ EXPTIME:
+  device: MTCamera
+  Stype: Event
+  topic: startIntegration
+  value: exposureTime
+  collect_after_event: start_collection_event
+
+ DARKTIME:
+  device: MTCamera
+  Stype: Event
+  topic: endOfImageTelemetry
+  value: darkTime
+  collect_after_event: end_collection_event
+
+ OBSANNOT:
+  device: MTCamera
+  Stype: Event
+  topic: imageReadoutParameters
+  value: daqAnnotation
+  collect_after_event: end_collection_event
+
+ SHUTTIME:
+  device: MTCamera
+  Stype: Event
+  topic: endOfImageTelemetry
+  value: measuredShutterOpenTime
+  collect_after_event: end_collection_event
+
+ CURINDEX:
+  device: MTCamera
+  Stype: Event
+  topic: startIntegration
+  value: imageIndex
+  collect_after_event: start_collection_event
+
+ MAXINDEX:
+  device: MTCamera
+  Stype: Event
+  topic: startIntegration
+  value: imagesInSequence
+  collect_after_event: start_collection_event
+
+# --- Camera Sensor information
+
+ CCDTEMP:
+  device: MTCamera
+  Stype: Telemetry
+  topic: focal_plane_Ccd
+  value: temp
+  collect_after_event: start_collection_event
+  array: CCD_array
+  array_keys: location
+
+ CCD_MANU:
+  device: MTCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: ccdManufacturer
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_keys: ccdLocation
+
+ CCD_TYPE:
+  device: MTCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: ccdType
+  collect_after_event: start_collection_event
+  array: CCD_array
+  array_keys: ccdLocation
+
+ CCD_SERN:
+  device: MTCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: ccdManSerNum
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_keys: ccdLocation
+
+ LSST_NUM:
+  device: MTCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: ccdLSSTName
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_keys: ccdLocation
+
+ CCDSLOT:
+  device: MTCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: ccdSlot
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_keys: ccdLocation
+
+ RAFTBAY:
+  device: MTCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: raftBay
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_keys: ccdLocation
+
+ SEQCKSUM:
+  device: MTCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: sequencerChecksum
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_keys: ccdLocation
+
+ SEQNAME:
+  device: MTCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: sequencerKey
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_keys: ccdLocation
+
+ REBNAME:
+  device: MTCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: rebLSSTName
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_keys: ccdLocation
+
+ CONTNUM:
+  device: MTCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: rebSerialNumber
+  collect_after_event: start_collection_event
+  array: CCD_array_str
+  array_keys: ccdLocation
+
+ TEMP_SET:
+  device: MTCamera
+  Stype: Event
+  topic: focalPlaneSummaryInfo
+  value: ccdTempSetPoint
+  collect_after_event: start_collection_event
+  array: CCD_array
+  array_keys: ccdLocation
+
+ IMAGETAG:
+  device: MTCamera
+  Stype: Event
+  topic: endOfImageTelemetry
+  value: imageTag
+  collect_after_event: end_collection_event
 
 # --- Pointing Information ---------------
  OBJECT:
@@ -270,6 +514,36 @@ telemetry:
   monitor: True
   rule: min
 
+# ----- Filter information from MTCamera ----------
+
+ FILTBAND:
+  device: MTCamera
+  Stype: Event
+  topic: endSetFilter
+  value: filterType
+  collect_after_event: start_collection_event
+
+ FILTER:
+  device: MTCamera
+  Stype: Event
+  topic: endSetFilter
+  value: filterName
+  collect_after_event: start_collection_event
+
+ FILTSLOT:
+  device: MTCamera
+  Stype: Event
+  topic: endSetFilter
+  value: filterSlot
+  collect_after_event: start_collection_event
+
+ FILTPOS:
+  device: MTCamera
+  Stype: Event
+  topic: endSetFilter
+  value: filterPosition
+  collect_after_event: start_collection_event
+
 # ---- Weather information -----------------------------
  AIRTEMP:
   device: ESS
@@ -382,3 +656,59 @@ telemetry:
    topic: simulationMode
    value: mode
    collect_after_event: start_collection_event
+
+
+# --- Keywords from playback ---------------
+playback_keywords:
+# --- Telescope information ---------
+ - OBJECT
+ - RA
+ - DEC
+ - ROTPA
+ - RASTART
+ - DECSTART
+ - HASTART
+ - AMSTART
+ - ELSTART
+ - AZSTART
+ - RAEND
+ - DECEND
+ - HAEND
+ - AMEND
+ - ELEND
+ - AZEND
+ - FOCUSZ
+ - TRACKSYS
+ - RADESYS
+# ---- Weather information -----------------------------
+ - AIRTEMP
+ - PRESSURE
+ - HUMIDITY
+ - WINDSPD
+ - WINDDIR
+ - SEEING
+# ------- Hierarch keywords --------
+ - HIERARCH SIMULATE MTMOUNT
+ - HIERARCH SIMULATE MTM1M3
+ - HIERARCH SIMULATE MTM2
+ - HIERARCH SIMULATE CAMHEXAPOD
+ - HIERARCH SIMULATE M2HEXAPOD
+ - HIERARCH SIMULATE MTROTATOR
+ - HIERARCH SIMULATE MTDOME
+ - HIERARCH SIMULATE MTDOMETRAJECTORY
+ - HIERARCH SIMULATED MJD-OBS
+ - HIERARCH SIMULATED DATE-OBS
+ - HIERARCH SIMULATED DATE-END
+
+# Keywords not to ignore from telemetry in playback mode
+playback_keywords_keep:
+  - EMUIMAGE
+  - DATE-OBS
+  - DATE-BEG
+  - DATE-END
+  - CAMCODE
+  - CONTRLLR
+  - DAYOBS
+  - SEQNUM
+  - OBSID
+  - FILTER
