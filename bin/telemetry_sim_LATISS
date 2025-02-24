@@ -142,6 +142,8 @@ async def amain():
     # Get the command line arguments
     args = cmdline()
 
+    shuttime = args.exptime + random.uniform(0, 0.5)
+
     # Create handlers for the CSCs we want to simulate messages
     cam = salobj.Controller(name="ATCamera", index=0)
     ptg = salobj.Controller(name="ATPtg", index=0)
@@ -385,11 +387,6 @@ async def amain():
         LOGGER.info("Sending simulated startReadout")
         del kwInt['timeout']
         await cam.evt_startReadout.set_write(**kwInt)
-
-        # Send Measured exptime event
-        LOGGER.info("Sending simulated Measured Exptime")
-        shuttime = args.exptime + random.uniform(0, 0.5)
-        await cam.evt_shutterMotionProfile.set_write(measuredExposureTime=shuttime)
 
         # The END telemetry for Airmass using ATPtg.currentTargetStatus
         kwTA = {'timestamp': get_tai_time(),
