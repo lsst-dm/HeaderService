@@ -1,0 +1,23 @@
+        ---- Information from Camera per sensor ----
+CCD_MANU=                      / CCD Manufacturer
+CCD_TYPE=                      / CCD Model Number
+CCD_SERN=                      / Manufacturers CCD Serial Number
+LSST_NUM=                      / LSST Assigned CCD Number
+SEQCKSUM=                      / Checksum of Sequencer
+SEQNAME =                      / SequenceName from Camera
+REBNAME =                      / Name of the REB
+CONTNUM =                      / CCD Controller (WREB) Serial Number
+TEMP_SET=                      / Temperature set point (deg C)
+CCDTEMP =                      / Measured temperature (deg C)
+CCDSLOT =                      / Name of the CCD Slot (SXx)
+RAFTBAY =                      / Name of the RAFT Bay (Rnn)
+
+        ---- Geometry from Camera ----
+DETSIZE =                      / Size of sensor
+OVERH   =                      / Over-scan pixels
+OVERV   =                      / Vert-overscan pix
+PREH    =                      / Pre-scan pixels
+
+        ---- Checksums ----
+CHECKSUM=                      / checksum for the current HDU
+DATASUM =                      / checksum of the data records

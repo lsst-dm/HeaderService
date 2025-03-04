@@ -189,7 +189,7 @@ class HSWorker(salobj.BaseCsc):
             self.log.info(f"Ignoring as current state is {self.summary_state.name}")
             return
 
-        self.log.info(f"---------- Received: {self.name_start} Event for {imageName} ----------")
+        self.log.info(f"----- Received: {self.name_start} Event for {imageName} -----")
         self.log.info(f"Starting callback for imageName: {imageName}")
 
         # Update header object and metadata dictionaries with lock and wait
@@ -214,7 +214,7 @@ class HSWorker(salobj.BaseCsc):
             return
 
         # Check for rogue end collection events
-        self.log.info(f"---------- Received: {self.name_end} Event for {imageName} ----------")
+        self.log.info(f"----- Received: {self.name_end} Event for {imageName} -----")
         # Cancel/stop the timeout task because we got the END callback
         self.log.info(f"Calling cancel() timeout_task for: {imageName}")
         self.end_evt_timeout_task[imageName].cancel()
@@ -568,10 +568,11 @@ class HSWorker(salobj.BaseCsc):
 
         # Define if we need sensor infornation in templates
         # For LSSTCam, MTCamera is charge the Camera metadata
-        if self.config.instrument == 'LSSTCam':
-            self.nosensors = True
-        else:
-            self.nosensors = False
+        # if self.config.instrument == 'LSSTCam':
+        #    self.nosensors = False
+        # else:
+        # Will try sensors for LSSTCam
+        self.nosensors = False
 
         # Check for segment name in configuration
         if not hasattr(self.config, 'segname'):
@@ -693,18 +694,18 @@ class HSWorker(salobj.BaseCsc):
             if self.completed_OK[imageName] is False:
                 self.log.warning("Sending the system to FAULT state")
                 await self.fault(code=9, report=f"Cannot write header for: {imageName}")
-                self.log.error(f"-------- Failed: {imageName} -------------------")
+                self.log.error(f"----- Failed: {imageName} -----")
             else:
                 # Announce/upload LFO if write_OK is True
                 self.completed_OK[imageName] = True
                 await self.announce(imageName)
-                self.log.info(f"-------- Done: {imageName} -------------------")
+                self.log.info(f"----- Done: {imageName} -----")
 
                 # Clean up
                 self.clean(imageName)
 
         if self.summary_state == salobj.State.ENABLED:
-            self.log.info("-------- Ready for next image -----")
+            self.log.info("----- Ready for next image -----")
 
         self.log.info(f"Current state is: {self.summary_state.name}")
 
@@ -830,7 +831,7 @@ class HSWorker(salobj.BaseCsc):
                 for sensor in value.keys():
                     extname = self.HDR[imageName].get_primary_extname(sensor)
                     self.HDR[imageName].update_record(keyword, value[sensor], extname)
-                    self.log.info(f"Updating header[{extname}] with {keyword:8s} = {value[sensor]}")
+                    self.log.debug(f"Updating header[{extname}] with {keyword:8s} = {value[sensor]}")
             # Otherwise we put it into the PRIMARY
             else:
                 extname = 'PRIMARY'
