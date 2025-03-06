@@ -125,9 +125,11 @@ def get_tai_time():
 
 async def amain():
 
+    LOGGER = hutils.create_logger(level='INFO')
+    LOGGER.propagate = False
+
     # Get the command line arguments
     args = cmdline()
-
     shuttime = args.exptime + random.uniform(0, 0.5)
 
     # Create handlers for the CSCs we want to simulate messages
@@ -143,8 +145,21 @@ async def amain():
     dometraj = salobj.Controller(name="MTDomeTrajectory", index=0)
     dimm = salobj.Controller(name="DIMM", index=1)
     ess = salobj.Controller(name="ESS", index=301)
-
-    LOGGER = hutils.create_logger()
+    # Wait for them to start
+    await asyncio.gather(
+        cam.start_task,
+        ptg.start_task,
+        hexa.start_task,
+        hexa2.start_task,
+        mount.start_task,
+        m1m3.start_task,
+        m2.start_task,
+        dome.start_task,
+        rotator.start_task,
+        dometraj.start_task,
+        dimm.start_task,
+        ess.start_task,
+    )
 
     # Camera Geometry
     # Send sub-set of imageReadoutParameters, we populate only a few fields

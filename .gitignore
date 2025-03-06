@@ -2,3 +2,4 @@
 *~
 ospl-info.log
 .DS_Store
+*.egg-info

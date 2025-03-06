@@ -100,8 +100,21 @@ async def amain():
     dome = salobj.Controller(name="MTDome", index=0)
     rotator = salobj.Controller(name="MTRotator", index=0)
     dometraj = salobj.Controller(name="MTDomeTrajectory", index=0)
+    # Wait for them to start
+    await asyncio.gather(
+        cam.start_task,
+        ptg.start_task,
+        hexa.start_task,
+        hexa2.start_task,
+        mount.start_task,
+        m1m3.start_task,
+        m2.start_task,
+        dome.start_task,
+        rotator.start_task,
+        dometraj.start_task)
 
     LOGGER = hutils.create_logger()
+    LOGGER.propagate = False
 
     # FocusZ positionZ for Hexapod
     kwHexa = {'demand': [0.0, 0.1, 0.2, 0.3, 0.4, 0.5],

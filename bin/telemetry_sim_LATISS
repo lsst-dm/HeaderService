@@ -156,8 +156,22 @@ async def amain():
     hexa = salobj.Controller(name="ATHexapod", index=0)
     pneumatics = salobj.Controller(name="ATPneumatics", index=0)
     dometraj = salobj.Controller(name="ATDomeTrajectory", index=0)
+    # Wait for them to start
+    await asyncio.gather(
+        cam.start_task,
+        ptg.start_task,
+        mcs.start_task,
+        spec.start_task,
+        ataos.start_task,
+        dome.start_task,
+        dimm.start_task,
+        ess.start_task,
+        hexa.start_task,
+        pneumatics.start_task,
+        dometraj.start_task)
 
-    LOGGER = hutils.create_logger()
+    LOGGER = hutils.create_logger(level='INFO')
+    LOGGER.propagate = False
 
     # Camera Geometry
     # Send sub-set of imageReadoutParameters, we populate only a few fields
@@ -335,7 +349,7 @@ async def amain():
 
         # Send CCD temperature telemetry using a random generator
         kwCCD = {'location': ':'.join(ccdLocation),
-                 'temp': [random.uniform(-100, -90)]*Nsensors
+                 'temp': random.uniform(-100, -90),
                  }
         LOGGER.info("Sending simulated fp_Ccd {}".format(kwCCD))
         await cam.tel_focal_plane_Ccd.set_write(**kwCCD)

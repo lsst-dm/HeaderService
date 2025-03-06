@@ -82,7 +82,7 @@ def configure_logger(logger, logfile=None, level=logging.NOTSET, log_format=None
     sh.setLevel(level)
     handlers.append(sh)
     logger.addHandler(sh)
-    return
+    return logger
 
 
 def create_logger(logfile=None, level=logging.NOTSET, log_format=None, log_format_date=None):

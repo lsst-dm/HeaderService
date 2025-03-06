@@ -106,5 +106,6 @@ def cmdline():
 async def amain():
     args = cmdline()
     hs = hslib_salobj.HSWorker(**args.__dict__)
+    hs.log.info("START")
     await hs.done_task
 asyncio.run(amain())
