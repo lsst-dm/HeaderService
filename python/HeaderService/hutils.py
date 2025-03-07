@@ -217,6 +217,7 @@ def repack_dict_list(mydict, masterkey):
         indx = mydict[masterkey].index(newkey)
         for key in mydict.keys():
             newdict[newkey][key] = mydict[key][indx]
+
     return newdict
 
 
@@ -310,8 +311,13 @@ def build_sensor_list(instrument, sep=""):
         return sensor_names
 
     for raft in raft_names:
-        for i in range(3):
-            for j in range(3):
+        xn = 3
+        yn = 3
+        for i in range(xn):
+            # Corner raft only 2 ccds
+            if raft in ('44', '40', '04', '00'):
+                yn = 1
+            for j in range(yn):
                 sensor_name = f"R{raft}{sep}S{i}{j}"
                 sensor_names.append(sensor_name)
 
@@ -423,11 +429,13 @@ class HDRTEMPL:
             self.vendor[sensor] = vendor
             if 'SENSOR' in self.templ_file:
                 self.HDRLIST.append(f"{sensor}_PRIMARY")
-            for hdu in range(1, n+1):
-                segment_name = camera_coords.SEGNAME[self.instrument][hdu]
-                self.segment_names[sensor].append(segment_name)
-                extname = self.get_segment_extname(sensor, segment_name)
-                self.HDRLIST.append(extname)
+
+            if 'SEGMENT' in self.templ_file:
+                for hdu in range(1, n+1):
+                    segment_name = camera_coords.SEGNAME[self.instrument][hdu]
+                    self.segment_names[sensor].append(segment_name)
+                    extname = self.get_segment_extname(sensor, segment_name)
+                    self.HDRLIST.append(extname)
 
         self.log.debug("Build HDRLIST:")
         self.log.debug('\n\t'.join(self.HDRLIST))
@@ -483,19 +491,20 @@ class HDRTEMPL:
                 extname = self.get_primary_extname(sensor)
                 self.header[extname] = copy.deepcopy(self.header_primary_sensor)
                 PRIMARY_DATA_SENSOR = self.CCDInfo[sensor].setup_primary_sensor()
-                self.log.info(f"Loading template for: {extname}")
+                self.log.debug(f"Loading template for: {extname}")
                 self.update_records(PRIMARY_DATA_SENSOR, extname)
 
             # Loop over all segment in Sensor/CCD
-            for seg in self.segment_names[sensor]:
-                # Get the right extnamme for sensor/segment combination
-                extname = self.get_segment_extname(sensor, seg)
-                self.log.info(f"Loading template for: {extname}")
-                self.header[extname] = copy.deepcopy(self.header_segment)
-                # Now get the new values for the SEGMENT
-                self.log.debug(f"Updating DATA in template for: {extname}")
-                SEGMENT_DATA = self.CCDInfo[sensor].setup_segment(seg)
-                self.update_records(SEGMENT_DATA, extname)
+            if 'SEGMENT' in self.templ_file:
+                for seg in self.segment_names[sensor]:
+                    # Get the right extname for sensor/segment combination
+                    extname = self.get_segment_extname(sensor, seg)
+                    self.log.debug(f"Loading template for: {extname}")
+                    self.header[extname] = copy.deepcopy(self.header_segment)
+                    # Now get the new values for the SEGMENT
+                    self.log.debug(f"Updating DATA in template for: {extname}")
+                    SEGMENT_DATA = self.CCDInfo[sensor].setup_segment(seg)
+                    self.update_records(SEGMENT_DATA, extname)
 
     def load_geometry(self, geom):
         """

@@ -23,6 +23,15 @@ def cmdline():
     parser.add_argument("--rotpa", action="store", default=0.0, type=float,
                         help="The ROTPA for the visit")
 
+    parser.add_argument("--filterband", action="store", default='r',
+                        help="The filter band name (i.e. r)")
+    parser.add_argument("--filtername", action="store", default='U-001',
+                        help="Name of the physical filter (i.e. U-001)")
+    parser.add_argument("--filterslot", action="store", default=0,
+                        help="Filter slot (1-indexed)")
+    parser.add_argument("--filterpos", action="store", default=666.0,
+                        help="The filter measured position of slide (i.e.: 666.0)")
+
     # Control imageName
     parser.add_argument("--camcode", action="store", default='MT',
                         help="The code for the telecope")
@@ -45,7 +54,14 @@ def cmdline():
                         help="The elevation angle")
     parser.add_argument("--az", action="store", default=45.0, type=float,
                         help="The azimuth angle")
-
+    parser.add_argument("--focusz", action="store", default=13, type=float,
+                        help="Hexapod FocusZ position (mm)")
+    parser.add_argument("--vignetted", action="store", default=1, type=int,
+                        help="Is the telescope vignetted 0:UNKNOWN, 1: NO, 2: PARTTIALLY, 3: FULLY")
+    parser.add_argument("--instport", action="store", default=1, type=int,
+                        help="The instrument port where LATISS is installed")
+    parser.add_argument("--m3port", action="store", default=1, type=int,
+                        help="Port the M3 is directing light into")
     parser.add_argument("--tracksys", action="store", default=1, type=int,
                         help="The tracking coordinate system [RADEC(1), AZEL(2), PLANET(3), EPHEM(4)].")
     parser.add_argument("--radesys", action="store", default=2, type=int,
@@ -58,7 +74,7 @@ def cmdline():
                         help="Optional imageName")
     parser.add_argument("--obsannot", action="store", default="Dummy Obs Annotation", type=str,
                         help="Optional Observation annnotation")
-    parser.add_argument("--emuimage", action="store", default="Dummy EMUNAME", type=str,
+    parser.add_argument("--emuimage", action="store", default="IM_P_20250914_001378", type=str,
                         help="Optional Emulated Image Name")
 
     parser.add_argument("--additionalKeys", action="store",
@@ -119,6 +135,32 @@ async def amain():
 
     LOGGER = hutils.create_logger()
 
+    # Camera Geometry
+    # Send sub-set of imageReadoutParameters, we populate only a few fields
+    ccdLocation = hutils.build_sensor_list('LSSTCam', sep='')
+    ccdSlots = [s[3:] for s in ccdLocation]
+    raftBays = [s[0:3] for s in ccdLocation]
+    Nsensors = len(ccdLocation) + 1
+
+    # Camera confguration from focalPlaneSummaryInfo
+    # Need to hardcore 212 for ccdType and ccdTempSetPoin
+    kwfPl = {'ccdLocation': ':'.join(ccdLocation),
+             'ccdSlot': ':'.join(ccdSlots),
+             'raftBay': ':'.join(raftBays),
+             'rebSerialNumber': ':'.join(['REBSER_TEST', ]*Nsensors),
+             'ccdManSerNum': ':'.join(['12345', ]*Nsensors),
+             'ccdManufacturer': ':'.join(['ITL', ]*Nsensors),
+             # 'ccdType': [1, ]*Nsensors,
+             'ccdType': [1, ]*212,
+             'ccdLSSTName': ':'.join(['ITL-YYYY-XXX', ]*Nsensors),
+             # Made up values just for testing
+             'sequencerChecksum': ':'.join(['1234567890', ]*Nsensors),
+             'sequencerKey': ':'.join(['SEQNAME_TEST', ]*Nsensors),
+             'rebLSSTName': ':'.join(['REBNAME_TEST', ]*Nsensors),
+             'ccdTempSetPoint': [random.uniform(-30, 0) for i in range(212)]}
+    await cam.evt_focalPlaneSummaryInfo.set_write(**kwfPl)
+    LOGGER.info("Sending simulated focalPlaneSummaryInfo {}".format(kwfPl))
+
     # FocusZ positionZ for Hexapod
     kwHexa = {'demand': [0.0, 0.1, 0.2, 0.3, 0.4, 0.5],
               'position': [0, 1, 2, 3, 4, 5],
@@ -138,6 +180,14 @@ async def amain():
             'force_output': True}
     await ptg.evt_currentTarget.set_write(**kwTA)
     LOGGER.info("Sending simulated Ptg currentTarget:{}".format(kwTA))
+
+    # Set the filter names
+    kwFilter = {'filterType': args.filterband,
+                'filterName': args.filtername,
+                'filterPosition': args.filterpos,
+                'filterSlot': args.filterslot}
+    await cam.evt_endSetFilter.set_write(**kwFilter)
+    LOGGER.info("Sending simulated Camera endSetFilter:{}".format(kwFilter))
 
     # Seeing
     timestamp_now = time.time()
@@ -188,6 +238,14 @@ async def amain():
     await dometraj.evt_simulationMode.set_write(**kwSim)
     LOGGER.info("Sending simulationMode for MTDomeTrajectory {}".format(kwSim))
 
+    # Send VIGNETTE value for all params
+    kwVignette = {'vignetted': args.vignetted,
+                  'azimuth': args.vignetted,
+                  'elevation': args.vignetted,
+                  'shutter': args.vignetted}
+    await dometraj.evt_telescopeVignetted.set_write(**kwVignette)
+    LOGGER.info("Sending telescopeVignetted for MTDomeTrajectory {}".format(kwVignette))
+
     # Loop over NSequence
     for k in range(args.NSequence):
 
@@ -207,6 +265,13 @@ async def amain():
             imageName = args.imageName
         else:
             imageName = "{}_{}_{}_{:06d}".format(args.camcode, args.controller, DAYOBS, seqN)
+
+        # Send CCD temperature telemetry using a random generator
+        kwCCD = {'location': ':'.join(ccdLocation),
+                 'temp': [random.uniform(-30, 0)]*Nsensors
+                 }
+        LOGGER.info("Sending simulated fp_Ccd {}".format(kwCCD))
+        await cam.tel_focal_plane_Ccd.set_write(**kwCCD)
 
         # The START telemetry for Airmass using the MTPtg.currentTargetStatus
         kwTA = {'timestamp': get_tai_time(),
@@ -265,7 +330,7 @@ async def amain():
         # The END telemetry for RA/DEC, EL/AZ from the MTPtg.mountPosition
         kwMP = {'ra': args.ra*random.uniform(0.95, 1.05),
                 'declination': args.dec*random.uniform(0.95, 1.05),
-                'skyAngle': args.rotpa*args.dec*random.uniform(0.95, 1.05),
+                'skyAngle': args.rotpa*random.uniform(0.95, 1.05),
                 'elevationActualPosition': args.el*random.uniform(0.95, 1.05),
                 'azimuthActualPosition': args.az*random.uniform(0.95, 1.05)}
         await ptg.tel_mountPosition.set_write(**kwMP)
