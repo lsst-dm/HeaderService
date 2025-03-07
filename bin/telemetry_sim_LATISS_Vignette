@@ -14,7 +14,9 @@ except IndexError:
 async def amain():
 
     LOGGER = hutils.create_logger()
+    LOGGER.propagate = False
     dometraj = salobj.Controller(name="ATDomeTrajectory", index=0)
+    await dometraj.start_task
     # Send VIGNETTE Value
     kwVignette = {'vignetted': newvalue, 'azimuth': newvalue, 'shutter': newvalue}
     await dometraj.evt_telescopeVignetted.set_write(**kwVignette)

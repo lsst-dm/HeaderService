@@ -68,7 +68,9 @@ async def amain():
 
     # Create handlers for the CSCs we want to simulate messages
     cam = salobj.Controller(name="GenericCamera", index=1)
+    await cam.start_task
     LOGGER = hutils.create_logger()
+    LOGGER.propagate = False
 
     # Sending camera information
     kwInfo = {'cameraMakeAndModel': 'Leica',

@@ -33,6 +33,7 @@ import HeaderService
 import importlib
 import json
 import copy
+import logging
 
 try:
     HEADERSERVICE_DIR = os.environ['HEADERSERVICE_DIR']
@@ -67,8 +68,8 @@ class HSWorker(salobj.BaseCsc):
         # Define the callbacks for start/end
         self.define_evt_callbacks()
 
-        # Load enum idl libraries
-        self.load_enums_idl()
+        # Load enum xml libraries
+        self.load_enums_xml()
 
         # Define global lock to update dictionaries
         self.dlock = asyncio.Lock()
@@ -98,6 +99,11 @@ class HSWorker(salobj.BaseCsc):
                 self.clean(imageName)
 
     async def handle_summary_state(self):
+
+        # Check that we have the right looger once the HS is running:
+        if self.log.name != self.salinfo.name:
+            self.log.info(f"Redirecting logger from {self.log} to {self.salinfo.log}")
+            self.setup_logging()
 
         # if current_state hasn't been set, and the summary_state is STANDBY,
         # we're just starting up, so don't do anything but set the current
@@ -396,6 +402,14 @@ class HSWorker(salobj.BaseCsc):
         dirname = os.path.dirname(self.config.logfile)
         if dirname != '':
             self.check_outdir(dirname)
+
+        # We cannot use the CSC logger before it starts
+        if not self.salinfo.running:
+            self.log = logging.getLogger(__name__)
+            print(f"{self.salinfo} is not running -- will use own logger for now")
+        else:
+            self.log = self.salinfo.log
+
         hutils.configure_logger(self.log, logfile=self.config.logfile,
                                 level=self.config.loglevel,
                                 log_format=self.config.log_format,
@@ -478,17 +492,18 @@ class HSWorker(salobj.BaseCsc):
         # Select the end_collection channel
         self.name_end = get_channel_name(self.config.end_collection_event)
 
-    def load_enums_idl(self):
+    def load_enums_xml(self):
         """
-        Load using importlib the idl libraries for the enumerated CSCs
+        Load using importlib the xml libraries for the enumerated CSCs
         """
         # Get the list of enum enum_csc
         self.log.info("Extracting enum CSC's from telemetry dictionary")
         self.enum_csc = get_enum_cscs(self.config.telemetry)
         self.xml_lib = {}
         for csc in self.enum_csc:
-            self.log.info(f"importing lsst.ts.idl.enums.{csc}")
+            self.log.info(f"importing lsst.ts.xml.enums.{csc}")
             self.xml_lib[csc] = importlib.import_module("lsst.ts.xml.enums.{}".format(csc))
+        self.log.info("enums imported")
 
     def get_channels(self):
         """Extract the unique channels by topic/device"""
@@ -1057,7 +1072,7 @@ class HSWorker(salobj.BaseCsc):
             key = self.config.telemetry[keyword]['array_keyname']
             # Extract only the requested key from the dictionary
             extracted_payload = dict(zip(keywords, hutils.split_esc(payload, sep)))[key]
-        # Case 3 -- enumeration using idl libraries
+        # Case 3 -- enumeration using xml libraries
         elif self.config.telemetry[keyword]['array'] == 'enum':
             device = self.config.telemetry[keyword]['device']
             array_name = self.config.telemetry[keyword]['array_name']
