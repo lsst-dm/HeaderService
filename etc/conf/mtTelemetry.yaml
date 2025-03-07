@@ -71,7 +71,7 @@ cameraConf_event:
     array_keys: ccdLocation
 
 # Telemetry values for images meta-data
-# https://confluence.lsstcorp.org/display/SYSENG/ComCam+Header+Information+Topic+Mapping
+# https://rubinobs.atlassian.net/wiki/spaces/SYSENG/pages/35350467/MT+Header+Information+Topic+Mapping
 telemetry:
 
 # -------------------------------

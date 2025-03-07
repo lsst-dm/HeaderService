@@ -212,11 +212,9 @@ def get_obsnite(date=None, thresh_hour=14, format='{year}{month:02d}{day:02d}'):
 def repack_dict_list(mydict, masterkey):
     # Repack dictionary with list, keys to a give key
     newdict = dict()
-    k = 1
     for newkey in mydict[masterkey]:
         newdict[newkey] = dict()
         indx = mydict[masterkey].index(newkey)
-        k = k + 1
         for key in mydict.keys():
             newdict[newkey][key] = mydict[key][indx]
 
@@ -499,7 +497,7 @@ class HDRTEMPL:
             # Loop over all segment in Sensor/CCD
             if 'SEGMENT' in self.templ_file:
                 for seg in self.segment_names[sensor]:
-                    # Get the right extnamme for sensor/segment combination
+                    # Get the right extname for sensor/segment combination
                     extname = self.get_segment_extname(sensor, seg)
                     self.log.debug(f"Loading template for: {extname}")
                     self.header[extname] = copy.deepcopy(self.header_segment)
