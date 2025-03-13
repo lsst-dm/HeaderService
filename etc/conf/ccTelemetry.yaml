@@ -462,42 +462,54 @@ telemetry:
   Stype: Telemetry
   topic: mountPosition
   value: ra
-  collect_after_event: end_collection_event
+  collect_after_event:
+    device: CCCamera
+    topic: startReadout
 
  DECEND:
   device: MTPtg
   Stype: Telemetry
   topic: mountPosition
   value: declination
-  collect_after_event: end_collection_event
+  collect_after_event:
+    device: CCCamera
+    topic: startReadout
 
  HAEND:
   device: MTPtg
   Stype: Telemetry
   topic: currentTargetStatus
   value: ha
-  collect_after_event: end_collection_event
+  collect_after_event:
+    device: CCCamera
+    topic: startReadout
 
  AMEND:
   device: MTPtg
   Stype: Telemetry
   topic: currentTargetStatus
   value: airmass
-  collect_after_event: end_collection_event
+  collect_after_event:
+    device: CCCamera
+    topic: startReadout
 
  ELEND:
   device: MTMount
   Stype: Telemetry
   topic: elevation
   value: actualPosition
-  collect_after_event: end_collection_event
+  collect_after_event:
+    device: CCCamera
+    topic: startReadout
 
  AZEND:
   device: MTMount
   Stype: Telemetry
   topic: azimuth
   value: actualPosition
-  collect_after_event: end_collection_event
+  collect_after_event:
+    device: CCCamera
+    topic: startReadout
 
  FOCUSZ:
   device: MTHexapod

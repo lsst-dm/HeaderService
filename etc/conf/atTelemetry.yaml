@@ -439,7 +439,9 @@ telemetry:
   Stype: Telemetry
   topic: mountPositions
   value: ra
-  collect_after_event: end_collection_event
+  collect_after_event:
+    device: ATCamera
+    topic: startReadout
   array: undef
 
  DECEND:
@@ -447,7 +449,9 @@ telemetry:
   Stype: Telemetry
   topic: mountPositions
   value: declination
-  collect_after_event: end_collection_event
+  collect_after_event:
+    device: ATCamera
+    topic: startReadout
   array: undef
 
  HAEND:
@@ -455,21 +459,27 @@ telemetry:
   Stype: Telemetry
   topic: currentTargetStatus
   value: ha
-  collect_after_event: end_collection_event
+  collect_after_event:
+    device: ATCamera
+    topic: startReadout
 
  AMEND:
   device: ATPtg
   Stype: Telemetry
   topic: currentTargetStatus
   value: airmass
-  collect_after_event: end_collection_event
+  collect_after_event:
+    device: ATCamera
+    topic: startReadout
 
  ELEND:
   device: ATPtg
   Stype: Telemetry
   topic: mountPositions
   value: elevationCalculatedAngle
-  collect_after_event: end_collection_event
+  collect_after_event:
+    device: ATCamera
+    topic: startReadout
   array: undef
 
  AZEND:
@@ -477,7 +487,9 @@ telemetry:
   Stype: Telemetry
   topic: mountPositions
   value: azimuthCalculatedAngle
-  collect_after_event: end_collection_event
+  collect_after_event:
+    device: ATCamera
+    topic: startReadout
   array: undef
 
  FOCUSZ:
@@ -485,7 +497,9 @@ telemetry:
   Stype: Event
   topic: focusOffsetSummary
   value: userApplied
-  collect_after_event: end_collection_event
+  collect_after_event:
+    device: ATCamera
+    topic: startReadout
 
  INSTPORT:
   device: ATSpectrograph

@@ -120,7 +120,7 @@ def cmdline():
 
     parser.add_argument("--sleeptime", action="store", default=1, type=float,
                         help="Sleep Time between step, in seconds")
-    parser.add_argument("--delaytime", action="store", default=0, type=float,
+    parser.add_argument("--delaytime", action="store", default=5, type=float,
                         help="Extra delay time before endOfImageTelemetry in seconds")
     parser.add_argument("--preh", action="store", default=CCDGEOM.preh, type=int,
                         help="prescan horizontal")
@@ -397,11 +397,6 @@ async def amain():
         LOGGER.info(f"Waiting for {args.exptime} sec")
         time.sleep(args.exptime)
 
-        # Send startReadout Event after integration is finished
-        LOGGER.info("Sending simulated startReadout")
-        del kwInt['timeout']
-        await cam.evt_startReadout.set_write(**kwInt)
-
         # The END telemetry for Airmass using ATPtg.currentTargetStatus
         kwTA = {'timestamp': get_tai_time(),
                 'ha': args.ha*1.01,
@@ -417,6 +412,11 @@ async def amain():
                 'azimuthCalculatedAngle': [args.az*1.01]*100}
         await ptg.tel_mountPositions.set_write(**kwMP)
         LOGGER.info("Sending simulated mountPositions for RA/DEC EL/AZ End")
+
+        # Send startReadout Event after integration is finished
+        LOGGER.info("Sending simulated startReadout")
+        del kwInt['timeout']
+        await cam.evt_startReadout.set_write(**kwInt)
 
         # Send endReadout event
         LOGGER.info("Sending simulated endReadout")

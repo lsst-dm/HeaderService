@@ -4,10 +4,15 @@ import time
 import argparse
 import HeaderService.hutils as hutils
 import HeaderService.hscalc as hscalc
+import HeaderService.camera_coords as camera_coords
 import random
 import lsst.ts.salobj as salobj
 import lsst.ts.utils as ts_utils
 import asyncio
+
+# Get the info from the camera_coords library for and ITL sensor
+CCDGEOM = camera_coords.CCDInfo('ITL')
+CCDGEOM.load_vendor_defaults()
 
 
 def cmdline():
@@ -101,8 +106,14 @@ def cmdline():
 
     parser.add_argument("--sleeptime", action="store", default=1, type=float,
                         help="Sleep Time between step, in seconds")
-    parser.add_argument("--delaytime", action="store", default=0, type=float,
+    parser.add_argument("--delaytime", action="store", default=5, type=float,
                         help="Extra delay time before endOfImageTelemetry in seconds")
+    parser.add_argument("--preh", action="store", default=CCDGEOM.preh, type=int,
+                        help="prescan horizontal")
+    parser.add_argument("--overh", action="store", default=CCDGEOM.overh, type=int,
+                        help="overscal horizontal")
+    parser.add_argument("--overv", action="store", default=CCDGEOM.overv, type=int,
+                        help="overscal vertical")
     args = parser.parse_args()
     return args
 
@@ -119,7 +130,6 @@ async def amain():
 
     # Get the command line arguments
     args = cmdline()
-
     shuttime = args.exptime + random.uniform(0, 0.5)
 
     # Create handlers for the CSCs we want to simulate messages
@@ -166,7 +176,6 @@ async def amain():
              'rebSerialNumber': ':'.join(['REBSER_TEST', ]*Nsensors),
              'ccdManSerNum': ':'.join(['12345', ]*Nsensors),
              'ccdManufacturer': ':'.join(['ITL', ]*Nsensors),
-             # 'ccdType': [1, ]*Nsensors,
              'ccdType': [1, ]*212,
              'ccdLSSTName': ':'.join(['ITL-YYYY-XXX', ]*Nsensors),
              # Made up values just for testing
@@ -176,6 +185,20 @@ async def amain():
              'ccdTempSetPoint': [random.uniform(-30, 0) for i in range(212)]}
     await cam.evt_focalPlaneSummaryInfo.set_write(**kwfPl)
     LOGGER.info("Sending simulated focalPlaneSummaryInfo {}".format(kwfPl))
+
+    kwRO = {'overRows': [args.overv]*Nsensors,
+            'overCols': [args.overh]*Nsensors,
+            'preCols': [args.preh]*Nsensors,
+            'readCols': [CCDGEOM.dimh]*Nsensors,
+            'readCols2': [0]*Nsensors,
+            'readRows': [CCDGEOM.dimv]*Nsensors,
+            'ccdLocation': ':'.join(ccdLocation),
+            'ccdSlot': ':'.join(ccdSlots),
+            'raftBay': ':'.join(raftBays),
+            'daqAnnotation': args.obsannot,
+            'force_output': True}
+    await cam.evt_imageReadoutParameters.set_write(**kwRO)
+    LOGGER.info("Sending simulated imageReadoutParameters {}".format(kwRO))
 
     # FocusZ positionZ for Hexapod
     kwHexa = {'demand': [0.0, 0.1, 0.2, 0.3, 0.4, 0.5],
@@ -331,18 +354,6 @@ async def amain():
         LOGGER.info(f"Waiting for {args.exptime} sec")
         time.sleep(args.exptime)
 
-        # Send startReadout Event after integration is finished
-        LOGGER.info("Sending simulated startReadout")
-        del kwInt['timeout']
-        await cam.evt_startReadout.set_write(**kwInt)
-
-        # Send endReadout Event after startReadout is finished
-        kwRO = kwInt
-        del kwRO['exposureTime']
-        kwRO['requestedExposureTime'] = args.exptime
-        LOGGER.info("Sending simulated endReadout")
-        await cam.evt_endReadout.set_write(**kwInt)
-
         # The END telemetry for RA/DEC, EL/AZ from the MTPtg.mountPosition
         kwMP = {'ra': args.ra*random.uniform(0.95, 1.05),
                 'declination': args.dec*random.uniform(0.95, 1.05),
@@ -364,6 +375,18 @@ async def amain():
         kwAZ = {'actualPosition': args.az**random.uniform(0.95, 1.05)}
         await mount.tel_azimuth.set_write(**kwAZ)
         LOGGER.info("Sending simulated mount positions for EL/AZ END")
+
+        # Send startReadout Event after integration is finished
+        LOGGER.info("Sending simulated startReadout")
+        del kwInt['timeout']
+        await cam.evt_startReadout.set_write(**kwInt)
+
+        # Send endReadout Event after startReadout is finished
+        kwRO = kwInt
+        del kwRO['exposureTime']
+        kwRO['requestedExposureTime'] = args.exptime
+        LOGGER.info("Sending simulated endReadout")
+        await cam.evt_endReadout.set_write(**kwInt)
 
         # send endOfImageTelemetry event
         kwEND = {'imagesInSequence': args.NSequence,

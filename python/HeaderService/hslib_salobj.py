@@ -40,6 +40,9 @@ try:
 except KeyError:
     HEADERSERVICE_DIR = __file__.split('python')[0]
 
+# The allowed values for fixed collection events
+FIXED_COLLECTION_EVENTS = frozenset(["start_collection_event", "end_collection_event"])
+
 
 class HSWorker(salobj.BaseCsc):
 
@@ -131,13 +134,27 @@ class HSWorker(salobj.BaseCsc):
         devname = get_channel_devname(self.config.start_collection_event)
         topic = self.config.start_collection_event['topic']
         getattr(self.Remote[devname], f"evt_{topic}").callback = self.start_collection_event_callback
-        self.log.info(f"Defining callback for {devname} {topic}")
+        self.log.info(f"Defining START callback for {devname} {topic}")
 
         # Select the end_collection callback
         devname = get_channel_devname(self.config.end_collection_event)
         topic = self.config.end_collection_event['topic']
         getattr(self.Remote[devname], f"evt_{topic}").callback = self.end_collection_event_callback
-        self.log.info(f"Defining callback for {devname} {topic}")
+        self.log.info(f"Defining END callback for {devname} {topic}")
+
+        # Store the callback for the generic collection
+        if len(self.collection_events_names) > 0:
+            self.collect_callback = {}
+            for name, c in self.collection_events.items():
+                if name in [self.name_start, self.name_end]:
+                    self.log.debug(f"Ignoring callback creation for {name}")
+                    continue
+                devname = get_channel_devname(c)
+                topic = c['topic']
+                self.collect_callback[name] = self.callback_collection_builder(name)
+                self.log.info(f"Created COLLECT callback function for: {name}")
+                getattr(self.Remote[devname], f"evt_{topic}").callback = self.collect_callback[name]
+                self.log.info(f"Defining COLLECT callback for: {devname} {topic}")
 
         # Store the callback for the events we want to monitor
         if len(self.monitor_event_channels) > 0:
@@ -146,19 +163,19 @@ class HSWorker(salobj.BaseCsc):
                 devname = get_channel_devname(c)
                 topic = c['topic']
                 # Get the name of the callback function
-                self.monitor_callback[name] = self.callback_builder(name)
+                self.monitor_callback[name] = self.callback_monitor_builder(name)
                 self.log.info(f"Created callback function for: {name}")
                 getattr(self.Remote[devname], f"evt_{topic}").callback = self.monitor_callback[name]
                 self.log.info(f"Defining callback for {devname} {topic}")
 
-    def callback_builder(self, monitor_event_name):
-        """Function builder for callbacks"""
-        def generic_callback(myData):
+    def callback_monitor_builder(self, monitor_event_name):
+        """Function builder for monitor's callbacks"""
+        def generic_monitor_callback(myData):
             """
             The generic callback function for the monitor collection event
             """
-            setattr(generic_callback, '__monitor_event_name__', monitor_event_name)
-            setattr(generic_callback, '__name__', monitor_event_name)
+            setattr(generic_monitor_callback, '__monitor_event_name__', monitor_event_name)
+            setattr(generic_monitor_callback, '__name__', monitor_event_name)
 
             # If not in ENABLED mode we do nothing
             if self.summary_state != salobj.State.ENABLED:
@@ -181,7 +198,34 @@ class HSWorker(salobj.BaseCsc):
                 self.log.info(f"Updating monitored metadata for: {imageName}")
                 self.update_monitor_metadata(imageName, keywords)
 
-        return generic_callback
+        return generic_monitor_callback
+
+    def callback_collection_builder(self, event_name):
+        """Function builder for collect event callbacks"""
+        def generic_collection_callback(myData):
+            """
+            Generic collection callback function. The event needs to be from
+            Camera as we will extract imageName from the event payload
+            """
+            setattr(generic_collection_callback, '__collect_event_name__', event_name)
+            setattr(generic_collection_callback, '__name__', event_name)
+            # Extract the key to match start/end events
+            imageName = self.get_imageName(myData)
+            # If not in ENABLED mode we do nothing
+            if self.summary_state != salobj.State.ENABLED:
+                self.log.info(f"Received: {event_name} Event for {imageName}")
+                self.log.info(f"Ignoring as current state is {self.summary_state.name}")
+                return
+
+            self.log.info(f"----- Received: {event_name} Event for {imageName} -----")
+            self.log.info(f"Starting callback {event_name} for imageName: {imageName}")
+            # The keywords we want to update
+            keywords = self.collection_events_keys[event_name]
+            self.log.info(f"Collecting Metadata GENERIC: {event_name} Event and keys: {keywords}")
+            self.log.info(f"Updating metadata for: {imageName}")
+            self.metadata[imageName].update(self.collect(keywords))
+
+        return generic_collection_callback
 
     def start_collection_event_callback(self, myData):
         """ The callback function for the START collection event"""
@@ -196,7 +240,7 @@ class HSWorker(salobj.BaseCsc):
             return
 
         self.log.info(f"----- Received: {self.name_start} Event for {imageName} -----")
-        self.log.info(f"Starting callback for imageName: {imageName}")
+        self.log.info(f"Starting callback START for imageName: {imageName}")
 
         # Update header object and metadata dictionaries with lock and wait
         asyncio.ensure_future(self.complete_tasks_START(imageName))
@@ -221,6 +265,7 @@ class HSWorker(salobj.BaseCsc):
 
         # Check for rogue end collection events
         self.log.info(f"----- Received: {self.name_end} Event for {imageName} -----")
+        self.log.info(f"Starting callback END for imageName: {imageName}")
         # Cancel/stop the timeout task because we got the END callback
         self.log.info(f"Calling cancel() timeout_task for: {imageName}")
         self.end_evt_timeout_task[imageName].cancel()
@@ -487,11 +532,6 @@ class HSWorker(salobj.BaseCsc):
                 self.Remote_get[channel_name] = getattr(self.Remote[devname], f"tel_{c['topic']}").get
                 self.log.info(f"Storing Remote.tel_{c['topic']}.get() for {channel_name}")
 
-        # Select the start_collection channel
-        self.name_start = get_channel_name(self.config.start_collection_event)
-        # Select the end_collection channel
-        self.name_end = get_channel_name(self.config.end_collection_event)
-
     def load_enums_xml(self):
         """
         Load using importlib the xml libraries for the enumerated CSCs
@@ -512,15 +552,25 @@ class HSWorker(salobj.BaseCsc):
                                                    start_collection_event=self.config.start_collection_event,
                                                    end_collection_event=self.config.end_collection_event,
                                                    imageParam_event=self.config.imageParam_event)
+
+        # Get the events where we want to collect telemetry
+        self.log.info("Extracting collection events from telemetry dictionary")
+        (self.collection_events,
+         self.collection_events_names,
+         self.collection_events_keys) = get_collection_events(self.config)
+        self.log.info(f"Extracted events to collect: {self.collection_events_names}")
+
+        # Select the start_collection channel
+        self.name_start = get_channel_name(self.config.start_collection_event)
+        # Select the end_collection channel
+        self.name_end = get_channel_name(self.config.end_collection_event)
+
         # Separate the keys to collect at the 'end' from the ones at 'start'
-        self.keywords_start = [key for key, value in self.config.telemetry.items()
-                               if value['collect_after_event'] == 'start_collection_event']
-        self.keywords_end = [key for key, value in self.config.telemetry.items()
-                             if value['collect_after_event'] == 'end_collection_event']
+        self.keywords_start = self.collection_events_keys[self.name_start]
+        self.keywords_end = self.collection_events_keys[self.name_end]
 
         # Get the events we want to monitor
         self.log.info("Extracting Telemetry channels to monitor from telemetry dictionary")
-
         (self.monitor_event_channels,
          self.monitor_event_channels_names,
          self.monitor_event_channels_keys) = get_monitor_channels(self.config.telemetry)
@@ -611,6 +661,7 @@ class HSWorker(salobj.BaseCsc):
             # Collect metadata at start of integration and
             # load it on the self.metadata dictionary
             self.log.info(f"Collecting Metadata START : {self.name_start} Event")
+            self.log.info(f"Creating metadata for: {imageName}")
             self.metadata[imageName] = self.collect(self.keywords_start)
 
             # Create the HDR object to be populated with the collected metadata
@@ -666,6 +717,7 @@ class HSWorker(salobj.BaseCsc):
 
             # Collect metadata at end of integration
             self.log.info(f"Collecting Metadata END: {self.name_end} Event")
+            self.log.info(f"Updating metadata for: {imageName}")
             self.metadata[imageName].update(self.collect(self.keywords_end))
             # Collect metadata created by the HeaderService
             self.log.info("Collecting Metadata from HeaderService")
@@ -1212,11 +1264,15 @@ def get_channel_name(c):
 
 def get_channel_device(c):
     """ Standard formatting for the device name of a channel across modules"""
+    if 'device_index' not in c:
+        c['device_index'] = 0
     return c['device']
 
 
 def get_channel_devname(c):
     """ Standard formatting for the 'devname' of a channel across modules"""
+    if 'device_index' not in c:
+        c['device_index'] = 0
     return "{}_{}".format(c['device'], c['device_index'])
 
 
@@ -1231,6 +1287,47 @@ def get_enum_cscs(telem):
             if telem[key]['device'] not in enum_cscs:
                 enum_cscs.append(telem[key]['device'])
     return enum_cscs
+
+
+def get_collection_events(config):
+    """
+    Get the names of the collection event, where we want to collect telemetry
+    """
+
+    telem = config.telemetry
+    collection_events = {}
+    collection_events_names = []
+    collection_events_keys = {}
+    for key in telem:
+        # Extract the string or dictionary that for 'collect_after_event'
+        collect_after_event = telem[key]['collect_after_event']
+
+        # Case 1: it is one of the fixed collection events, so we get the info
+        # from the config section
+        if isinstance(collect_after_event, str) and collect_after_event in FIXED_COLLECTION_EVENTS:
+            collect_dict = getattr(config, collect_after_event)
+
+        # Case 2: it is a custom collection event, defined as a dictionary in
+        # the telemetry section of the config.
+        elif isinstance(collect_after_event, dict):
+            collect_dict = telem[key]['collect_after_event']
+        else:
+            msg = f"Wrong definition 'collect_after_event' for keyword:{key}"
+            raise ValueError(msg)
+
+        # Get the device and topic for collection event
+        device = collect_dict['device']
+        topic = collect_dict['topic']
+        name = get_channel_name(collect_dict)
+        # Append channel (i.e.: event name) if not in the list already
+        if name not in collection_events_names:
+            collection_events_names.append(name)
+            collection_events[name] = {'device': device, 'topic': topic}
+            collection_events_keys[name] = [key]
+        else:
+            collection_events_keys[name].append(key)
+
+    return collection_events, collection_events_names, collection_events_keys
 
 
 def get_monitor_channels(telem):
@@ -1274,15 +1371,13 @@ def extract_telemetry_channels(telem, start_collection_event=None,
     Get the unique telemetry channels from telemetry dictionary to
     define the topics that we need to subscribe to
     """
-
-    valid_collection_events = frozenset(["start_collection_event", "end_collection_event"])
-
     channels = {}
     for key in telem:
-
+        collect_name = telem[key]['collect_after_event']
         # Make sure telemetry as a valid collection event definition
-        if telem[key]['collect_after_event'] not in valid_collection_events:
+        if isinstance(collect_name, str) and collect_name not in FIXED_COLLECTION_EVENTS:
             raise ValueError(f"Wrong collection_event in telemetry definition for keyword:{key}")
+
         # Add array qualifier -- REVISE or replace by array
         if 'type' not in telem[key]:
             telem[key]['type'] = 'scalar'
