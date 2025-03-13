@@ -207,7 +207,7 @@ class HSWorker(salobj.BaseCsc):
             Generic collection callback function. The event needs to be from
             Camera as we will extract imageName from the event payload
             """
-            setattr(generic_collection_callback, '__monitor_event_name__', event_name)
+            setattr(generic_collection_callback, '__collect_event_name__', event_name)
             setattr(generic_collection_callback, '__name__', event_name)
             # Extract the key to match start/end events
             imageName = self.get_imageName(myData)
