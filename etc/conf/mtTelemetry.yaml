@@ -233,14 +233,14 @@ telemetry:
 
 # --- Camera Sensor information
 
- CCDTEMP:
-  device: MTCamera
-  Stype: Telemetry
-  topic: focal_plane_Ccd
-  value: temp
-  collect_after_event: start_collection_event
-  array: CCD_array
-  array_keys: location
+# CCDTEMP:
+#  device: MTCamera
+#  Stype: Telemetry
+#  topic: focal_plane_Ccd
+#  value: temp
+#  collect_after_event: start_collection_event
+#  array: CCD_array
+#  array_keys: location
 
  CCD_MANU:
   device: MTCamera
