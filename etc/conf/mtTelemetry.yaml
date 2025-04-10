@@ -4,7 +4,7 @@
 hs_name: MTHeaderService
 instrument: LSSTCam
 # Vendor names come from a MTCamera Event, this is in case it does not
-# vendor_names: ['ITL','ITL','ITL','ITL','ITL','ITL','ITL','ITL','ITL','ITL']
+vendor_names: ['ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL', 'ITL']
 section: LSSTCam
 
 # Default logging level
