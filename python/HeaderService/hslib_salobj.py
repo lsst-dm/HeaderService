@@ -551,7 +551,8 @@ class HSWorker(salobj.BaseCsc):
         self.channels = extract_telemetry_channels(self.config.telemetry,
                                                    start_collection_event=self.config.start_collection_event,
                                                    end_collection_event=self.config.end_collection_event,
-                                                   imageParam_event=self.config.imageParam_event)
+                                                   imageParam_event=self.config.imageParam_event,
+                                                   cameraConf_event=self.config.cameraConf_event)
 
         # Get the events where we want to collect telemetry
         self.log.info("Extracting collection events from telemetry dictionary")
@@ -1366,7 +1367,8 @@ def get_monitor_channels(telem):
 
 def extract_telemetry_channels(telem, start_collection_event=None,
                                end_collection_event=None,
-                               imageParam_event=None):
+                               imageParam_event=None,
+                               cameraConf_event=None):
     """
     Get the unique telemetry channels from telemetry dictionary to
     define the topics that we need to subscribe to
@@ -1418,6 +1420,17 @@ def extract_telemetry_channels(telem, start_collection_event=None,
     # The imageParam event
     if imageParam_event:
         c = imageParam_event
+        # Assume index=0 if not defined
+        if 'device_index' not in c:
+            c['device_index'] = 0
+        name = get_channel_name(c)
+        if name not in channels.keys():
+            c['Stype'] = 'Event'
+            channels[name] = c
+
+    # The cameraConf_event event
+    if cameraConf_event:
+        c = cameraConf_event
         # Assume index=0 if not defined
         if 'device_index' not in c:
             c['device_index'] = 0
