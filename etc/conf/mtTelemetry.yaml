@@ -692,6 +692,8 @@ playback_keywords:
  - FOCUSZ
  - TRACKSYS
  - RADESYS
+ - VIGN_MIN
+ - VIGNETTE
 # ---- Weather information -----------------------------
  - AIRTEMP
  - PRESSURE
@@ -724,3 +726,4 @@ playback_keywords_keep:
   - SEQNUM
   - OBSID
   - FILTER
+  - IMGTYPE
