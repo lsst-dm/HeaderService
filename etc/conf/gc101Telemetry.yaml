@@ -71,6 +71,9 @@ end_collection_event:
 # The event for the image readout paramters
 imageParam_event: False
 
+# The event for the camera vendor and CCD names configuration
+cameraConf_event: False
+
 # Telemetry values for images meta-data
 # https://confluence.lsstcorp.org/pages/viewpage.action?spaceKey=LSSTCOM&title=Simulation+Camera+Header+Information+Topic+Mapping
 telemetry:
