@@ -73,9 +73,6 @@ PROGRAM =                      / Name of the program
 REASON  =                      / Reason for observation
 OBSANNOT=                      / Observing annotation
 
-        ---- Test Stand information ----
-TSTAND  =                      / The Test Stand used
-
         ---- Information from Camera (Common block) ----
 IMAGETAG=                      / DAQ Image id
 
