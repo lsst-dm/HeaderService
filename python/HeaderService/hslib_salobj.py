@@ -903,8 +903,8 @@ class HSWorker(salobj.BaseCsc):
             # Otherwise we put it into the PRIMARY
             else:
                 extname = 'PRIMARY'
-                self.HDR[imageName].update_record(keyword, value, extname)
                 self.log.info(f"Updating header[{extname}] with {keyword:8s} = {value}")
+                self.HDR[imageName].update_record(keyword, value, extname)
 
     def get_imageName(self, myData):
         """
