@@ -27,7 +27,8 @@ def cmdline():
                         help="The DEC of the visit")
     parser.add_argument("--rotpa", action="store", default=0.0, type=float,
                         help="The ROTPA for the visit")
-
+    parser.add_argument("--rotation", action="store", default=0.8, type=float,
+                        help="The START value MTRotator for the visit")
     parser.add_argument("--filterband", action="store", default='r',
                         help="The filter band name (i.e. r)")
     parser.add_argument("--filtername", action="store", default='U-001',
@@ -334,6 +335,11 @@ async def amain():
         await mount.tel_azimuth.set_write(**kwAZ)
         LOGGER.info("Sending simulated mount positions for EL/AZ Start")
 
+        # Sending MTRotator telemetry for ROTSTART
+        kwROT = {'actualPosition': args.rotation}
+        await rotator.tel_rotation.set_write(**kwROT)
+        LOGGER.info("Sending simulated rotator positions for ROTSTART")
+
         # Send the startIntegration for image: k
         LOGGER.info("Sending simulated startIntegration")
         kwInt = {'imagesInSequence': args.NSequence,
@@ -375,6 +381,11 @@ async def amain():
         kwAZ = {'actualPosition': args.az**random.uniform(0.95, 1.05)}
         await mount.tel_azimuth.set_write(**kwAZ)
         LOGGER.info("Sending simulated mount positions for EL/AZ END")
+
+        # Sending MTRotator telemetry for ROTSTART
+        kwROT = {'actualPosition': args.rotation*random.uniform(0.95, 1.05)}
+        await rotator.tel_rotation.set_write(**kwROT)
+        LOGGER.info("Sending simulated rotator positions for ROTEND")
 
         # Send startReadout Event after integration is finished
         LOGGER.info("Sending simulated startReadout")
