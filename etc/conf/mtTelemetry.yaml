@@ -526,6 +526,22 @@ telemetry:
   monitor: True
   rule: min
 
+ ROTSTART:
+  device: MTRotator
+  Stype: Telemetry
+  topic: rotation
+  value: actualPosition
+  collect_after_event: start_collection_event
+
+ ROTEND:
+  device: MTRotator
+  Stype: Telemetry
+  topic: rotation
+  value: actualPosition
+  collect_after_event:
+    device: MTCamera
+    topic: startReadout
+
 # ----- Filter information from MTCamera ----------
 
  FILTBAND:
