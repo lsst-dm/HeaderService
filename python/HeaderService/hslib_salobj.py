@@ -522,8 +522,12 @@ class HSWorker(salobj.BaseCsc):
                 self.devices.append(devname)
                 self.Remote[devname] = salobj.Remote(domain=self.domain,
                                                      name=c['device'],
-                                                     index=c['device_index'])
+                                                     index=c['device_index'],
+                                                     include=self.device_topics[devname],
+                                                     )
                 self.log.info(f"Created Remote for {devname}")
+                self.log.info(f"with include topics: {self.device_topics[devname]}")
+
             # capture the evt.get() function for the channel
             if c['Stype'] == 'Event':
                 self.Remote_get[channel_name] = getattr(self.Remote[devname], f"evt_{c['topic']}").get
@@ -547,12 +551,13 @@ class HSWorker(salobj.BaseCsc):
 
     def get_channels(self):
         """Extract the unique channels by topic/device"""
-        self.log.info("Extracting Telemetry channels from telemetry dictionary")
-        self.channels = extract_telemetry_channels(self.config.telemetry,
-                                                   start_collection_event=self.config.start_collection_event,
-                                                   end_collection_event=self.config.end_collection_event,
-                                                   imageParam_event=self.config.imageParam_event,
-                                                   cameraConf_event=self.config.cameraConf_event)
+        self.log.info("Extracting Telemetry channels and topics from telemetry dictionary")
+        self.channels, self.device_topics = extract_telemetry_channels(
+            self.config.telemetry,
+            start_collection_event=self.config.start_collection_event,
+            end_collection_event=self.config.end_collection_event,
+            imageParam_event=self.config.imageParam_event,
+            cameraConf_event=self.config.cameraConf_event)
 
         # Get the events where we want to collect telemetry
         self.log.info("Extracting collection events from telemetry dictionary")
@@ -1277,6 +1282,24 @@ def get_channel_devname(c):
     return "{}_{}".format(c['device'], c['device_index'])
 
 
+def get_channel_topic(c):
+    """ Standard formatting for the topic of a channel across modules"""
+    return c['topic']
+
+
+def collect_device_topics(c, device_topics):
+    """
+    Collect and update/augment topics for each device in the input
+    device_topics dictionary
+    """
+    devname = get_channel_devname(c)
+    topic = get_channel_topic(c)
+    device_topics.setdefault(devname, [])
+    if topic not in device_topics[devname]:
+        device_topics[devname].append(topic)
+    return device_topics
+
+
 def get_enum_cscs(telem):
     """
     Get only the enumerated devices described
@@ -1302,12 +1325,10 @@ def get_collection_events(config):
     for key in telem:
         # Extract the string or dictionary that for 'collect_after_event'
         collect_after_event = telem[key]['collect_after_event']
-
         # Case 1: it is one of the fixed collection events, so we get the info
         # from the config section
         if isinstance(collect_after_event, str) and collect_after_event in FIXED_COLLECTION_EVENTS:
             collect_dict = getattr(config, collect_after_event)
-
         # Case 2: it is a custom collection event, defined as a dictionary in
         # the telemetry section of the config.
         elif isinstance(collect_after_event, dict):
@@ -1374,11 +1395,22 @@ def extract_telemetry_channels(telem, start_collection_event=None,
     define the topics that we need to subscribe to
     """
     channels = {}
+    device_topics = {}
     for key in telem:
-        collect_name = telem[key]['collect_after_event']
-        # Make sure telemetry as a valid collection event definition
-        if isinstance(collect_name, str) and collect_name not in FIXED_COLLECTION_EVENTS:
-            raise ValueError(f"Wrong collection_event in telemetry definition for keyword:{key}")
+        # Extract the string or dictionary that for 'collect_after_event'
+        collect_after_event = telem[key]['collect_after_event']
+        # Case 1: it is one of the fixed collection events
+        print(f"{key} -- collect_after_event: {collect_after_event}")
+        if isinstance(collect_after_event, str) and collect_after_event in FIXED_COLLECTION_EVENTS:
+            collect_dict = None
+
+        # Case 2: it is a custom collection event, defined as a dictionary in
+        # the telemetry section of the config.
+        elif isinstance(collect_after_event, dict):
+            collect_dict = telem[key]['collect_after_event']
+        else:
+            msg = f"Wrong definition 'collect_after_event' for keyword:{key}"
+            raise ValueError(msg)
 
         # Add array qualifier -- REVISE or replace by array
         if 'type' not in telem[key]:
@@ -1390,6 +1422,10 @@ def extract_telemetry_channels(telem, start_collection_event=None,
         # Make sure we don't create extra channels
         if name not in channels.keys():
             channels[name] = telem[key]
+        # Store the topics for the device
+        if collect_dict is not None:
+            device_topics = collect_device_topics(collect_dict, device_topics)
+        device_topics = collect_device_topics(telem[key], device_topics)
 
     # We also need to make sure that we subscribe to the start/end
     # collection Events in case these were not contained by the
@@ -1404,6 +1440,8 @@ def extract_telemetry_channels(telem, start_collection_event=None,
         if name not in channels.keys():
             c['Stype'] = 'Event'
             channels[name] = c
+        # Store the topics for the device
+        device_topics = collect_device_topics(c, device_topics)
 
     if end_collection_event:
         # Shortcut to variable c, note that when we update c
@@ -1416,6 +1454,8 @@ def extract_telemetry_channels(telem, start_collection_event=None,
         if name not in list(channels.keys()):
             c['Stype'] = 'Event'
             channels[name] = c
+        # Store the topics for the device
+        device_topics = collect_device_topics(c, device_topics)
 
     # The imageParam event
     if imageParam_event:
@@ -1427,6 +1467,8 @@ def extract_telemetry_channels(telem, start_collection_event=None,
         if name not in channels.keys():
             c['Stype'] = 'Event'
             channels[name] = c
+        # Store the topics for the device
+        device_topics = collect_device_topics(c, device_topics)
 
     # The cameraConf_event event
     if cameraConf_event:
@@ -1438,5 +1480,7 @@ def extract_telemetry_channels(telem, start_collection_event=None,
         if name not in channels.keys():
             c['Stype'] = 'Event'
             channels[name] = c
+        # Store the topics for the device
+        device_topics = collect_device_topics(c, device_topics)
 
-    return channels
+    return channels, device_topics
